@@ -12,7 +12,7 @@ import { previewFullGraph, previewInitialGraph } from "@/lib/preview-graph";
 import { isPaperLink, resolvePaper } from "@/lib/resolve-paper";
 import type { Paper } from "@/lib/types";
 
-export function ResearchWorkspace() {
+export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
   const [query, setQuery] = useState("");
   const [resultsOpen, setResultsOpen] = useState(false);
   const [resolving, setResolving] = useState(false);
@@ -62,6 +62,7 @@ export function ResearchWorkspace() {
     setDirection("all");
     setYearFrom("");
     setYearTo("");
+    onHome?.();
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
