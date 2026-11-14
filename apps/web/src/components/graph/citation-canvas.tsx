@@ -1,6 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+  type Ref,
+} from "react";
 import {
   BaseEdge,
   Background,
@@ -19,6 +27,11 @@ import {
 import { AmbientLinks } from "./ambient-links";
 import { graphDistances, paperSize, spaceCircles } from "@/lib/graph-focus";
 import type { Graph, Paper } from "@/lib/types";
+import type { GraphLayout } from "@/lib/browser-library";
+
+export interface CitationCanvasHandle {
+  getLayout: () => GraphLayout;
+}
 
 type PaperNodeData = { paper: Paper };
 type PaperNode = Node<PaperNodeData, "paperBubble">;
@@ -108,6 +121,8 @@ function positionNewNode(
 type Hover = { paper: Paper; x: number; y: number };
 
 export function CitationCanvas({
+  ref,
+  initialLayout,
   seedId,
   graph,
   visibleGraph,
@@ -119,6 +134,8 @@ export function CitationCanvas({
   onSelectCitation,
   onClearSelection,
 }: {
+  ref?: Ref<CitationCanvasHandle>;
+  initialLayout?: GraphLayout;
   seedId: string | null;
   graph: Graph;
   visibleGraph: Graph;
@@ -146,6 +163,19 @@ export function CitationCanvas({
     nodesRef.current = nodes;
   }, [nodes]);
 
+  useImperativeHandle(
+    ref,
+    () => ({
+      getLayout: () => ({
+        positions: Object.fromEntries(
+          nodes.map((node) => [node.id, node.position]),
+        ),
+        viewport: instance?.getViewport() ?? null,
+      }),
+    }),
+    [nodes, instance],
+  );
+
   useEffect(() => {
     setNodes((current) => {
       const placed = [...current];
@@ -156,31 +186,38 @@ export function CitationCanvas({
           id: paper.id,
           type: "paperBubble",
           position:
-            paper.id === seedId
+            initialLayout?.positions[paper.id] ??
+            (paper.id === seedId
               ? { x: 0, y: 0 }
               : positionNewNode(
                   paper.id,
                   expansionOrigin ?? seedId,
                   graph,
                   placed,
-                ),
+                )),
           data: { paper },
         });
         known.add(paper.id);
       }
       return placed;
     });
-  }, [graph, seedId, expansionOrigin, setNodes]);
+  }, [graph, seedId, expansionOrigin, setNodes, initialLayout]);
 
   useEffect(() => {
-    if (!instance || fitted.current || graph.papers.length < 1) return;
+    if (
+      !instance ||
+      fitted.current ||
+      graph.papers.length < 1 ||
+      initialLayout?.viewport
+    )
+      return;
     fitted.current = true;
     const frame = requestAnimationFrame(
       () =>
         void instance.fitView({ padding: 0.25, duration: 850, maxZoom: 1.2 }),
     );
     return () => cancelAnimationFrame(frame);
-  }, [instance, graph.papers.length]);
+  }, [instance, graph.papers.length, initialLayout]);
 
   const visibleIds = useMemo(
     () => new Set(visibleGraph.papers.map((paper) => paper.id)),
@@ -212,7 +249,12 @@ export function CitationCanvas({
     () => graphDistances(visibleGraph, focusId),
     [visibleGraph, focusId],
   );
-  const settleOverlaps = useCallback(
+  const restoredView = useRef(
+    initialLayout && Object.keys(initialLayout.positions).length > 0
+      ? { graph: visibleGraph, focusId }
+      : null,
+  );
+  const animateLayout = useCallback(
     (source: PaperNode[], pinnedId: string | null = focusId) => {
       if (animation.current !== null) cancelAnimationFrame(animation.current);
       const circles = source
@@ -271,8 +313,16 @@ export function CitationCanvas({
   );
 
   useEffect(() => {
-    if (nodes.length > 1) settleOverlaps(nodesRef.current);
-  }, [settleOverlaps, nodes.length]);
+    if (restoredView.current) {
+      if (
+        restoredView.current.graph === visibleGraph &&
+        restoredView.current.focusId === focusId
+      )
+        return;
+      restoredView.current = null;
+    }
+    if (nodes.length > 1) animateLayout(nodesRef.current);
+  }, [animateLayout, nodes.length, visibleGraph, focusId]);
 
   useEffect(
     () => () => {
@@ -417,7 +467,8 @@ export function CitationCanvas({
           setHoveredCitationId(null);
         }}
         nodesConnectable={false}
-        fitView
+        fitView={!initialLayout?.viewport}
+        defaultViewport={initialLayout?.viewport ?? undefined}
         minZoom={0.15}
         maxZoom={2}
         colorMode="dark"
