@@ -1,43 +1,67 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { CitationCanvas } from "@/components/graph/citation-canvas";
+import { CitationDetails } from "@/components/papers/citation-details";
 import { PaperDetails } from "@/components/papers/paper-details";
+import { useCitationGraph } from "@/hooks/use-citation-graph";
 import { useResearch } from "@/hooks/use-research";
+import { filteredGraph, type DirectionFilter } from "@/lib/graph";
+import { previewFullGraph, previewInitialGraph } from "@/lib/preview-graph";
 import type { Paper } from "@/lib/types";
 
 export function ResearchWorkspace() {
   const [query, setQuery] = useState("");
-  const [seed, setSeed] = useState<Paper | null>(null);
-  const [selected, setSelected] = useState<Paper | null>(null);
+  const [resultsOpen, setResultsOpen] = useState(true);
+  const [direction, setDirection] = useState<DirectionFilter>("all");
+  const [yearFrom, setYearFrom] = useState("");
+  const [yearTo, setYearTo] = useState("");
   const { connection, result, loading, error, search } = useResearch();
+  const citationGraph = useCitationGraph();
+  const visibleGraph = useMemo(
+    () =>
+      filteredGraph(
+        citationGraph.graph,
+        citationGraph.seed?.id ?? null,
+        direction,
+        yearFrom,
+        yearTo,
+      ),
+    [citationGraph.graph, citationGraph.seed?.id, direction, yearFrom, yearTo],
+  );
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (query.trim()) void search(query.trim());
+    if (query.trim()) {
+      setResultsOpen(true);
+      void search(query.trim());
+    }
   }
 
   function choose(paper: Paper) {
-    setSeed(paper);
-    setSelected(paper);
+    setResultsOpen(false);
+    setDirection("all");
+    setYearFrom("");
+    setYearTo("");
+    void citationGraph.openPaper(paper);
   }
 
   return (
     <>
       <header className="topbar">
-        <Link className="brand" href="/" aria-label="ResearchGraph home">
+        <Link className="brand" href="/" aria-label="TRACE home">
           <span className="brand-mark" aria-hidden="true">
-            ⌘
+            ◎
           </span>
-          ResearchGraph
+          TRACE
         </Link>
         <nav aria-label="Main navigation">
           <a href="#workspace">Explore</a>
           <button
             className="text-button"
             disabled
-            title="Graph persistence is planned"
+            title="Saved graphs are planned after the graph API is complete"
           >
             Saved graphs
           </button>
@@ -66,11 +90,20 @@ export function ResearchWorkspace() {
           <h2>Graph settings</h2>
           <div className="filter-group">
             <label htmlFor="direction">Citation direction</label>
-            <select id="direction" disabled>
-              <option>References & citations</option>
+            <select
+              id="direction"
+              value={direction}
+              onChange={(event) =>
+                setDirection(event.target.value as DirectionFilter)
+              }
+              disabled={citationGraph.graph.citations.length === 0}
+            >
+              <option value="all">All relationships</option>
+              <option value="references">References from seed</option>
+              <option value="citations">Papers citing seed</option>
             </select>
             <p className="muted sidebar-note">
-              Available with graph expansion.
+              Direction filters are relative to the starting paper.
             </p>
           </div>
           <div className="filter-group">
@@ -78,15 +111,20 @@ export function ResearchWorkspace() {
             <div className="year-range">
               <input
                 id="year-from"
+                type="number"
                 placeholder="From"
-                disabled
-                aria-label="Publication year from"
+                value={yearFrom}
+                onChange={(event) => setYearFrom(event.target.value)}
+                disabled={citationGraph.graph.papers.length < 2}
               />
               <span className="muted">–</span>
               <input
+                type="number"
                 placeholder="To"
-                disabled
                 aria-label="Publication year to"
+                value={yearTo}
+                onChange={(event) => setYearTo(event.target.value)}
+                disabled={citationGraph.graph.papers.length < 2}
               />
             </div>
           </div>
@@ -112,15 +150,18 @@ export function ResearchWorkspace() {
             </ul>
           </div>
           <p className="muted sidebar-note">
-            Arrows follow citations from the citing paper to the cited paper.
+            Arrows run from a citing paper to the paper it cites.
           </p>
         </aside>
         <section className="center" aria-label="Research workspace">
           <div className="workspace-heading">
             <div>
+              <p className="eyebrow">
+                Tracing Relationships Across Citation Evidence
+              </p>
               <h1>Research explorer</h1>
               <p className="muted">
-                Discover papers. Explore how ideas connect.
+                Discover papers. Watch their connections grow.
               </p>
             </div>
             <span className="connection" role="status">
@@ -130,6 +171,28 @@ export function ResearchWorkspace() {
               {connection}
             </span>
           </div>
+          {process.env.NODE_ENV === "development" &&
+            (!citationGraph.seed || citationGraph.loadError) && (
+              <div className="preview-entry">
+                <span>Waiting for the citation API?</span>
+                <button
+                  className="secondary-button"
+                  onClick={() =>
+                    citationGraph.openPreview(
+                      previewInitialGraph,
+                      previewFullGraph,
+                    )
+                  }
+                >
+                  Preview graph interactions with sample data
+                </button>
+              </div>
+            )}
+          {citationGraph.isPreview && (
+            <p className="preview-notice" role="status">
+              UI preview: these sample papers are not real academic records.
+            </p>
+          )}
           {loading && (
             <p className="feedback" role="status">
               Searching OpenAlex…
@@ -140,7 +203,7 @@ export function ResearchWorkspace() {
               {error}
             </p>
           )}
-          {result && (
+          {result && resultsOpen && (
             <div className="results" aria-label="Search results">
               <h2>
                 {result.total.toLocaleString()} results · showing{" "}
@@ -169,17 +232,53 @@ export function ResearchWorkspace() {
               )}
             </div>
           )}
-          <CitationCanvas paper={seed} onSelect={() => setSelected(seed)} />
+          {citationGraph.loadError && (
+            <p className="feedback error" role="alert">
+              {citationGraph.loadError}
+            </p>
+          )}
+          <CitationCanvas
+            key={citationGraph.seed?.id ?? "empty"}
+            seedId={citationGraph.seed?.id ?? null}
+            graph={citationGraph.graph}
+            visibleGraph={visibleGraph}
+            selectedPaperId={citationGraph.selectedPaperId}
+            selectedCitationId={citationGraph.selectedCitationId}
+            expansionOrigin={citationGraph.expansionOrigin}
+            loading={citationGraph.loadingSeed}
+            onSelectPaper={citationGraph.selectPaper}
+            onSelectCitation={citationGraph.selectCitation}
+          />
           <footer className="graph-footer">
             <span>
-              {seed
-                ? "1 paper · 0 relationships"
-                : "0 papers · 0 relationships"}
+              {visibleGraph.papers.length} papers ·{" "}
+              {visibleGraph.citations.length} relationships
+              {visibleGraph.papers.length < citationGraph.graph.papers.length &&
+                ` · ${citationGraph.graph.papers.length - visibleGraph.papers.length} filtered`}
             </span>
-            <span>Scholarly metadata from OpenAlex</span>
+            <span>
+              Tap or click open space to draw temporary links ·{" "}
+              {citationGraph.isPreview
+                ? "UI sample data"
+                : "Metadata from OpenAlex"}
+            </span>
           </footer>
         </section>
-        <PaperDetails paper={selected} />
+        {citationGraph.selectedCitation ? (
+          <CitationDetails
+            citation={citationGraph.selectedCitation}
+            papers={citationGraph.graph.papers}
+          />
+        ) : (
+          <PaperDetails
+            paper={citationGraph.selectedPaper}
+            isPreview={citationGraph.isPreview}
+            onExpand={citationGraph.expand}
+            expanding={citationGraph.expanding}
+            expanded={citationGraph.expanded}
+            expansionError={citationGraph.expansionError}
+          />
+        )}
       </main>
     </>
   );

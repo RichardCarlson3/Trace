@@ -1,3 +1,4 @@
+import type { ExpansionDirection } from "@/hooks/use-citation-graph";
 import type { Paper } from "@/lib/types";
 
 function externalUrl(value: string | null) {
@@ -10,7 +11,22 @@ function externalUrl(value: string | null) {
   }
 }
 
-export function PaperDetails({ paper }: { paper: Paper | null }) {
+export function PaperDetails({
+  paper,
+  isPreview,
+  onExpand,
+  expanding,
+  expanded,
+  expansionError,
+}: {
+  paper: Paper | null;
+  isPreview: boolean;
+  onExpand: (id: string, direction: ExpansionDirection) => void;
+  expanding: string | null;
+  expanded: Set<string>;
+  expansionError: string | null;
+}) {
+  const publicationUrl = externalUrl(paper?.landing_page_url ?? null);
   return (
     <aside className="details" aria-label="Paper details">
       <p className="eyebrow">Paper details</p>
@@ -24,34 +40,56 @@ export function PaperDetails({ paper }: { paper: Paper | null }) {
             {paper.year ?? "Year unavailable"} ·{" "}
             {paper.cited_by_count.toLocaleString()} citations
           </p>
-          <div className="paper-links">
-            {externalUrl(paper.landing_page_url) && (
+          {!isPreview && (
+            <div className="paper-links">
+              {publicationUrl && (
+                <a href={publicationUrl} target="_blank" rel="noreferrer">
+                  View publication ↗
+                </a>
+              )}
               <a
-                href={externalUrl(paper.landing_page_url)}
+                href={`https://openalex.org/${paper.id}`}
                 target="_blank"
                 rel="noreferrer"
               >
-                View publication ↗
+                OpenAlex ↗
               </a>
-            )}
-            <a
-              href={`https://openalex.org/${paper.id}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              OpenAlex ↗
-            </a>
-          </div>
+            </div>
+          )}
           <div className="abstract">
             <h3>Abstract</h3>
             <p>
               {paper.abstract ?? "An abstract is unavailable for this paper."}
             </p>
           </div>
-          <p className="muted sidebar-note">
-            Citation expansion is planned. Citation intent requires a genuine
-            passage from the citing paper.
-          </p>
+          <div className="expansion-actions">
+            <h3>Explore from this paper</h3>
+            {(["references", "citations"] as const).map((direction) => {
+              const key = `${paper.id}:${direction}`;
+              const done = expanded.has(key);
+              return (
+                <button
+                  key={direction}
+                  className="secondary-button"
+                  onClick={() => onExpand(paper.id, direction)}
+                  disabled={Boolean(expanding) || done}
+                >
+                  {expanding === key
+                    ? "Growing connections…"
+                    : done
+                      ? `${direction === "references" ? "References" : "Citing papers"} loaded`
+                      : direction === "references"
+                        ? "Show references"
+                        : "Show citing papers"}
+                </button>
+              );
+            })}
+            {expansionError && (
+              <p className="feedback error expansion-error" role="alert">
+                {expansionError} You can try again.
+              </p>
+            )}
+          </div>
         </>
       ) : (
         <div className="details-empty">
@@ -60,9 +98,8 @@ export function PaperDetails({ paper }: { paper: Paper | null }) {
           </div>
           <h3>A closer look</h3>
           <p className="muted">
-            Select a paper to see its authors,
-            <br />
-            abstract, and publication details.
+            Select a paper to see its authors, abstract, and publication
+            details.
           </p>
         </div>
       )}

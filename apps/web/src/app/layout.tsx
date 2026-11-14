@@ -4,7 +4,7 @@ import "@xyflow/react/dist/style.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "ResearchGraph · Explore research connections",
+  title: "TRACE · See why research connects",
   description:
     "Discover scientific papers and explore their citation relationships.",
 };
