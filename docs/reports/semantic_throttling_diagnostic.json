@@ -1,0 +1,123 @@
+{
+  "started_at": "2026-11-14T09:49:02.443073+00:00",
+  "pid": 8836,
+  "processes_before": [
+    {
+      "ProcessId": 41268,
+      "ParentProcessId": 21800,
+      "Name": "uv.exe"
+    },
+    {
+      "ProcessId": 39856,
+      "ParentProcessId": 41268,
+      "Name": "python.exe"
+    },
+    {
+      "ProcessId": 8836,
+      "ParentProcessId": 39856,
+      "Name": "python.exe"
+    }
+  ],
+  "quiet_seconds": 60,
+  "requests": [
+    {
+      "utc": "2026-11-14T09:50:03.630074+00:00",
+      "start_monotonic": 29337.281,
+      "seconds": 0.23400000000037835,
+      "path": "/graph/v1/paper/DOI:10.18653/v1/D19-1410",
+      "status": 200,
+      "authenticated": true,
+      "headers": {
+        "date": "Sat, 14 Nov 2026 09:50:03 GMT",
+        "x-amzn-requestid": "d2b38a00-fead-4241-882d-f06cb4df9090",
+        "x-cache": "Miss from cloudfront",
+        "via": "1.1 0183ff9ee020ad610265527657351a04.cloudfront.net (CloudFront)",
+        "x-amz-cf-pop": "BOS50-P4",
+        "x-amz-cf-id": "7EOCBaPMAedZViyyWQsFiDdeik41-T1Y58pnaKn3R0oYWkgCAQC5pQ=="
+      }
+    },
+    {
+      "utc": "2026-11-14T09:50:08.867372+00:00",
+      "start_monotonic": 29342.531,
+      "seconds": 0.3280000000013388,
+      "path": "/graph/v1/paper/DOI:10.18653/v1/N18-1202",
+      "status": 200,
+      "authenticated": true,
+      "headers": {
+        "date": "Sat, 14 Nov 2026 09:50:08 GMT",
+        "x-amzn-requestid": "e305c64e-5a99-45c7-9dfd-d80c5820928f",
+        "x-cache": "Miss from cloudfront",
+        "via": "1.1 b12a0bcc7e5e3864a58cdd8bb47c61d2.cloudfront.net (CloudFront)",
+        "x-amz-cf-pop": "BOS50-P4",
+        "x-amz-cf-id": "Lub7dJS_igRqtl8c3f1blEFmcZnTRp_voTW1vEZmTqxW6TlAMF_w7Q=="
+      }
+    },
+    {
+      "utc": "2026-11-14T09:50:14.214900+00:00",
+      "start_monotonic": 29347.875,
+      "seconds": 0.1709999999984575,
+      "path": "/graph/v1/paper/156d217b0a911af97fa1b5a71dc909ccef7a8028/references",
+      "status": 429,
+      "authenticated": true,
+      "headers": {
+        "date": "Sat, 14 Nov 2026 09:50:14 GMT",
+        "x-amzn-requestid": "ac685f57-c5e6-440a-bd88-267904e1db2f",
+        "x-cache": "Error from cloudfront",
+        "via": "1.1 444cff119449030682546c5e05bfd1da.cloudfront.net (CloudFront)",
+        "x-amz-cf-pop": "BOS50-P4",
+        "x-amz-cf-id": "FoGp3kVrQR1I4Z1cVYO0p5zqoYsoZl2UGCO6Wus8oppedcJFrG5dlg=="
+      }
+    },
+    {
+      "utc": "2026-11-14T09:50:19.403723+00:00",
+      "start_monotonic": 29353.062,
+      "seconds": 0.15599999999903957,
+      "path": "/graph/v1/paper/DOI:10.18653/v1/D19-1410",
+      "status": 200,
+      "authenticated": true,
+      "headers": {
+        "date": "Sat, 14 Nov 2026 09:50:19 GMT",
+        "x-amzn-requestid": "7b57e75b-fb09-4cd0-92d9-f4f234ecca0f",
+        "x-cache": "Miss from cloudfront",
+        "via": "1.1 747d47277bb55e9ca12ebb92db620d58.cloudfront.net (CloudFront)",
+        "x-amz-cf-pop": "BOS50-P4",
+        "x-amz-cf-id": "-xy04VUrIVdhmOqSu2AGgDiFWDPlRBwljtOovp7YnvfobZOZae6t4g=="
+      }
+    },
+    {
+      "utc": "2026-11-14T09:50:24.561262+00:00",
+      "start_monotonic": 29358.218,
+      "seconds": 0.125,
+      "path": "/graph/v1/paper/DOI:10.18653/v1/N18-1202",
+      "status": 429,
+      "authenticated": true,
+      "headers": {
+        "date": "Sat, 14 Nov 2026 09:50:24 GMT",
+        "x-amzn-requestid": "30ca50cd-9c2e-4563-a8a6-2a1574e95585",
+        "x-cache": "Error from cloudfront",
+        "via": "1.1 747d47277bb55e9ca12ebb92db620d58.cloudfront.net (CloudFront)",
+        "x-amz-cf-pop": "BOS50-P4",
+        "x-amz-cf-id": "FZZ07AB44IoKlQaSn6vggrNQ3R1JU6UkjsxUPkwGVVXTeca_lEJd_w=="
+      }
+    }
+  ],
+  "stop_reason": "two_429_responses_volume_cap",
+  "processes_after": [
+    {
+      "ProcessId": 41268,
+      "ParentProcessId": 21800,
+      "Name": "uv.exe"
+    },
+    {
+      "ProcessId": 39856,
+      "ParentProcessId": 41268,
+      "Name": "python.exe"
+    },
+    {
+      "ProcessId": 8836,
+      "ParentProcessId": 39856,
+      "Name": "python.exe"
+    }
+  ],
+  "finished_at": "2026-11-14T09:50:25.570722+00:00"
+}

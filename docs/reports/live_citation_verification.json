@@ -1,0 +1,3188 @@
+{
+  "description": "Actual live HTTP results, with passages replaced by SHA-256 for the review artifact. Exact passages remain in ignored local reports. No fixtures counted as live.",
+  "initial_run_summary": {
+    "unique_relationships": 21,
+    "mapped": 13,
+    "with_contexts": 12,
+    "classified": 12,
+    "coverage_percent": 57.142857142857146,
+    "semantic_scholar_requests": 39,
+    "http_429": 17,
+    "statuses": {
+      "available": 12,
+      "unresolved_identifiers": 6,
+      "relationship_not_found": 1,
+      "upstream_error": 2
+    },
+    "semantic_request_latency": {
+      "count": 39,
+      "median_seconds": 0.281,
+      "max_seconds": 0.468
+    },
+    "retrieval_latency": {
+      "count": 19,
+      "median_seconds": 1.5,
+      "max_seconds": 8.281
+    },
+    "end_to_end_latency": {
+      "count": 21,
+      "median_seconds": 1.516,
+      "max_seconds": 8.313
+    },
+    "minimum_semantic_start_spacing_seconds": 1.5
+  },
+  "followup_run": {
+    "started_at": "2026-11-14T09:31:53.461542+00:00",
+    "authenticated": true,
+    "enabled": true,
+    "method": "Four NLP/biomedical NLP publication seeds; first seven OpenAlex referenced_works IDs per seed in returned order. Selected before checking Semantic Scholar coverage. OpenAlex direction and exact DOI mappings independently checked. Cold service caches; mode=live excludes bundled examples.",
+    "requests": [
+      {
+        "provider": "openalex",
+        "phase": "discovery",
+        "path": "/works",
+        "status": 200,
+        "started_monotonic": 28247.234,
+        "seconds": 0.26599999999962165,
+        "authenticated": false
+      },
+      {
+        "provider": "openalex",
+        "phase": "discovery",
+        "path": "/works",
+        "status": 200,
+        "started_monotonic": 28247.515,
+        "seconds": 0.06300000000192085,
+        "authenticated": false
+      },
+      {
+        "provider": "openalex",
+        "phase": "discovery",
+        "path": "/works",
+        "status": 200,
+        "started_monotonic": 28247.578,
+        "seconds": 0.0779999999977008,
+        "authenticated": false
+      },
+      {
+        "provider": "openalex",
+        "phase": "discovery",
+        "path": "/works",
+        "status": 200,
+        "started_monotonic": 28247.656,
+        "seconds": 0.062000000001717126,
+        "authenticated": false
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W2970641574",
+        "status": 200,
+        "started_monotonic": 28247.718,
+        "seconds": 0.06299999999828287,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.18653/v1/d19-1410",
+        "status": 200,
+        "started_monotonic": 28247.781,
+        "seconds": 0.21900000000096043,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W1486649854",
+        "status": 200,
+        "started_monotonic": 28248.015,
+        "seconds": 0.06300000000192085,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.48550/arxiv.1506.06726",
+        "status": 200,
+        "started_monotonic": 28249.281,
+        "seconds": 0.15600000000267755,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/93d63ec754f29fa22572615320afe0521f7ec66d/references",
+        "status": 200,
+        "started_monotonic": 28250.781,
+        "seconds": 0.3899999999994179,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W1840435438",
+        "status": 200,
+        "started_monotonic": 28251.75,
+        "seconds": 0.0459999999984575,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.18653/v1/d15-1075",
+        "status": 200,
+        "started_monotonic": 28252.296,
+        "seconds": 0.14100000000325963,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W1980776243",
+        "status": 200,
+        "started_monotonic": 28252.453,
+        "seconds": 0.046999999998661224,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.3115/1220355.1220406",
+        "status": 200,
+        "started_monotonic": 28253.796,
+        "seconds": 0.375,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W2014902591",
+        "status": 200,
+        "started_monotonic": 28254.171,
+        "seconds": 0.0470000000022992,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.1007/s10579-005-7880-9",
+        "status": 429,
+        "started_monotonic": 28255.312,
+        "seconds": 0.26599999999962165,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.1007/s10579-005-7880-9",
+        "status": 429,
+        "started_monotonic": 28257.843,
+        "seconds": 0.2819999999992433,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.1007/s10579-005-7880-9",
+        "status": 200,
+        "started_monotonic": 28261.5,
+        "seconds": 0.2959999999984575,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W2070246124",
+        "status": 200,
+        "started_monotonic": 28261.796,
+        "seconds": 0.2040000000015425,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.3115/1072228.1072378",
+        "status": 200,
+        "started_monotonic": 28264.875,
+        "seconds": 0.3280000000013388,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W2096733369",
+        "status": 200,
+        "started_monotonic": 28265.218,
+        "seconds": 0.06299999999828287,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.1109/cvpr.2015.7298682",
+        "status": 200,
+        "started_monotonic": 28268.265,
+        "seconds": 0.2970000000022992,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W2114524997",
+        "status": 200,
+        "started_monotonic": 28268.562,
+        "seconds": 0.06299999999828287,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.3115/1218955.1218990",
+        "status": 429,
+        "started_monotonic": 28271.656,
+        "seconds": 0.25,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.3115/1218955.1218990",
+        "status": 429,
+        "started_monotonic": 28276.406,
+        "seconds": 0.1720000000022992,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.3115/1218955.1218990",
+        "status": 200,
+        "started_monotonic": 28281.093,
+        "seconds": 0.1569999999992433,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W2787560479",
+        "status": 200,
+        "started_monotonic": 28281.25,
+        "seconds": 0.13999999999941792,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.18653/v1/n18-1202",
+        "status": 429,
+        "started_monotonic": 28285.609,
+        "seconds": 0.25,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.18653/v1/n18-1202",
+        "status": 429,
+        "started_monotonic": 28290.375,
+        "seconds": 0.125,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.18653/v1/n18-1202",
+        "status": 200,
+        "started_monotonic": 28295.015,
+        "seconds": 0.14099999999962165,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W6908809",
+        "status": 200,
+        "started_monotonic": 28295.156,
+        "seconds": 0.125,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.48550/arxiv.1212.5701",
+        "status": 429,
+        "started_monotonic": 28299.531,
+        "seconds": 0.2649999999994179,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.48550/arxiv.1212.5701",
+        "status": 200,
+        "started_monotonic": 28304.312,
+        "seconds": 0.15599999999903957,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/3febb2bed8865945e7fddc99efd791887bb7e14f/references",
+        "status": 200,
+        "started_monotonic": 28308.828,
+        "seconds": 0.25,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W581956982",
+        "status": 200,
+        "started_monotonic": 28309.078,
+        "seconds": 0.13999999999941792,
+        "authenticated": false
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W1026270304",
+        "status": 200,
+        "started_monotonic": 28309.218,
+        "seconds": 0.0779999999977008,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.48550/arxiv.1507.06228",
+        "status": 429,
+        "started_monotonic": 28313.328,
+        "seconds": 0.13999999999941792,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.48550/arxiv.1507.06228",
+        "status": 429,
+        "started_monotonic": 28317.984,
+        "seconds": 0.125,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.48550/arxiv.1507.06228",
+        "status": 200,
+        "started_monotonic": 28322.625,
+        "seconds": 0.15599999999903957,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W1522301498",
+        "status": 200,
+        "started_monotonic": 28322.781,
+        "seconds": 0.1720000000022992,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.48550/arxiv.1412.6980",
+        "status": 429,
+        "started_monotonic": 28327.125,
+        "seconds": 0.125,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.48550/arxiv.1412.6980",
+        "status": 429,
+        "started_monotonic": 28331.75,
+        "seconds": 0.13999999999941792,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.48550/arxiv.1412.6980",
+        "status": 200,
+        "started_monotonic": 28336.39,
+        "seconds": 0.1720000000022992,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W1539309091",
+        "status": 200,
+        "started_monotonic": 28336.562,
+        "seconds": 0.14099999999962165,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.21437/interspeech.2014-564",
+        "status": 200,
+        "started_monotonic": 28340.89,
+        "seconds": 0.14099999999962165,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W1632114991",
+        "status": 200,
+        "started_monotonic": 28341.046,
+        "seconds": 0.06300000000192085,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.21236/ada273556",
+        "status": 429,
+        "started_monotonic": 28345.406,
+        "seconds": 0.13999999999941792,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.21236/ada273556",
+        "status": 429,
+        "started_monotonic": 28350.062,
+        "seconds": 0.125,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.21236/ada273556",
+        "status": 429,
+        "started_monotonic": 28354.687,
+        "seconds": 0.125,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W2982399380",
+        "status": 200,
+        "started_monotonic": 28354.828,
+        "seconds": 0.15599999999903957,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.18653/v1/2020.acl-main.703",
+        "status": 429,
+        "started_monotonic": 28359.328,
+        "seconds": 0.10900000000037835,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.18653/v1/2020.acl-main.703",
+        "status": 404,
+        "started_monotonic": 28363.968,
+        "seconds": 0.2819999999992433,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W131533222",
+        "status": 200,
+        "started_monotonic": 28364.265,
+        "seconds": 0.1720000000022992,
+        "authenticated": false
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W1544827683",
+        "status": 200,
+        "started_monotonic": 28364.453,
+        "seconds": 0.0779999999977008,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.48550/arxiv.1506.03340",
+        "status": 429,
+        "started_monotonic": 28368.468,
+        "seconds": 0.14099999999962165,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.48550/arxiv.1506.03340",
+        "status": 200,
+        "started_monotonic": 28373.109,
+        "seconds": 0.2969999999986612,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W1599016936",
+        "status": 200,
+        "started_monotonic": 28373.421,
+        "seconds": 0.11000000000058208,
+        "authenticated": false
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W1614298861",
+        "status": 200,
+        "started_monotonic": 28373.546,
+        "seconds": 0.06300000000192085,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.48550/arxiv.1301.3781",
+        "status": 200,
+        "started_monotonic": 28377.625,
+        "seconds": 0.2649999999994179,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W2130158090",
+        "status": 200,
+        "started_monotonic": 28377.906,
+        "seconds": 0.09400000000096043,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.1007/11736790_9",
+        "status": 200,
+        "started_monotonic": 28382.125,
+        "seconds": 0.13999999999941792,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W2251939518",
+        "status": 200,
+        "started_monotonic": 28382.265,
+        "seconds": 0.07800000000133878,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.18653/v1/d13-1170",
+        "status": 200,
+        "started_monotonic": 28386.64,
+        "seconds": 0.20300000000133878,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W2418388682",
+        "status": 200,
+        "started_monotonic": 28386.859,
+        "seconds": 0.046999999998661224,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.18653/v1/w16-2323",
+        "status": 429,
+        "started_monotonic": 28391.156,
+        "seconds": 0.125,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.18653/v1/w16-2323",
+        "status": 429,
+        "started_monotonic": 28395.796,
+        "seconds": 0.125,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.18653/v1/w16-2323",
+        "status": 200,
+        "started_monotonic": 28400.437,
+        "seconds": 0.14099999999962165,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W2911489562",
+        "status": 200,
+        "started_monotonic": 28400.593,
+        "seconds": 0.2029999999977008,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.1093/bioinformatics/btz682",
+        "status": 200,
+        "started_monotonic": 28404.953,
+        "seconds": 0.2809999999990396,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W1981208470",
+        "status": 200,
+        "started_monotonic": 28405.234,
+        "seconds": 0.06199999999807915,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.1186/s12859-015-0564-6",
+        "status": 429,
+        "started_monotonic": 28409.453,
+        "seconds": 0.13999999999941792,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.1186/s12859-015-0564-6",
+        "status": 200,
+        "started_monotonic": 28414.109,
+        "seconds": 0.14099999999962165,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/1e43c7084bdcb6b3102afaf301cce10faead2702/references",
+        "status": 429,
+        "started_monotonic": 28418.609,
+        "seconds": 0.26599999999962165,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/1e43c7084bdcb6b3102afaf301cce10faead2702/references",
+        "status": 429,
+        "started_monotonic": 28423.375,
+        "seconds": 0.15599999999903957,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/1e43c7084bdcb6b3102afaf301cce10faead2702/references",
+        "status": 429,
+        "started_monotonic": 28428.031,
+        "seconds": 0.125,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W2047782770",
+        "status": 200,
+        "started_monotonic": 28428.156,
+        "seconds": 0.125,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.3115/1567594.1567610",
+        "status": 200,
+        "started_monotonic": 28432.656,
+        "seconds": 0.125,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/1e43c7084bdcb6b3102afaf301cce10faead2702/references",
+        "status": 429,
+        "started_monotonic": 28437.171,
+        "seconds": 0.11000000000058208,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/1e43c7084bdcb6b3102afaf301cce10faead2702/references",
+        "status": 200,
+        "started_monotonic": 28441.796,
+        "seconds": 0.2970000000022992,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W2052217781",
+        "status": 200,
+        "started_monotonic": 28442.093,
+        "seconds": 0.14099999999962165,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.1016/j.jbi.2012.04.004",
+        "status": 429,
+        "started_monotonic": 28446.296,
+        "seconds": 0.2970000000022992,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.1016/j.jbi.2012.04.004",
+        "status": 200,
+        "started_monotonic": 28451.109,
+        "seconds": 0.14099999999962165,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W2071879021",
+        "status": 200,
+        "started_monotonic": 28451.265,
+        "seconds": 0.125,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.1371/journal.pone.0065390",
+        "status": 200,
+        "started_monotonic": 28455.609,
+        "seconds": 0.17199999999866122,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W2100627415",
+        "status": 200,
+        "started_monotonic": 28455.796,
+        "seconds": 0.0790000000015425,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.1186/1471-2105-11-85",
+        "status": 429,
+        "started_monotonic": 28460.125,
+        "seconds": 0.10900000000037835,
+        "authenticated": true
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.1186/1471-2105-11-85",
+        "status": 200,
+        "started_monotonic": 28464.75,
+        "seconds": 0.1709999999984575,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W2136437513",
+        "status": 200,
+        "started_monotonic": 28464.937,
+        "seconds": 0.15599999999903957,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.1186/s12859-015-0472-9",
+        "status": 200,
+        "started_monotonic": 28469.265,
+        "seconds": 0.2809999999990396,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "retrieval",
+        "path": "/works/W2149369282",
+        "status": 200,
+        "started_monotonic": 28469.546,
+        "seconds": 0.09400000000096043,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "retrieval",
+        "path": "/graph/v1/paper/DOI:10.1186/1758-2946-7-s1-s2",
+        "status": 200,
+        "started_monotonic": 28473.765,
+        "seconds": 0.14099999999962165,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "repeat",
+        "path": "/works/W1632114991",
+        "status": 200,
+        "started_monotonic": 28473.921,
+        "seconds": 0.06300000000192085,
+        "authenticated": false
+      },
+      {
+        "provider": "semantic_scholar",
+        "phase": "repeat",
+        "path": "/graph/v1/paper/DOI:10.21236/ada273556",
+        "status": 200,
+        "started_monotonic": 28478.265,
+        "seconds": 0.15599999999903957,
+        "authenticated": true
+      },
+      {
+        "provider": "openalex",
+        "phase": "search_regression",
+        "path": "/works",
+        "status": 200,
+        "started_monotonic": 28478.437,
+        "seconds": 0.17199999999866122,
+        "authenticated": false
+      }
+    ],
+    "relationships": [
+      {
+        "citing_paper_id": "W2970641574",
+        "cited_paper_id": "W1486649854",
+        "citing_title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 3.452999999997701,
+        "mapping_succeeded": true,
+        "relationship_found": true,
+        "status": "available",
+        "origin": "live",
+        "passage_count": 1,
+        "classified_passages": 1,
+        "result": {
+          "citing_paper_id": "W2970641574",
+          "cited_paper_id": "W1486649854",
+          "status": "available",
+          "source": "semantic_scholar",
+          "origin": "live",
+          "retrieved_at": "2026-11-14T09:31:57.517300Z",
+          "evidence_urls": [
+            "https://api.semanticscholar.org/graph/v1/paper/93d63ec754f29fa22572615320afe0521f7ec66d/references?fields=contexts%2CexternalIds&limit=100&offset=0"
+          ],
+          "observed_context_count": 1,
+          "citing_mapping": {
+            "openalex_id": "W2970641574",
+            "title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+            "doi": "10.18653/v1/d19-1410",
+            "semantic_scholar_paper_id": "93d63ec754f29fa22572615320afe0521f7ec66d",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W1486649854",
+            "title": "Skip-Thought Vectors",
+            "doi": "10.48550/arxiv.1506.06726",
+            "semantic_scholar_paper_id": "6e795c6e9916174ae12349f5dc3f516570c17ce8",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": true,
+          "reference_scan_complete": true,
+          "reason": null,
+          "contexts": [
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "background",
+                "confidence": 0.858827967518576,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "2edcb6524f3e72b5e2800bc307389ac1fe3fd869d1127749938ad6795451a967"
+            }
+          ],
+          "available": true
+        },
+        "end_to_end_seconds": 4.015999999999622,
+        "semantic_scholar_requests": 3,
+        "openalex_requests": 2,
+        "http_errors": []
+      },
+      {
+        "citing_paper_id": "W2970641574",
+        "cited_paper_id": "W1840435438",
+        "citing_title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 0.6870000000017171,
+        "mapping_succeeded": true,
+        "relationship_found": true,
+        "status": "available",
+        "origin": "memory_cache",
+        "passage_count": 6,
+        "classified_passages": 6,
+        "result": {
+          "citing_paper_id": "W2970641574",
+          "cited_paper_id": "W1840435438",
+          "status": "available",
+          "source": "semantic_scholar",
+          "origin": "memory_cache",
+          "retrieved_at": "2026-11-14T09:31:57.517300Z",
+          "evidence_urls": [
+            "https://api.semanticscholar.org/graph/v1/paper/93d63ec754f29fa22572615320afe0521f7ec66d/references?fields=contexts%2CexternalIds&limit=100&offset=0"
+          ],
+          "observed_context_count": 6,
+          "citing_mapping": {
+            "openalex_id": "W2970641574",
+            "title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+            "doi": "10.18653/v1/d19-1410",
+            "semantic_scholar_paper_id": "93d63ec754f29fa22572615320afe0521f7ec66d",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W1840435438",
+            "title": "A large annotated corpus for learning natural language inference",
+            "doi": "10.18653/v1/d15-1075",
+            "semantic_scholar_paper_id": "f04df4e20a18358ea2f689b4c129781628ef7fc1",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": true,
+          "reference_scan_complete": true,
+          "reason": null,
+          "contexts": [
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "method",
+                "confidence": 0.7463874129730877,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "1461acaba4ea433610232b3f2a775c56f60c0f57c874d18f0064717546649f79"
+            },
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "method",
+                "confidence": 0.6732211244480493,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "aee4bf299519120c4232160139ef40a0e692730e4c5b05d765e340054d88b860"
+            },
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "method",
+                "confidence": 0.9210376062281859,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "80379f644308a74f46363350d9fd3aed6658bfce47e1fe2d6c38dbdbd6ba3a19"
+            },
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "background",
+                "confidence": 0.6239232497867677,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "4efe6060d79a9fe1135aa9c61ca30a9bf64ebab4a3b40461ccda25bb8d09666b"
+            },
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "background",
+                "confidence": 0.6384058530708709,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "9952c25d6a38afc69182a93e0da213b09fc0c93ff60a1a8105c9f36751bfd9d0"
+            },
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "background",
+                "confidence": 0.7055307030502593,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "c981506b51fd12f66dba0183f748f58377481a09926885aa175d340d198353a5"
+            }
+          ],
+          "available": true
+        },
+        "end_to_end_seconds": 0.7030000000013388,
+        "semantic_scholar_requests": 1,
+        "openalex_requests": 1,
+        "http_errors": []
+      },
+      {
+        "citing_paper_id": "W2970641574",
+        "cited_paper_id": "W1980776243",
+        "citing_title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 1.7179999999971187,
+        "mapping_succeeded": true,
+        "relationship_found": true,
+        "status": "available",
+        "origin": "memory_cache",
+        "passage_count": 1,
+        "classified_passages": 1,
+        "result": {
+          "citing_paper_id": "W2970641574",
+          "cited_paper_id": "W1980776243",
+          "status": "available",
+          "source": "semantic_scholar",
+          "origin": "memory_cache",
+          "retrieved_at": "2026-11-14T09:31:57.517300Z",
+          "evidence_urls": [
+            "https://api.semanticscholar.org/graph/v1/paper/93d63ec754f29fa22572615320afe0521f7ec66d/references?fields=contexts%2CexternalIds&limit=100&offset=0"
+          ],
+          "observed_context_count": 1,
+          "citing_mapping": {
+            "openalex_id": "W2970641574",
+            "title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+            "doi": "10.18653/v1/d19-1410",
+            "semantic_scholar_paper_id": "93d63ec754f29fa22572615320afe0521f7ec66d",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W1980776243",
+            "title": "Unsupervised construction of large paraphrase corpora: exploiting massively parallel news sources",
+            "doi": "10.3115/1220355.1220406",
+            "semantic_scholar_paper_id": "7acfdc905f734abf966aed58abb983bc015ff7fe",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": true,
+          "reference_scan_complete": true,
+          "reason": null,
+          "contexts": [
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "background",
+                "confidence": 0.9448865667480281,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "900d9c2328bffb1d6ffbb2113f8517baf6905876e31c5b18bb797d9202d7a748"
+            }
+          ],
+          "available": true
+        },
+        "end_to_end_seconds": 1.7179999999971187,
+        "semantic_scholar_requests": 1,
+        "openalex_requests": 1,
+        "http_errors": []
+      },
+      {
+        "citing_paper_id": "W2970641574",
+        "cited_paper_id": "W2014902591",
+        "citing_title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 7.625,
+        "mapping_succeeded": true,
+        "relationship_found": true,
+        "status": "available",
+        "origin": "memory_cache",
+        "passage_count": 2,
+        "classified_passages": 2,
+        "result": {
+          "citing_paper_id": "W2970641574",
+          "cited_paper_id": "W2014902591",
+          "status": "available",
+          "source": "semantic_scholar",
+          "origin": "memory_cache",
+          "retrieved_at": "2026-11-14T09:31:57.517300Z",
+          "evidence_urls": [
+            "https://api.semanticscholar.org/graph/v1/paper/93d63ec754f29fa22572615320afe0521f7ec66d/references?fields=contexts%2CexternalIds&limit=100&offset=0"
+          ],
+          "observed_context_count": 2,
+          "citing_mapping": {
+            "openalex_id": "W2970641574",
+            "title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+            "doi": "10.18653/v1/d19-1410",
+            "semantic_scholar_paper_id": "93d63ec754f29fa22572615320afe0521f7ec66d",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W2014902591",
+            "title": "Annotating Expressions of Opinions and Emotions in Language",
+            "doi": "10.1007/s10579-005-7880-9",
+            "semantic_scholar_paper_id": "1cff7cc15555c38607016aaba24059e76b160adb",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": true,
+          "reference_scan_complete": true,
+          "reason": null,
+          "contexts": [
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "background",
+                "confidence": 0.8557400245563245,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "9225ada24d4314a92ebb7860a5e43cd60cac3e5b708ceb2bada99bd42faa5f48"
+            },
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "background",
+                "confidence": 0.9047774603291877,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "ec975d80f9196e87d5760931dce1152ee07cefb27b5aafa5141ba8972d6065fd"
+            }
+          ],
+          "available": true
+        },
+        "end_to_end_seconds": 7.625,
+        "semantic_scholar_requests": 3,
+        "openalex_requests": 1,
+        "http_errors": [
+          429,
+          429
+        ]
+      },
+      {
+        "citing_paper_id": "W2970641574",
+        "cited_paper_id": "W2070246124",
+        "citing_title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 3.4070000000028813,
+        "mapping_succeeded": true,
+        "relationship_found": true,
+        "status": "available",
+        "origin": "memory_cache",
+        "passage_count": 4,
+        "classified_passages": 4,
+        "result": {
+          "citing_paper_id": "W2970641574",
+          "cited_paper_id": "W2070246124",
+          "status": "available",
+          "source": "semantic_scholar",
+          "origin": "memory_cache",
+          "retrieved_at": "2026-11-14T09:31:57.517300Z",
+          "evidence_urls": [
+            "https://api.semanticscholar.org/graph/v1/paper/93d63ec754f29fa22572615320afe0521f7ec66d/references?fields=contexts%2CexternalIds&limit=100&offset=0"
+          ],
+          "observed_context_count": 4,
+          "citing_mapping": {
+            "openalex_id": "W2970641574",
+            "title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+            "doi": "10.18653/v1/d19-1410",
+            "semantic_scholar_paper_id": "93d63ec754f29fa22572615320afe0521f7ec66d",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W2070246124",
+            "title": "Learning question classifiers",
+            "doi": "10.3115/1072228.1072378",
+            "semantic_scholar_paper_id": "2c8ac3e1f0edeed1fbd76813e61efdc384c319c7",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": true,
+          "reference_scan_complete": true,
+          "reason": null,
+          "contexts": [
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "background",
+                "confidence": 0.8036116840566306,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "8bc09d7ddc0ed0c608a0591655b05bff7b32bef6fad5b20b5220a5e83e9e0bca"
+            },
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "background",
+                "confidence": 0.8434970702431037,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "e48795afcc98c50392a822e74eee4faaa3df7cc7d1d442e6e217de354f8e9af4"
+            },
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "method",
+                "confidence": 0.5594198797956781,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "e889b921b43653de4657f19e7e00b401dccea78fc6fb42c44a3bfd58a5ad93b4"
+            },
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "background",
+                "confidence": 0.8507311171967354,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "411873a875ae0ebe4d26eb780b58c551e411751809ccc866a41bebaa6b603ed2"
+            }
+          ],
+          "available": true
+        },
+        "end_to_end_seconds": 3.4070000000028813,
+        "semantic_scholar_requests": 1,
+        "openalex_requests": 1,
+        "http_errors": []
+      },
+      {
+        "citing_paper_id": "W2970641574",
+        "cited_paper_id": "W2096733369",
+        "citing_title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 3.3440000000009604,
+        "mapping_succeeded": true,
+        "relationship_found": true,
+        "status": "available",
+        "origin": "memory_cache",
+        "passage_count": 1,
+        "classified_passages": 1,
+        "result": {
+          "citing_paper_id": "W2970641574",
+          "cited_paper_id": "W2096733369",
+          "status": "available",
+          "source": "semantic_scholar",
+          "origin": "memory_cache",
+          "retrieved_at": "2026-11-14T09:31:57.517300Z",
+          "evidence_urls": [
+            "https://api.semanticscholar.org/graph/v1/paper/93d63ec754f29fa22572615320afe0521f7ec66d/references?fields=contexts%2CexternalIds&limit=100&offset=0"
+          ],
+          "observed_context_count": 1,
+          "citing_mapping": {
+            "openalex_id": "W2970641574",
+            "title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+            "doi": "10.18653/v1/d19-1410",
+            "semantic_scholar_paper_id": "93d63ec754f29fa22572615320afe0521f7ec66d",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W2096733369",
+            "title": "FaceNet: A unified embedding for face recognition and clustering",
+            "doi": "10.1109/cvpr.2015.7298682",
+            "semantic_scholar_paper_id": "5aa26299435bdf7db874ef1640a6c3b5a4a2c394",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": true,
+          "reference_scan_complete": true,
+          "reason": null,
+          "contexts": [
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "background",
+                "confidence": 0.5430116872340007,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "1774ce69db44c1741f63a77fb64ea545416b61562a550fe6c4207e47e67e1525"
+            }
+          ],
+          "available": true
+        },
+        "end_to_end_seconds": 3.3440000000009604,
+        "semantic_scholar_requests": 1,
+        "openalex_requests": 1,
+        "http_errors": []
+      },
+      {
+        "citing_paper_id": "W2970641574",
+        "cited_paper_id": "W2114524997",
+        "citing_title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 12.687999999998283,
+        "mapping_succeeded": true,
+        "relationship_found": true,
+        "status": "available",
+        "origin": "memory_cache",
+        "passage_count": 1,
+        "classified_passages": 1,
+        "result": {
+          "citing_paper_id": "W2970641574",
+          "cited_paper_id": "W2114524997",
+          "status": "available",
+          "source": "semantic_scholar",
+          "origin": "memory_cache",
+          "retrieved_at": "2026-11-14T09:31:57.517300Z",
+          "evidence_urls": [
+            "https://api.semanticscholar.org/graph/v1/paper/93d63ec754f29fa22572615320afe0521f7ec66d/references?fields=contexts%2CexternalIds&limit=100&offset=0"
+          ],
+          "observed_context_count": 1,
+          "citing_mapping": {
+            "openalex_id": "W2970641574",
+            "title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+            "doi": "10.18653/v1/d19-1410",
+            "semantic_scholar_paper_id": "93d63ec754f29fa22572615320afe0521f7ec66d",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W2114524997",
+            "title": "A sentimental education: sentiment analysis using subjectivity summarization based on minimum cuts",
+            "doi": "10.3115/1218955.1218990",
+            "semantic_scholar_paper_id": "167e1359943b96b9e92ee73db1df69a1f65d731d",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": true,
+          "reference_scan_complete": true,
+          "reason": null,
+          "contexts": [
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "background",
+                "confidence": 0.7736405510823292,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "ebe6b70e5a4cbf96d7409350272e8e393bff886f8c53cdbd864e8011ef3e222f"
+            }
+          ],
+          "available": true
+        },
+        "end_to_end_seconds": 12.687999999998283,
+        "semantic_scholar_requests": 3,
+        "openalex_requests": 1,
+        "http_errors": [
+          429,
+          429
+        ]
+      },
+      {
+        "citing_paper_id": "W2787560479",
+        "cited_paper_id": "W6908809",
+        "citing_title": "Deep Contextualized Word Representations",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 27.82800000000134,
+        "mapping_succeeded": true,
+        "relationship_found": true,
+        "status": "available",
+        "origin": "live",
+        "passage_count": 1,
+        "classified_passages": 1,
+        "result": {
+          "citing_paper_id": "W2787560479",
+          "cited_paper_id": "W6908809",
+          "status": "available",
+          "source": "semantic_scholar",
+          "origin": "live",
+          "retrieved_at": "2026-11-14T09:32:55.417225Z",
+          "evidence_urls": [
+            "https://api.semanticscholar.org/graph/v1/paper/3febb2bed8865945e7fddc99efd791887bb7e14f/references?fields=contexts%2CexternalIds&limit=100&offset=0"
+          ],
+          "observed_context_count": 1,
+          "citing_mapping": {
+            "openalex_id": "W2787560479",
+            "title": "Deep Contextualized Word Representations",
+            "doi": "10.18653/v1/n18-1202",
+            "semantic_scholar_paper_id": "3febb2bed8865945e7fddc99efd791887bb7e14f",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W6908809",
+            "title": "ADADELTA: An Adaptive Learning Rate Method",
+            "doi": "10.48550/arxiv.1212.5701",
+            "semantic_scholar_paper_id": "8729441d734782c3ed532a7d2d9611b438c0a09a",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": true,
+          "reference_scan_complete": true,
+          "reason": null,
+          "contexts": [
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/3febb2bed8865945e7fddc99efd791887bb7e14f",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "background",
+                "confidence": 0.8899927115974255,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "033d338c7e8e1a5f93eba262af1d01ad39bfe16621f007ef962e39b7c2ffba2c"
+            }
+          ],
+          "available": true
+        },
+        "end_to_end_seconds": 27.82800000000134,
+        "semantic_scholar_requests": 6,
+        "openalex_requests": 2,
+        "http_errors": [
+          429,
+          429,
+          429
+        ]
+      },
+      {
+        "citing_paper_id": "W2787560479",
+        "cited_paper_id": "W581956982",
+        "citing_title": "Deep Contextualized Word Representations",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 0.13999999999941792,
+        "mapping_succeeded": false,
+        "relationship_found": null,
+        "status": "unresolved_identifiers",
+        "origin": "live",
+        "passage_count": 0,
+        "classified_passages": 0,
+        "result": {
+          "citing_paper_id": "W2787560479",
+          "cited_paper_id": "W581956982",
+          "status": "unresolved_identifiers",
+          "source": "semantic_scholar",
+          "origin": "live",
+          "retrieved_at": "2026-11-14T09:32:55.560710Z",
+          "evidence_urls": [],
+          "observed_context_count": null,
+          "citing_mapping": {
+            "openalex_id": "W2787560479",
+            "title": "Deep Contextualized Word Representations",
+            "doi": "10.18653/v1/n18-1202",
+            "semantic_scholar_paper_id": "3febb2bed8865945e7fddc99efd791887bb7e14f",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W581956982",
+            "title": "An Empirical Exploration of Recurrent Network Architectures",
+            "doi": null,
+            "semantic_scholar_paper_id": null,
+            "verified": false,
+            "reason": "missing_doi"
+          },
+          "relationship_found": null,
+          "reference_scan_complete": false,
+          "reason": null,
+          "contexts": [],
+          "available": false
+        },
+        "end_to_end_seconds": 0.13999999999941792,
+        "semantic_scholar_requests": 0,
+        "openalex_requests": 1,
+        "http_errors": []
+      },
+      {
+        "citing_paper_id": "W2787560479",
+        "cited_paper_id": "W1026270304",
+        "citing_title": "Deep Contextualized Word Representations",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 13.562999999998283,
+        "mapping_succeeded": true,
+        "relationship_found": true,
+        "status": "available",
+        "origin": "memory_cache",
+        "passage_count": 3,
+        "classified_passages": 3,
+        "result": {
+          "citing_paper_id": "W2787560479",
+          "cited_paper_id": "W1026270304",
+          "status": "available",
+          "source": "semantic_scholar",
+          "origin": "memory_cache",
+          "retrieved_at": "2026-11-14T09:32:55.417225Z",
+          "evidence_urls": [
+            "https://api.semanticscholar.org/graph/v1/paper/3febb2bed8865945e7fddc99efd791887bb7e14f/references?fields=contexts%2CexternalIds&limit=100&offset=0"
+          ],
+          "observed_context_count": 3,
+          "citing_mapping": {
+            "openalex_id": "W2787560479",
+            "title": "Deep Contextualized Word Representations",
+            "doi": "10.18653/v1/n18-1202",
+            "semantic_scholar_paper_id": "3febb2bed8865945e7fddc99efd791887bb7e14f",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W1026270304",
+            "title": "Training Very Deep Networks",
+            "doi": "10.48550/arxiv.1507.06228",
+            "semantic_scholar_paper_id": "b92aa7024b87f50737b372e5df31ef091ab54e62",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": true,
+          "reference_scan_complete": true,
+          "reason": null,
+          "contexts": [
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/3febb2bed8865945e7fddc99efd791887bb7e14f",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "background",
+                "confidence": 0.5192094701896924,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "bb67f00ecca1c1c6593ae3a85249a45254d44fbdf9a33d6ee0103d77b9f331c3"
+            },
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/3febb2bed8865945e7fddc99efd791887bb7e14f",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "background",
+                "confidence": 0.5449063541739012,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "5dd0750fb3c131cfd2c7a9682ecb89aed88326a6d2564d68dc5b9f34e0fe6ac3"
+            },
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/3febb2bed8865945e7fddc99efd791887bb7e14f",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "background",
+                "confidence": 0.6778754180176396,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "d1366b1243257116ddff5ec247393e4415fbcc69eafcb313a637c9a0c2193bb4"
+            }
+          ],
+          "available": true
+        },
+        "end_to_end_seconds": 13.562999999998283,
+        "semantic_scholar_requests": 3,
+        "openalex_requests": 1,
+        "http_errors": [
+          429,
+          429
+        ]
+      },
+      {
+        "citing_paper_id": "W2787560479",
+        "cited_paper_id": "W1522301498",
+        "citing_title": "Deep Contextualized Word Representations",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 13.781000000002678,
+        "mapping_succeeded": true,
+        "relationship_found": true,
+        "status": "available",
+        "origin": "memory_cache",
+        "passage_count": 1,
+        "classified_passages": 1,
+        "result": {
+          "citing_paper_id": "W2787560479",
+          "cited_paper_id": "W1522301498",
+          "status": "available",
+          "source": "semantic_scholar",
+          "origin": "memory_cache",
+          "retrieved_at": "2026-11-14T09:32:55.417225Z",
+          "evidence_urls": [
+            "https://api.semanticscholar.org/graph/v1/paper/3febb2bed8865945e7fddc99efd791887bb7e14f/references?fields=contexts%2CexternalIds&limit=100&offset=0"
+          ],
+          "observed_context_count": 1,
+          "citing_mapping": {
+            "openalex_id": "W2787560479",
+            "title": "Deep Contextualized Word Representations",
+            "doi": "10.18653/v1/n18-1202",
+            "semantic_scholar_paper_id": "3febb2bed8865945e7fddc99efd791887bb7e14f",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W1522301498",
+            "title": "Adam: A Method for Stochastic Optimization",
+            "doi": "10.48550/arxiv.1412.6980",
+            "semantic_scholar_paper_id": "cf5cf758f1b00214d70e34f8a57813557dc03e17",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": true,
+          "reference_scan_complete": true,
+          "reason": null,
+          "contexts": [
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/3febb2bed8865945e7fddc99efd791887bb7e14f",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "method",
+                "confidence": 0.8993644478379654,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "3d19fc389a35b32a8a5a22e03cf007d6aeaca5e6b2a4c5af0613326a6ce18cb6"
+            }
+          ],
+          "available": true
+        },
+        "end_to_end_seconds": 13.781000000002678,
+        "semantic_scholar_requests": 3,
+        "openalex_requests": 1,
+        "http_errors": [
+          429,
+          429
+        ]
+      },
+      {
+        "citing_paper_id": "W2787560479",
+        "cited_paper_id": "W1539309091",
+        "citing_title": "Deep Contextualized Word Representations",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 4.48399999999674,
+        "mapping_succeeded": true,
+        "relationship_found": true,
+        "status": "available",
+        "origin": "memory_cache",
+        "passage_count": 3,
+        "classified_passages": 3,
+        "result": {
+          "citing_paper_id": "W2787560479",
+          "cited_paper_id": "W1539309091",
+          "status": "available",
+          "source": "semantic_scholar",
+          "origin": "memory_cache",
+          "retrieved_at": "2026-11-14T09:32:55.417225Z",
+          "evidence_urls": [
+            "https://api.semanticscholar.org/graph/v1/paper/3febb2bed8865945e7fddc99efd791887bb7e14f/references?fields=contexts%2CexternalIds&limit=100&offset=0"
+          ],
+          "observed_context_count": 3,
+          "citing_mapping": {
+            "openalex_id": "W2787560479",
+            "title": "Deep Contextualized Word Representations",
+            "doi": "10.18653/v1/n18-1202",
+            "semantic_scholar_paper_id": "3febb2bed8865945e7fddc99efd791887bb7e14f",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W1539309091",
+            "title": "One billion word benchmark for measuring progress in statistical language modeling",
+            "doi": "10.21437/interspeech.2014-564",
+            "semantic_scholar_paper_id": "5d833331b0e22ff359db05c62a8bca18c4f04b68",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": true,
+          "reference_scan_complete": true,
+          "reason": null,
+          "contexts": [
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/3febb2bed8865945e7fddc99efd791887bb7e14f",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "method",
+                "confidence": 0.5452267394452691,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "648a836d4c23eb5ab31f2197027e431660880672cd69ed924b5e2d21946ccb71"
+            },
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/3febb2bed8865945e7fddc99efd791887bb7e14f",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "method",
+                "confidence": 0.7955208337881735,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "1842f01b5d198a0d4d6c0c8d1d59b1bd4a35124273833c2f5c77b616d0322835"
+            },
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/3febb2bed8865945e7fddc99efd791887bb7e14f",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "method",
+                "confidence": 0.49533069887568804,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "855753f01777a83701b29e4510f7b05e72dcf7e25ded7761d395f2ce23c2d92d"
+            }
+          ],
+          "available": true
+        },
+        "end_to_end_seconds": 4.48399999999674,
+        "semantic_scholar_requests": 1,
+        "openalex_requests": 1,
+        "http_errors": []
+      },
+      {
+        "citing_paper_id": "W2787560479",
+        "cited_paper_id": "W1632114991",
+        "citing_title": "Deep Contextualized Word Representations",
+        "openalex_outbound_reference_verified": true,
+        "status": "upstream_error",
+        "error_code": "semantic_scholar_rate_limited",
+        "end_to_end_seconds": 13.76600000000326,
+        "semantic_scholar_requests": 3,
+        "openalex_requests": 1,
+        "http_errors": [
+          429,
+          429,
+          429
+        ]
+      },
+      {
+        "citing_paper_id": "W2787560479",
+        "cited_paper_id": "W1840435438",
+        "citing_title": "Deep Contextualized Word Representations",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 0.0,
+        "mapping_succeeded": true,
+        "relationship_found": true,
+        "status": "available",
+        "origin": "memory_cache",
+        "passage_count": 2,
+        "classified_passages": 2,
+        "result": {
+          "citing_paper_id": "W2787560479",
+          "cited_paper_id": "W1840435438",
+          "status": "available",
+          "source": "semantic_scholar",
+          "origin": "memory_cache",
+          "retrieved_at": "2026-11-14T09:32:55.417225Z",
+          "evidence_urls": [
+            "https://api.semanticscholar.org/graph/v1/paper/3febb2bed8865945e7fddc99efd791887bb7e14f/references?fields=contexts%2CexternalIds&limit=100&offset=0"
+          ],
+          "observed_context_count": 2,
+          "citing_mapping": {
+            "openalex_id": "W2787560479",
+            "title": "Deep Contextualized Word Representations",
+            "doi": "10.18653/v1/n18-1202",
+            "semantic_scholar_paper_id": "3febb2bed8865945e7fddc99efd791887bb7e14f",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W1840435438",
+            "title": "A large annotated corpus for learning natural language inference",
+            "doi": "10.18653/v1/d15-1075",
+            "semantic_scholar_paper_id": "f04df4e20a18358ea2f689b4c129781628ef7fc1",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": true,
+          "reference_scan_complete": true,
+          "reason": null,
+          "contexts": [
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/3febb2bed8865945e7fddc99efd791887bb7e14f",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "background",
+                "confidence": 0.7057681691609838,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "6c718efa03ee03d3b95151286d2b601aa8999c1e401ccef28333f0fb0381a1ea"
+            },
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/3febb2bed8865945e7fddc99efd791887bb7e14f",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "background",
+                "confidence": 0.8344977742098758,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "49455fd0a9691d7603a54f038c9fc4493993c1edcfcc439f7dbeffaba46a1de1"
+            }
+          ],
+          "available": true
+        },
+        "end_to_end_seconds": 0.01599999999962165,
+        "semantic_scholar_requests": 0,
+        "openalex_requests": 0,
+        "http_errors": []
+      },
+      {
+        "citing_paper_id": "W2982399380",
+        "cited_paper_id": "W131533222",
+        "citing_title": "BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 9.609000000000378,
+        "mapping_succeeded": false,
+        "relationship_found": null,
+        "status": "unresolved_identifiers",
+        "origin": "live",
+        "passage_count": 0,
+        "classified_passages": 0,
+        "result": {
+          "citing_paper_id": "W2982399380",
+          "cited_paper_id": "W131533222",
+          "status": "unresolved_identifiers",
+          "source": "semantic_scholar",
+          "origin": "live",
+          "retrieved_at": "2026-11-14T09:33:50.786193Z",
+          "evidence_urls": [],
+          "observed_context_count": null,
+          "citing_mapping": {
+            "openalex_id": "W2982399380",
+            "title": "BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension",
+            "doi": "10.18653/v1/2020.acl-main.703",
+            "semantic_scholar_paper_id": null,
+            "verified": false,
+            "reason": "semantic_scholar_work_not_found"
+          },
+          "cited_mapping": {
+            "openalex_id": "W131533222",
+            "title": "Automatically Constructing a Corpus of Sentential Paraphrases.",
+            "doi": null,
+            "semantic_scholar_paper_id": null,
+            "verified": false,
+            "reason": "missing_doi"
+          },
+          "relationship_found": null,
+          "reference_scan_complete": false,
+          "reason": null,
+          "contexts": [],
+          "available": false
+        },
+        "end_to_end_seconds": 9.609000000000378,
+        "semantic_scholar_requests": 2,
+        "openalex_requests": 2,
+        "http_errors": [
+          429,
+          404
+        ]
+      },
+      {
+        "citing_paper_id": "W2982399380",
+        "cited_paper_id": "W1544827683",
+        "citing_title": "BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 8.9529999999977,
+        "mapping_succeeded": false,
+        "relationship_found": null,
+        "status": "unresolved_identifiers",
+        "origin": "live",
+        "passage_count": 0,
+        "classified_passages": 0,
+        "result": {
+          "citing_paper_id": "W2982399380",
+          "cited_paper_id": "W1544827683",
+          "status": "unresolved_identifiers",
+          "source": "semantic_scholar",
+          "origin": "live",
+          "retrieved_at": "2026-11-14T09:33:59.755391Z",
+          "evidence_urls": [],
+          "observed_context_count": null,
+          "citing_mapping": {
+            "openalex_id": "W2982399380",
+            "title": "BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension",
+            "doi": "10.18653/v1/2020.acl-main.703",
+            "semantic_scholar_paper_id": null,
+            "verified": false,
+            "reason": "semantic_scholar_work_not_found"
+          },
+          "cited_mapping": {
+            "openalex_id": "W1544827683",
+            "title": "Teaching Machines to Read and Comprehend",
+            "doi": "10.48550/arxiv.1506.03340",
+            "semantic_scholar_paper_id": "d1505c6123c102e53eb19dff312cb25cea840b72",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": null,
+          "reference_scan_complete": false,
+          "reason": null,
+          "contexts": [],
+          "available": false
+        },
+        "end_to_end_seconds": 8.9529999999977,
+        "semantic_scholar_requests": 2,
+        "openalex_requests": 1,
+        "http_errors": [
+          429
+        ]
+      },
+      {
+        "citing_paper_id": "W2982399380",
+        "cited_paper_id": "W1599016936",
+        "citing_title": "BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 0.125,
+        "mapping_succeeded": false,
+        "relationship_found": null,
+        "status": "unresolved_identifiers",
+        "origin": "live",
+        "passage_count": 0,
+        "classified_passages": 0,
+        "result": {
+          "citing_paper_id": "W2982399380",
+          "cited_paper_id": "W1599016936",
+          "status": "unresolved_identifiers",
+          "source": "semantic_scholar",
+          "origin": "live",
+          "retrieved_at": "2026-11-14T09:33:59.882652Z",
+          "evidence_urls": [],
+          "observed_context_count": null,
+          "citing_mapping": {
+            "openalex_id": "W2982399380",
+            "title": "BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension",
+            "doi": "10.18653/v1/2020.acl-main.703",
+            "semantic_scholar_paper_id": null,
+            "verified": false,
+            "reason": "semantic_scholar_work_not_found"
+          },
+          "cited_mapping": {
+            "openalex_id": "W1599016936",
+            "title": "The Winograd Schema Challenge",
+            "doi": null,
+            "semantic_scholar_paper_id": null,
+            "verified": false,
+            "reason": "missing_doi"
+          },
+          "relationship_found": null,
+          "reference_scan_complete": false,
+          "reason": null,
+          "contexts": [],
+          "available": false
+        },
+        "end_to_end_seconds": 0.125,
+        "semantic_scholar_requests": 0,
+        "openalex_requests": 1,
+        "http_errors": []
+      },
+      {
+        "citing_paper_id": "W2982399380",
+        "cited_paper_id": "W1614298861",
+        "citing_title": "BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 4.360000000000582,
+        "mapping_succeeded": false,
+        "relationship_found": null,
+        "status": "unresolved_identifiers",
+        "origin": "live",
+        "passage_count": 0,
+        "classified_passages": 0,
+        "result": {
+          "citing_paper_id": "W2982399380",
+          "cited_paper_id": "W1614298861",
+          "status": "unresolved_identifiers",
+          "source": "semantic_scholar",
+          "origin": "live",
+          "retrieved_at": "2026-11-14T09:34:04.244418Z",
+          "evidence_urls": [],
+          "observed_context_count": null,
+          "citing_mapping": {
+            "openalex_id": "W2982399380",
+            "title": "BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension",
+            "doi": "10.18653/v1/2020.acl-main.703",
+            "semantic_scholar_paper_id": null,
+            "verified": false,
+            "reason": "semantic_scholar_work_not_found"
+          },
+          "cited_mapping": {
+            "openalex_id": "W1614298861",
+            "title": "Efficient Estimation of Word Representations in Vector Space",
+            "doi": "10.48550/arxiv.1301.3781",
+            "semantic_scholar_paper_id": "f6b51c8753a871dc94ff32152c00c01e94f90f09",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": null,
+          "reference_scan_complete": false,
+          "reason": null,
+          "contexts": [],
+          "available": false
+        },
+        "end_to_end_seconds": 4.360000000000582,
+        "semantic_scholar_requests": 1,
+        "openalex_requests": 1,
+        "http_errors": []
+      },
+      {
+        "citing_paper_id": "W2982399380",
+        "cited_paper_id": "W2130158090",
+        "citing_title": "BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 4.359000000000378,
+        "mapping_succeeded": false,
+        "relationship_found": null,
+        "status": "unresolved_identifiers",
+        "origin": "live",
+        "passage_count": 0,
+        "classified_passages": 0,
+        "result": {
+          "citing_paper_id": "W2982399380",
+          "cited_paper_id": "W2130158090",
+          "status": "unresolved_identifiers",
+          "source": "semantic_scholar",
+          "origin": "live",
+          "retrieved_at": "2026-11-14T09:34:08.608550Z",
+          "evidence_urls": [],
+          "observed_context_count": null,
+          "citing_mapping": {
+            "openalex_id": "W2982399380",
+            "title": "BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension",
+            "doi": "10.18653/v1/2020.acl-main.703",
+            "semantic_scholar_paper_id": null,
+            "verified": false,
+            "reason": "semantic_scholar_work_not_found"
+          },
+          "cited_mapping": {
+            "openalex_id": "W2130158090",
+            "title": "The PASCAL Recognising Textual Entailment Challenge",
+            "doi": "10.1007/11736790_9",
+            "semantic_scholar_paper_id": "696f7be79a6e099cfa3021f22060e511d3b192f8",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": null,
+          "reference_scan_complete": false,
+          "reason": null,
+          "contexts": [],
+          "available": false
+        },
+        "end_to_end_seconds": 4.359000000000378,
+        "semantic_scholar_requests": 1,
+        "openalex_requests": 1,
+        "http_errors": []
+      },
+      {
+        "citing_paper_id": "W2982399380",
+        "cited_paper_id": "W2251939518",
+        "citing_title": "BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 4.59400000000096,
+        "mapping_succeeded": false,
+        "relationship_found": null,
+        "status": "unresolved_identifiers",
+        "origin": "live",
+        "passage_count": 0,
+        "classified_passages": 0,
+        "result": {
+          "citing_paper_id": "W2982399380",
+          "cited_paper_id": "W2251939518",
+          "status": "unresolved_identifiers",
+          "source": "semantic_scholar",
+          "origin": "live",
+          "retrieved_at": "2026-11-14T09:34:13.196541Z",
+          "evidence_urls": [],
+          "observed_context_count": null,
+          "citing_mapping": {
+            "openalex_id": "W2982399380",
+            "title": "BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension",
+            "doi": "10.18653/v1/2020.acl-main.703",
+            "semantic_scholar_paper_id": null,
+            "verified": false,
+            "reason": "semantic_scholar_work_not_found"
+          },
+          "cited_mapping": {
+            "openalex_id": "W2251939518",
+            "title": "Recursive Deep Models for Semantic Compositionality Over a Sentiment Treebank",
+            "doi": "10.18653/v1/d13-1170",
+            "semantic_scholar_paper_id": "687bac2d3320083eb4530bf18bb8f8f721477600",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": null,
+          "reference_scan_complete": false,
+          "reason": null,
+          "contexts": [],
+          "available": false
+        },
+        "end_to_end_seconds": 4.59400000000096,
+        "semantic_scholar_requests": 1,
+        "openalex_requests": 1,
+        "http_errors": []
+      },
+      {
+        "citing_paper_id": "W2982399380",
+        "cited_paper_id": "W2418388682",
+        "citing_title": "BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 13.734000000000378,
+        "mapping_succeeded": false,
+        "relationship_found": null,
+        "status": "unresolved_identifiers",
+        "origin": "live",
+        "passage_count": 0,
+        "classified_passages": 0,
+        "result": {
+          "citing_paper_id": "W2982399380",
+          "cited_paper_id": "W2418388682",
+          "status": "unresolved_identifiers",
+          "source": "semantic_scholar",
+          "origin": "live",
+          "retrieved_at": "2026-11-14T09:34:26.929805Z",
+          "evidence_urls": [],
+          "observed_context_count": null,
+          "citing_mapping": {
+            "openalex_id": "W2982399380",
+            "title": "BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension",
+            "doi": "10.18653/v1/2020.acl-main.703",
+            "semantic_scholar_paper_id": null,
+            "verified": false,
+            "reason": "semantic_scholar_work_not_found"
+          },
+          "cited_mapping": {
+            "openalex_id": "W2418388682",
+            "title": "Edinburgh Neural Machine Translation Systems for WMT 16",
+            "doi": "10.18653/v1/w16-2323",
+            "semantic_scholar_paper_id": "e3ce71a26872c7755e6d8b8fc45bf00c8be64193",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": null,
+          "reference_scan_complete": false,
+          "reason": null,
+          "contexts": [],
+          "available": false
+        },
+        "end_to_end_seconds": 13.734000000000378,
+        "semantic_scholar_requests": 3,
+        "openalex_requests": 1,
+        "http_errors": [
+          429,
+          429
+        ]
+      },
+      {
+        "citing_paper_id": "W2911489562",
+        "cited_paper_id": "W1981208470",
+        "citing_title": "BioBERT: a pre-trained biomedical language representation model for biomedical text mining",
+        "openalex_outbound_reference_verified": true,
+        "status": "upstream_error",
+        "error_code": "semantic_scholar_rate_limited",
+        "end_to_end_seconds": 27.562999999998283,
+        "semantic_scholar_requests": 6,
+        "openalex_requests": 2,
+        "http_errors": [
+          429,
+          429,
+          429,
+          429
+        ]
+      },
+      {
+        "citing_paper_id": "W2911489562",
+        "cited_paper_id": "W2047782770",
+        "citing_title": "BioBERT: a pre-trained biomedical language representation model for biomedical text mining",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 13.937000000001717,
+        "mapping_succeeded": true,
+        "relationship_found": true,
+        "status": "no_context",
+        "origin": "live",
+        "passage_count": 0,
+        "classified_passages": 0,
+        "result": {
+          "citing_paper_id": "W2911489562",
+          "cited_paper_id": "W2047782770",
+          "status": "no_context",
+          "source": "semantic_scholar",
+          "origin": "live",
+          "retrieved_at": "2026-11-14T09:35:08.433314Z",
+          "evidence_urls": [
+            "https://api.semanticscholar.org/graph/v1/paper/1e43c7084bdcb6b3102afaf301cce10faead2702/references?fields=contexts%2CexternalIds&limit=100&offset=0"
+          ],
+          "observed_context_count": 0,
+          "citing_mapping": {
+            "openalex_id": "W2911489562",
+            "title": "BioBERT: a pre-trained biomedical language representation model for biomedical text mining",
+            "doi": "10.1093/bioinformatics/btz682",
+            "semantic_scholar_paper_id": "1e43c7084bdcb6b3102afaf301cce10faead2702",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W2047782770",
+            "title": "Introduction to the bio-entity recognition task at JNLPBA",
+            "doi": "10.3115/1567594.1567610",
+            "semantic_scholar_paper_id": "3bd4d2de49d8a092abb295b845dba14874f8787d",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": true,
+          "reference_scan_complete": true,
+          "reason": null,
+          "contexts": [],
+          "available": false
+        },
+        "end_to_end_seconds": 13.937000000001717,
+        "semantic_scholar_requests": 3,
+        "openalex_requests": 1,
+        "http_errors": [
+          429
+        ]
+      },
+      {
+        "citing_paper_id": "W2911489562",
+        "cited_paper_id": "W2052217781",
+        "citing_title": "BioBERT: a pre-trained biomedical language representation model for biomedical text mining",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 9.171999999998661,
+        "mapping_succeeded": true,
+        "relationship_found": true,
+        "status": "no_context",
+        "origin": "memory_cache",
+        "passage_count": 0,
+        "classified_passages": 0,
+        "result": {
+          "citing_paper_id": "W2911489562",
+          "cited_paper_id": "W2052217781",
+          "status": "no_context",
+          "source": "semantic_scholar",
+          "origin": "memory_cache",
+          "retrieved_at": "2026-11-14T09:35:08.433314Z",
+          "evidence_urls": [
+            "https://api.semanticscholar.org/graph/v1/paper/1e43c7084bdcb6b3102afaf301cce10faead2702/references?fields=contexts%2CexternalIds&limit=100&offset=0"
+          ],
+          "observed_context_count": 0,
+          "citing_mapping": {
+            "openalex_id": "W2911489562",
+            "title": "BioBERT: a pre-trained biomedical language representation model for biomedical text mining",
+            "doi": "10.1093/bioinformatics/btz682",
+            "semantic_scholar_paper_id": "1e43c7084bdcb6b3102afaf301cce10faead2702",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W2052217781",
+            "title": "The EU-ADR corpus: Annotated drugs, diseases, targets, and their relationships",
+            "doi": "10.1016/j.jbi.2012.04.004",
+            "semantic_scholar_paper_id": "506c7e333efa0b31823c1b1914b1180c346773ee",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": true,
+          "reference_scan_complete": true,
+          "reason": null,
+          "contexts": [],
+          "available": false
+        },
+        "end_to_end_seconds": 9.171999999998661,
+        "semantic_scholar_requests": 2,
+        "openalex_requests": 1,
+        "http_errors": [
+          429
+        ]
+      },
+      {
+        "citing_paper_id": "W2911489562",
+        "cited_paper_id": "W2071879021",
+        "citing_title": "BioBERT: a pre-trained biomedical language representation model for biomedical text mining",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 4.53099999999904,
+        "mapping_succeeded": true,
+        "relationship_found": true,
+        "status": "no_context",
+        "origin": "memory_cache",
+        "passage_count": 0,
+        "classified_passages": 0,
+        "result": {
+          "citing_paper_id": "W2911489562",
+          "cited_paper_id": "W2071879021",
+          "status": "no_context",
+          "source": "semantic_scholar",
+          "origin": "memory_cache",
+          "retrieved_at": "2026-11-14T09:35:08.433314Z",
+          "evidence_urls": [
+            "https://api.semanticscholar.org/graph/v1/paper/1e43c7084bdcb6b3102afaf301cce10faead2702/references?fields=contexts%2CexternalIds&limit=100&offset=0"
+          ],
+          "observed_context_count": 0,
+          "citing_mapping": {
+            "openalex_id": "W2911489562",
+            "title": "BioBERT: a pre-trained biomedical language representation model for biomedical text mining",
+            "doi": "10.1093/bioinformatics/btz682",
+            "semantic_scholar_paper_id": "1e43c7084bdcb6b3102afaf301cce10faead2702",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W2071879021",
+            "title": "The SPECIES and ORGANISMS Resources for Fast and Accurate Identification of Taxonomic Names in Text",
+            "doi": "10.1371/journal.pone.0065390",
+            "semantic_scholar_paper_id": "c83d05b15797ade0f8dffb9a311a859682d43a27",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": true,
+          "reference_scan_complete": true,
+          "reason": null,
+          "contexts": [],
+          "available": false
+        },
+        "end_to_end_seconds": 4.53099999999904,
+        "semantic_scholar_requests": 1,
+        "openalex_requests": 1,
+        "http_errors": []
+      },
+      {
+        "citing_paper_id": "W2911489562",
+        "cited_paper_id": "W2100627415",
+        "citing_title": "BioBERT: a pre-trained biomedical language representation model for biomedical text mining",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 9.125,
+        "mapping_succeeded": true,
+        "relationship_found": true,
+        "status": "available",
+        "origin": "memory_cache",
+        "passage_count": 1,
+        "classified_passages": 1,
+        "result": {
+          "citing_paper_id": "W2911489562",
+          "cited_paper_id": "W2100627415",
+          "status": "available",
+          "source": "semantic_scholar",
+          "origin": "memory_cache",
+          "retrieved_at": "2026-11-14T09:35:08.433314Z",
+          "evidence_urls": [
+            "https://api.semanticscholar.org/graph/v1/paper/1e43c7084bdcb6b3102afaf301cce10faead2702/references?fields=contexts%2CexternalIds&limit=100&offset=0"
+          ],
+          "observed_context_count": 1,
+          "citing_mapping": {
+            "openalex_id": "W2911489562",
+            "title": "BioBERT: a pre-trained biomedical language representation model for biomedical text mining",
+            "doi": "10.1093/bioinformatics/btz682",
+            "semantic_scholar_paper_id": "1e43c7084bdcb6b3102afaf301cce10faead2702",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W2100627415",
+            "title": "LINNAEUS: A species name identification system for biomedical literature",
+            "doi": "10.1186/1471-2105-11-85",
+            "semantic_scholar_paper_id": "e1039346942874c59d89028bb934b72524827b8c",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": true,
+          "reference_scan_complete": true,
+          "reason": null,
+          "contexts": [
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/1e43c7084bdcb6b3102afaf301cce10faead2702",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "background",
+                "confidence": 0.9176888189658047,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "08d3f4d4d7793ef9933c9e23e6c651b5df14aa2f2ac6c3fb2d38ababd9f9ffa5"
+            }
+          ],
+          "available": true
+        },
+        "end_to_end_seconds": 9.14100000000326,
+        "semantic_scholar_requests": 2,
+        "openalex_requests": 1,
+        "http_errors": [
+          429
+        ]
+      },
+      {
+        "citing_paper_id": "W2911489562",
+        "cited_paper_id": "W2136437513",
+        "citing_title": "BioBERT: a pre-trained biomedical language representation model for biomedical text mining",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 4.60899999999674,
+        "mapping_succeeded": true,
+        "relationship_found": true,
+        "status": "no_context",
+        "origin": "memory_cache",
+        "passage_count": 0,
+        "classified_passages": 0,
+        "result": {
+          "citing_paper_id": "W2911489562",
+          "cited_paper_id": "W2136437513",
+          "status": "no_context",
+          "source": "semantic_scholar",
+          "origin": "memory_cache",
+          "retrieved_at": "2026-11-14T09:35:08.433314Z",
+          "evidence_urls": [
+            "https://api.semanticscholar.org/graph/v1/paper/1e43c7084bdcb6b3102afaf301cce10faead2702/references?fields=contexts%2CexternalIds&limit=100&offset=0"
+          ],
+          "observed_context_count": 0,
+          "citing_mapping": {
+            "openalex_id": "W2911489562",
+            "title": "BioBERT: a pre-trained biomedical language representation model for biomedical text mining",
+            "doi": "10.1093/bioinformatics/btz682",
+            "semantic_scholar_paper_id": "1e43c7084bdcb6b3102afaf301cce10faead2702",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W2136437513",
+            "title": "Extraction of relations between genes and diseases from text and large-scale data analysis: implications for translational research",
+            "doi": "10.1186/s12859-015-0472-9",
+            "semantic_scholar_paper_id": "cfb4edb7541fafcf593b466320c63ae32d27f57e",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": true,
+          "reference_scan_complete": true,
+          "reason": null,
+          "contexts": [],
+          "available": false
+        },
+        "end_to_end_seconds": 4.60899999999674,
+        "semantic_scholar_requests": 1,
+        "openalex_requests": 1,
+        "http_errors": []
+      },
+      {
+        "citing_paper_id": "W2911489562",
+        "cited_paper_id": "W2149369282",
+        "citing_title": "BioBERT: a pre-trained biomedical language representation model for biomedical text mining",
+        "openalex_outbound_reference_verified": true,
+        "retrieval_seconds": 4.360000000000582,
+        "mapping_succeeded": true,
+        "relationship_found": true,
+        "status": "available",
+        "origin": "memory_cache",
+        "passage_count": 1,
+        "classified_passages": 1,
+        "result": {
+          "citing_paper_id": "W2911489562",
+          "cited_paper_id": "W2149369282",
+          "status": "available",
+          "source": "semantic_scholar",
+          "origin": "memory_cache",
+          "retrieved_at": "2026-11-14T09:35:08.433314Z",
+          "evidence_urls": [
+            "https://api.semanticscholar.org/graph/v1/paper/1e43c7084bdcb6b3102afaf301cce10faead2702/references?fields=contexts%2CexternalIds&limit=100&offset=0"
+          ],
+          "observed_context_count": 1,
+          "citing_mapping": {
+            "openalex_id": "W2911489562",
+            "title": "BioBERT: a pre-trained biomedical language representation model for biomedical text mining",
+            "doi": "10.1093/bioinformatics/btz682",
+            "semantic_scholar_paper_id": "1e43c7084bdcb6b3102afaf301cce10faead2702",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W2149369282",
+            "title": "The CHEMDNER corpus of chemicals and drugs and its annotation principles",
+            "doi": "10.1186/1758-2946-7-s1-s2",
+            "semantic_scholar_paper_id": "932117813af889104cafb457ebbc52a38d8b64eb",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": true,
+          "reference_scan_complete": true,
+          "reason": null,
+          "contexts": [
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/1e43c7084bdcb6b3102afaf301cce10faead2702",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "method",
+                "confidence": 0.9781610228064642,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "ac0bbd4f7206db7c94309769d6c896583257fc2d8449b2a25d9cd8e6269234de"
+            }
+          ],
+          "available": true
+        },
+        "end_to_end_seconds": 4.375,
+        "semantic_scholar_requests": 1,
+        "openalex_requests": 1,
+        "http_errors": []
+      }
+    ],
+    "candidate_count": 28,
+    "repeat": {
+      "relationships": 28,
+      "upstream_requests": 2,
+      "seconds": 4.51600000000326
+    },
+    "openalex_search": {
+      "total": 148018,
+      "returned_ids": [
+        "W2970641574",
+        "W2971193649"
+      ]
+    },
+    "caches": {
+      "mappings": {
+        "hits": 28,
+        "misses": 32,
+        "coalesced": 0
+      },
+      "reference_pages": {
+        "hits": 17,
+        "misses": 4,
+        "coalesced": 0
+      }
+    },
+    "summary": {
+      "unique_relationships": 28,
+      "mapped": 18,
+      "with_contexts": 14,
+      "classified": 14,
+      "coverage_percent": 50.0,
+      "semantic_scholar_requests": 56,
+      "http_429": 25,
+      "statuses": {
+        "available": 14,
+        "unresolved_identifiers": 8,
+        "upstream_error": 2,
+        "no_context": 4
+      },
+      "semantic_request_latency": {
+        "count": 56,
+        "median_seconds": 0.156,
+        "max_seconds": 0.39
+      },
+      "retrieval_latency": {
+        "count": 26,
+        "median_seconds": 4.5625,
+        "max_seconds": 27.828
+      },
+      "end_to_end_latency": {
+        "count": 28,
+        "median_seconds": 4.6015,
+        "max_seconds": 27.828
+      },
+      "minimum_semantic_start_spacing_seconds": 1.5
+    },
+    "finished_at": "2026-11-14T09:35:44.966025+00:00"
+  },
+  "final_http_smoke": {
+    "calls": [
+      {
+        "path": "/graph/v1/paper/DOI:10.18653/v1/d19-1410",
+        "status": 429,
+        "retry_after": null,
+        "authenticated": true
+      },
+      {
+        "path": "/graph/v1/paper/DOI:10.18653/v1/d19-1410",
+        "status": 200,
+        "retry_after": null,
+        "authenticated": true
+      },
+      {
+        "path": "/graph/v1/paper/DOI:10.48550/arxiv.1506.06726",
+        "status": 429,
+        "retry_after": null,
+        "authenticated": true
+      },
+      {
+        "path": "/graph/v1/paper/DOI:10.18653/v1/d15-1075",
+        "status": 200,
+        "retry_after": null,
+        "authenticated": true
+      },
+      {
+        "path": "/graph/v1/paper/DOI:10.48550/arxiv.1506.06726",
+        "status": 200,
+        "retry_after": null,
+        "authenticated": true
+      },
+      {
+        "path": "/graph/v1/paper/93d63ec754f29fa22572615320afe0521f7ec66d/references",
+        "status": 429,
+        "retry_after": null,
+        "authenticated": true
+      },
+      {
+        "path": "/graph/v1/paper/93d63ec754f29fa22572615320afe0521f7ec66d/references",
+        "status": 429,
+        "retry_after": null,
+        "authenticated": true
+      },
+      {
+        "path": "/graph/v1/paper/93d63ec754f29fa22572615320afe0521f7ec66d/references",
+        "status": 200,
+        "retry_after": null,
+        "authenticated": true
+      }
+    ],
+    "live_seconds": 25.377966899999592,
+    "live": [
+      {
+        "http_status": 200,
+        "body": {
+          "citing_paper_id": "W2970641574",
+          "cited_paper_id": "W1486649854",
+          "status": "available",
+          "source": "semantic_scholar",
+          "origin": "memory_cache",
+          "retrieved_at": "2026-11-14T09:38:03.999010Z",
+          "evidence_urls": [
+            "https://api.semanticscholar.org/graph/v1/paper/93d63ec754f29fa22572615320afe0521f7ec66d/references?fields=contexts%2CexternalIds&limit=100&offset=0"
+          ],
+          "observed_context_count": 1,
+          "citing_mapping": {
+            "openalex_id": "W2970641574",
+            "title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+            "doi": "10.18653/v1/d19-1410",
+            "semantic_scholar_paper_id": "93d63ec754f29fa22572615320afe0521f7ec66d",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W1486649854",
+            "title": "Skip-Thought Vectors",
+            "doi": "10.48550/arxiv.1506.06726",
+            "semantic_scholar_paper_id": "6e795c6e9916174ae12349f5dc3f516570c17ce8",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": true,
+          "reference_scan_complete": true,
+          "reason": null,
+          "contexts": [
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "background",
+                "confidence": 0.858827967518576,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "2edcb6524f3e72b5e2800bc307389ac1fe3fd869d1127749938ad6795451a967"
+            }
+          ],
+          "available": true
+        }
+      },
+      {
+        "http_status": 200,
+        "body": {
+          "citing_paper_id": "W2970641574",
+          "cited_paper_id": "W1840435438",
+          "status": "available",
+          "source": "semantic_scholar",
+          "origin": "live",
+          "retrieved_at": "2026-11-14T09:38:03.999010Z",
+          "evidence_urls": [
+            "https://api.semanticscholar.org/graph/v1/paper/93d63ec754f29fa22572615320afe0521f7ec66d/references?fields=contexts%2CexternalIds&limit=100&offset=0"
+          ],
+          "observed_context_count": 6,
+          "citing_mapping": {
+            "openalex_id": "W2970641574",
+            "title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+            "doi": "10.18653/v1/d19-1410",
+            "semantic_scholar_paper_id": "93d63ec754f29fa22572615320afe0521f7ec66d",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W1840435438",
+            "title": "A large annotated corpus for learning natural language inference",
+            "doi": "10.18653/v1/d15-1075",
+            "semantic_scholar_paper_id": "f04df4e20a18358ea2f689b4c129781628ef7fc1",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": true,
+          "reference_scan_complete": true,
+          "reason": null,
+          "contexts": [
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "method",
+                "confidence": 0.7463874129730877,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "1461acaba4ea433610232b3f2a775c56f60c0f57c874d18f0064717546649f79"
+            },
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "method",
+                "confidence": 0.6732211244480493,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "aee4bf299519120c4232160139ef40a0e692730e4c5b05d765e340054d88b860"
+            },
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "method",
+                "confidence": 0.9210376062281859,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "80379f644308a74f46363350d9fd3aed6658bfce47e1fe2d6c38dbdbd6ba3a19"
+            },
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "background",
+                "confidence": 0.6239232497867677,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "4efe6060d79a9fe1135aa9c61ca30a9bf64ebab4a3b40461ccda25bb8d09666b"
+            },
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "background",
+                "confidence": 0.6384058530708709,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "9952c25d6a38afc69182a93e0da213b09fc0c93ff60a1a8105c9f36751bfd9d0"
+            },
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "background",
+                "confidence": 0.7055307030502593,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "c981506b51fd12f66dba0183f748f58377481a09926885aa175d340d198353a5"
+            }
+          ],
+          "available": true
+        }
+      }
+    ],
+    "repeat": [
+      {
+        "http_status": 200,
+        "body": {
+          "citing_paper_id": "W2970641574",
+          "cited_paper_id": "W1486649854",
+          "status": "available",
+          "source": "semantic_scholar",
+          "origin": "memory_cache",
+          "retrieved_at": "2026-11-14T09:38:03.999010Z",
+          "evidence_urls": [
+            "https://api.semanticscholar.org/graph/v1/paper/93d63ec754f29fa22572615320afe0521f7ec66d/references?fields=contexts%2CexternalIds&limit=100&offset=0"
+          ],
+          "observed_context_count": 1,
+          "citing_mapping": {
+            "openalex_id": "W2970641574",
+            "title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+            "doi": "10.18653/v1/d19-1410",
+            "semantic_scholar_paper_id": "93d63ec754f29fa22572615320afe0521f7ec66d",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W1486649854",
+            "title": "Skip-Thought Vectors",
+            "doi": "10.48550/arxiv.1506.06726",
+            "semantic_scholar_paper_id": "6e795c6e9916174ae12349f5dc3f516570c17ce8",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": true,
+          "reference_scan_complete": true,
+          "reason": null,
+          "contexts": [
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": null,
+              "classification_unavailable_reason": null,
+              "context_sha256": "2edcb6524f3e72b5e2800bc307389ac1fe3fd869d1127749938ad6795451a967"
+            }
+          ],
+          "available": true
+        }
+      },
+      {
+        "http_status": 200,
+        "body": {
+          "citing_paper_id": "W2970641574",
+          "cited_paper_id": "W1840435438",
+          "status": "available",
+          "source": "semantic_scholar",
+          "origin": "memory_cache",
+          "retrieved_at": "2026-11-14T09:38:03.999010Z",
+          "evidence_urls": [
+            "https://api.semanticscholar.org/graph/v1/paper/93d63ec754f29fa22572615320afe0521f7ec66d/references?fields=contexts%2CexternalIds&limit=100&offset=0"
+          ],
+          "observed_context_count": 6,
+          "citing_mapping": {
+            "openalex_id": "W2970641574",
+            "title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+            "doi": "10.18653/v1/d19-1410",
+            "semantic_scholar_paper_id": "93d63ec754f29fa22572615320afe0521f7ec66d",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W1840435438",
+            "title": "A large annotated corpus for learning natural language inference",
+            "doi": "10.18653/v1/d15-1075",
+            "semantic_scholar_paper_id": "f04df4e20a18358ea2f689b4c129781628ef7fc1",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": true,
+          "reference_scan_complete": true,
+          "reason": null,
+          "contexts": [
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": null,
+              "classification_unavailable_reason": null,
+              "context_sha256": "1461acaba4ea433610232b3f2a775c56f60c0f57c874d18f0064717546649f79"
+            },
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": null,
+              "classification_unavailable_reason": null,
+              "context_sha256": "aee4bf299519120c4232160139ef40a0e692730e4c5b05d765e340054d88b860"
+            },
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": null,
+              "classification_unavailable_reason": null,
+              "context_sha256": "80379f644308a74f46363350d9fd3aed6658bfce47e1fe2d6c38dbdbd6ba3a19"
+            },
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": null,
+              "classification_unavailable_reason": null,
+              "context_sha256": "4efe6060d79a9fe1135aa9c61ca30a9bf64ebab4a3b40461ccda25bb8d09666b"
+            },
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": null,
+              "classification_unavailable_reason": null,
+              "context_sha256": "9952c25d6a38afc69182a93e0da213b09fc0c93ff60a1a8105c9f36751bfd9d0"
+            },
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/93d63ec754f29fa22572615320afe0521f7ec66d",
+              "source_url_scope": "paper",
+              "classification": null,
+              "classification_unavailable_reason": null,
+              "context_sha256": "c981506b51fd12f66dba0183f748f58377481a09926885aa175d340d198353a5"
+            }
+          ],
+          "available": true
+        }
+      }
+    ],
+    "repeat_semantic_requests": 0,
+    "disabled_examples": [
+      {
+        "http_status": 200,
+        "body": {
+          "citing_paper_id": "W2970771982",
+          "cited_paper_id": "W2963341956",
+          "status": "available",
+          "source": "semantic_scholar",
+          "origin": "verified_example",
+          "retrieved_at": "2026-11-14T08:31:59.549867Z",
+          "evidence_urls": [
+            "https://api.semanticscholar.org/graph/v1/paper/DOI:10.18653/v1/D19-1371/references?fields=contexts%2Ctitle%2CexternalIds%2Curl&limit=100"
+          ],
+          "observed_context_count": 7,
+          "citing_mapping": {
+            "openalex_id": "W2970771982",
+            "title": "SciBERT: A Pretrained Language Model for Scientific Text",
+            "doi": "10.18653/v1/d19-1371",
+            "semantic_scholar_paper_id": "156d217b0a911af97fa1b5a71dc909ccef7a8028",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W2963341956",
+            "title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+            "doi": "10.18653/v1/n19-1423",
+            "semantic_scholar_paper_id": "df2b0e26d0599ce3e70df8a9da02e51594e0e992",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": true,
+          "reference_scan_complete": true,
+          "reason": null,
+          "contexts": [
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/156d217b0a911af97fa1b5a71dc909ccef7a8028",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "method",
+                "confidence": 0.9856118818381374,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "4c9579114c74567670428f9e0527f751e929d4588be39e637887ac6971ff041c"
+            }
+          ],
+          "available": true
+        }
+      },
+      {
+        "http_status": 200,
+        "body": {
+          "citing_paper_id": "W2970771982",
+          "cited_paper_id": "W2626778328",
+          "status": "available",
+          "source": "semantic_scholar",
+          "origin": "verified_example",
+          "retrieved_at": "2026-11-14T08:31:59.549867Z",
+          "evidence_urls": [
+            "https://api.semanticscholar.org/graph/v1/paper/DOI:10.18653/v1/D19-1371/references?fields=contexts%2Ctitle%2CexternalIds%2Curl&limit=100"
+          ],
+          "observed_context_count": 1,
+          "citing_mapping": {
+            "openalex_id": "W2970771982",
+            "title": "SciBERT: A Pretrained Language Model for Scientific Text",
+            "doi": "10.18653/v1/d19-1371",
+            "semantic_scholar_paper_id": "156d217b0a911af97fa1b5a71dc909ccef7a8028",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W2626778328",
+            "title": "Attention Is All You Need",
+            "doi": "10.48550/arxiv.1706.03762",
+            "semantic_scholar_paper_id": "204e3073870fae3d05bcbc2f6a8e263d9b72e776",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": true,
+          "reference_scan_complete": true,
+          "reason": null,
+          "contexts": [
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/156d217b0a911af97fa1b5a71dc909ccef7a8028",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "method",
+                "confidence": 0.5567790219277727,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "9681c4e03364dbf6e41fa5eabcc51889b47a24185aaaf252b755d9c2dfe5bac7"
+            }
+          ],
+          "available": true
+        }
+      },
+      {
+        "http_status": 200,
+        "body": {
+          "citing_paper_id": "W2970771982",
+          "cited_paper_id": "W1522301498",
+          "status": "available",
+          "source": "semantic_scholar",
+          "origin": "verified_example",
+          "retrieved_at": "2026-11-14T08:31:59.549867Z",
+          "evidence_urls": [
+            "https://api.semanticscholar.org/graph/v1/paper/DOI:10.18653/v1/D19-1371/references?fields=contexts%2Ctitle%2CexternalIds%2Curl&limit=100"
+          ],
+          "observed_context_count": 2,
+          "citing_mapping": {
+            "openalex_id": "W2970771982",
+            "title": "SciBERT: A Pretrained Language Model for Scientific Text",
+            "doi": "10.18653/v1/d19-1371",
+            "semantic_scholar_paper_id": "156d217b0a911af97fa1b5a71dc909ccef7a8028",
+            "verified": true,
+            "reason": null
+          },
+          "cited_mapping": {
+            "openalex_id": "W1522301498",
+            "title": "Adam: A Method for Stochastic Optimization",
+            "doi": "10.48550/arxiv.1412.6980",
+            "semantic_scholar_paper_id": "cf5cf758f1b00214d70e34f8a57813557dc03e17",
+            "verified": true,
+            "reason": null
+          },
+          "relationship_found": true,
+          "reference_scan_complete": true,
+          "reason": null,
+          "contexts": [
+            {
+              "source": "semantic_scholar",
+              "source_url": "https://www.semanticscholar.org/paper/156d217b0a911af97fa1b5a71dc909ccef7a8028",
+              "source_url_scope": "paper",
+              "classification": {
+                "intent": "method",
+                "confidence": 0.8079501246169966,
+                "model_version": "scicite-tfidf-logreg-v1"
+              },
+              "classification_unavailable_reason": null,
+              "context_sha256": "461a6e55ffba5ec4146b7522c5c23ee977f16f166535dec5010ee0a950ad3112"
+            }
+          ],
+          "available": true
+        }
+      }
+    ],
+    "disabled_semantic_requests": 0,
+    "health": 200,
+    "openapi": 200
+  },
+  "openalex_fulltext_metadata": [
+    {
+      "id": "https://openalex.org/W2970641574",
+      "title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+      "has_content": {
+        "pdf": true,
+        "grobid_xml": true
+      },
+      "content_urls": {
+        "pdf": "https://content.openalex.org/works/W2970641574.pdf",
+        "grobid_xml": "https://content.openalex.org/works/W2970641574.grobid-xml"
+      },
+      "license": "cc-by"
+    },
+    {
+      "id": "https://openalex.org/W2787560479",
+      "title": "Deep Contextualized Word Representations",
+      "has_content": {
+        "pdf": true,
+        "grobid_xml": true
+      },
+      "content_urls": {
+        "pdf": "https://content.openalex.org/works/W2787560479.pdf",
+        "grobid_xml": "https://content.openalex.org/works/W2787560479.grobid-xml"
+      },
+      "license": "cc-by"
+    },
+    {
+      "id": "https://openalex.org/W2982399380",
+      "title": "BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension",
+      "has_content": {
+        "pdf": true,
+        "grobid_xml": true
+      },
+      "content_urls": {
+        "pdf": "https://content.openalex.org/works/W2982399380.pdf",
+        "grobid_xml": "https://content.openalex.org/works/W2982399380.grobid-xml"
+      },
+      "license": "cc-by"
+    },
+    {
+      "id": "https://openalex.org/W2911489562",
+      "title": "BioBERT: a pre-trained biomedical language representation model for biomedical text mining",
+      "has_content": {
+        "pdf": true,
+        "grobid_xml": true
+      },
+      "content_urls": {
+        "pdf": "https://content.openalex.org/works/W2911489562.pdf",
+        "grobid_xml": "https://content.openalex.org/works/W2911489562.grobid-xml"
+      },
+      "license": "cc-by"
+    }
+  ],
+  "raw_followup_sha256": "482683f34e3607d25b614806343787b5cf1c717c8c0adebda9026682d67be7c1"
+}
