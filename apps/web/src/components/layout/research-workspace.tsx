@@ -343,6 +343,7 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
               <CitationDetails
                 citation={citationGraph.selectedCitation}
                 papers={citationGraph.graph.papers}
+                isPreview={citationGraph.isPreview}
                 onClose={() => {
                   setCitationPopup(null);
                   citationGraph.clearSelection();

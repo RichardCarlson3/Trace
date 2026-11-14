@@ -8,6 +8,7 @@ import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from io import BytesIO
+from time import perf_counter
 from urllib.parse import urlsplit
 from xml.etree.ElementTree import ParseError
 
@@ -26,6 +27,7 @@ from app.schemas.citation_contexts import (
 )
 from app.schemas.contracts import normalize_work_id
 from app.services.citation_identifiers import normalize_identifier, work_identifiers
+from app.services.citation_timing import record_timing, timed, timing
 from app.services.openalex import retry_after_seconds
 from app.services.resource_cache import ResourceCache
 
@@ -267,6 +269,7 @@ class OpenAlexTEIService:
         self._gate = asyncio.Semaphore(2)
         self._blocked_until = 0.0
 
+    @timed("tei_http")
     async def _read(self, url, limit):
         if self._blocked_until > time.monotonic():
             raise TEIUnavailable("openalex_tei_cooldown")
@@ -289,6 +292,7 @@ class OpenAlexTEIService:
                     raise TEIUnavailable("tei_document_too_large")
             return bytes(data)
 
+    @timed("tei_metadata")
     async def _work(self, wid):
         async def load():
             try:
@@ -312,9 +316,11 @@ class OpenAlexTEIService:
             except (ValueError, KeyError, TypeError, AttributeError):
                 return Missing("openalex_tei_invalid_metadata")
 
-        value, _ = await self._metadata.get(
+        started = perf_counter()
+        value, reused = await self._metadata.get(
             wid, load, lifetime=lambda v: 300 if isinstance(v, Missing) else 86400
         )
+        record_timing("tei_metadata_cache", started, reused=reused)
         if isinstance(value, Missing):
             raise TEIUnavailable(value.reason)
         return value
@@ -328,17 +334,23 @@ class OpenAlexTEIService:
                     or (work.get("content_urls") or {}).get("grobid_xml") != url
                 ):
                     return Missing("openalex_tei_content_unavailable")
-                data = await self._read(url, MAX_XML_BYTES)
-                return await run_in_threadpool(parse_document, data, work)
+                with timing("tei_xml_retrieval"):
+                    data = await self._read(url, MAX_XML_BYTES)
+                with timing("tei_parse"):
+                    return await run_in_threadpool(parse_document, data, work)
             except TEIUnavailable as exc:
                 return Missing(str(exc))
             except httpx.HTTPError:
                 return Missing("openalex_tei_transport_error")
 
-        return await self._documents.get(
+        started = perf_counter()
+        value, reused = await self._documents.get(
             wid, load, lifetime=lambda v: 300 if isinstance(v, Missing) else 86400
         )
+        record_timing("tei_document_cache", started, reused=reused)
+        return value, reused
 
+    @timed("openalex_fallback")
     async def retrieve(self, pair: CitationPair):
         if not self.settings.openalex_tei_enabled:
             return None, "openalex_tei_disabled"
@@ -346,7 +358,9 @@ class OpenAlexTEIService:
             return None, "openalex_key_missing"
         try:
             async with asyncio.timeout(FALLBACK_TIMEOUT):
+                queued_at = perf_counter()
                 async with self._gate:
+                    record_timing("tei_queue", queued_at)
                     work = await self._work(pair.citing_paper_id)
                     references = {normalize_work_id(r) for r in work.get("referenced_works", [])}
                     if pair.cited_paper_id not in references:

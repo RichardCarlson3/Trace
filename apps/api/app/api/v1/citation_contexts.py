@@ -5,6 +5,7 @@ from starlette.concurrency import run_in_threadpool
 
 from app.schemas.citation_contexts import CitationContextRequest, CitationContexts, CitationPair
 from app.services.citation_contexts import classify_contexts
+from app.services.citation_timing import timed
 
 router = APIRouter(
     prefix="/citation-contexts",
@@ -24,6 +25,7 @@ async def retrieve_contexts(query: Annotated[CitationContextRequest, Query()], r
 
 
 @router.post("/classify", response_model=CitationContexts)
+@timed("classification_total")
 async def classify_pair(body: CitationContextRequest, request: Request):
     """Classify verified passages, trying Semantic Scholar then exact-identity OpenAlex TEI."""
     pair = CitationPair(citing_paper_id=body.citing_paper_id, cited_paper_id=body.cited_paper_id)
