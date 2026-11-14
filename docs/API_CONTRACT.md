@@ -13,6 +13,8 @@ Base URL `http://localhost:8000/api/v1`. JSON fields use snake_case. Runtime Ope
 | GET | `/papers/{id}/citations?limit=10&cursor=*` | Paginated incoming citations, IncomingCitationResponse |
 | GET | `/papers/{id}/neighbors?direction=both&limit=10&cursor=*` | Bounded graph expansion, NeighborResponse |
 | POST | `/classify` | 503 without artifact, Classification response when installed |
+| GET | `/citation-contexts` | Directed citation evidence, verified examples by default |
+| POST | `/citation-contexts/classify` | Retrieve evidence for one pair and explicitly classify available passages |
 | POST | `/graphs` | 501, validates intended save request |
 | GET | `/graphs` | 501, intended saved-graph summaries |
 | GET | `/graphs/{id}` | 501, intended saved snapshot, UUID path parameter |
@@ -410,6 +412,22 @@ Empty, whitespace-only, missing, oversized or incorrectly typed passages return 
 The application creates an inference service at startup and lazily loads `citation_pipeline.joblib` plus `model_metadata.json` on the first valid classification request. Loading uses `ml.artifacts.load_model`, including its exact sklearn-version check and artifact checksum. Successful loads are cached once per application process, with a lock coordinating concurrent first requests. Failed loads can retry on a later request after the artifact pair is restored. Restart each application process after replacing a successfully cached model.
 
 `MODEL_ARTIFACT_DIR` selects the trusted server-side artifact directory and defaults to `apps/api/artifacts`. Relative overrides resolve from `apps/api`. Backend startup, health and paper search work without artifacts or a database. Training remains an explicit developer command. See `apps/api/ml/README.md` for PowerShell startup, invocation, restoration and test commands.
+
+## Citation contexts
+
+`GET /citation-contexts` accepts query fields `citing_paper_id`, `cited_paper_id` and optional `mode` (`auto`, `examples`, `live`). `POST /citation-contexts/classify` accepts the same fields as JSON. IDs use the existing OpenAlex normalization. The citing ID is the source and the cited ID is the target. The interface accepts paper identities rather than caller-supplied passages.
+
+The result includes both canonical IDs, `status`, computed `available`, `origin`, `retrieved_at`, `evidence_urls`, verified `citing_mapping`/`cited_mapping`, nullable `relationship_found`, `reference_scan_complete`, `reason`, `observed_context_count` and `contexts`.
+
+Each context has `context_text`, `source="semantic_scholar"`, `source_url`, `source_url_scope="paper"`, nullable `classification` and nullable `classification_unavailable_reason`. The classification object uses the existing intent/score/model-version fields. Retrieval produces empty classification fields. Explicit classification runs only on verified retrieved evidence. Oversized contexts remain available with an explicit unclassified reason.
+
+Statuses distinguish `available`, `no_context`, `relationship_not_found`, `unresolved_identifiers`, `incomplete`, `provider_unavailable` and `example_not_found`. A provider failure or missing passage does not establish that a scientific citation is absent. Origins distinguish `live`, `memory_cache`, `verified_example` and `unavailable`. Recorded examples contain a representative passage and the full observed source count.
+
+Live Semantic Scholar access is disabled by default. `auto` uses fresh cached evidence or a verified example before considering an enabled live provider. It reports source failures as `provider_unavailable` with a reason code. `examples` performs no provider HTTP requests. `live` excludes recorded examples and bypasses the final relationship cache, but now reuses fresh provider mapping/reference caches to conserve the approved quota. This changes the earlier cache-bypass behavior without changing request or response shapes. A reused reference response reports `origin="memory_cache"` and preserves its capture timestamp, even if resolving a new target required a live metadata call. Mixed cached/fresh reference pages report `live`, with the oldest page capture time. `live` returns HTTP 503 when disabled, rate limited or its bounded queue is busy, and HTTP 502 for transport/protocol failures. Invalid input returns HTTP 422. Missing model artifacts affect explicit classification with HTTP 503.
+
+All Semantic Scholar endpoints share one scheduler per lifespan service, with at least 1.5 seconds between request starts, adaptive slowdown after HTTP 429, bounded retries and a shared `Retry-After` cooldown. The supported hackathon deployment is exactly one backend worker and one instance per API key. See [citation retrieval operations](CITATION_CONTEXTS.md) for cache lifetimes, deployment restrictions and live verification.
+
+See [citation-context configuration, examples and graph integration](CITATION_CONTEXTS.md) for PowerShell commands, mapping details, source limitations and the three real verified demo relationships.
 
 ## Intended graph persistence
 
