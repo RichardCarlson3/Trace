@@ -86,9 +86,87 @@ export function graphDistances(
 }
 
 export function paperSize(distance: number | undefined): number {
-  if (distance === 0) return 204;
-  if (distance === 1) return 154;
-  if (distance === 2) return 126;
-  if (distance === 3) return 108;
-  return 92;
+  if (distance === 0) return 208;
+  return Math.max(96, 182 - Math.min(distance ?? 5, 5) * 18);
+}
+
+export interface PositionedCircle {
+  id: string;
+  x: number;
+  y: number;
+  size: number;
+}
+
+export function spaceCircles(
+  circles: PositionedCircle[],
+  pinnedId: string | null,
+  gap = 26,
+): Map<string, { x: number; y: number }> {
+  const placed = circles.map((circle) => ({
+    ...circle,
+    cx: circle.x + circle.size / 2,
+    cy: circle.y + circle.size / 2,
+  }));
+  for (let pass = 0; pass < 64; pass += 1) {
+    let collided = false;
+    for (let i = 0; i < placed.length; i += 1) {
+      for (let j = i + 1; j < placed.length; j += 1) {
+        const a = placed[i];
+        const b = placed[j];
+        let dx = b.cx - a.cx;
+        let dy = b.cy - a.cy;
+        let distance = Math.hypot(dx, dy);
+        const minimum = (a.size + b.size) / 2 + gap;
+        if (distance >= minimum - 0.1) continue;
+        collided = true;
+        if (distance < 0.001) {
+          const angle = (i * 17 + j * 31) * 2.39996;
+          dx = Math.cos(angle);
+          dy = Math.sin(angle);
+          distance = 1;
+        }
+        const push = minimum - distance;
+        const aWeight = a.id === pinnedId ? 0 : b.id === pinnedId ? 1 : 0.5;
+        const bWeight = b.id === pinnedId ? 0 : a.id === pinnedId ? 1 : 0.5;
+        a.cx -= (dx / distance) * push * aWeight;
+        a.cy -= (dy / distance) * push * aWeight;
+        b.cx += (dx / distance) * push * bWeight;
+        b.cy += (dy / distance) * push * bWeight;
+      }
+    }
+    if (!collided) break;
+  }
+  return new Map(
+    placed.map((circle) => [
+      circle.id,
+      { x: circle.cx - circle.size / 2, y: circle.cy - circle.size / 2 },
+    ]),
+  );
+}
+
+export function gravityLayout(
+  circles: PositionedCircle[],
+  focusId: string | null,
+  distances: Map<string, number>,
+  pinnedId: string | null = focusId,
+): Map<string, { x: number; y: number }> {
+  const focus = circles.find((circle) => circle.id === focusId);
+  if (!focus) return spaceCircles(circles, pinnedId);
+  const focusX = focus.x + focus.size / 2;
+  const focusY = focus.y + focus.size / 2;
+  const pulled = circles.map((circle) => {
+    if (circle.id === pinnedId || circle.id === focusId) return circle;
+    const depth = distances.get(circle.id) ?? 4;
+    const strength = Math.max(0.04, 0.16 - depth * 0.03);
+    const centerX = circle.x + circle.size / 2;
+    const centerY = circle.y + circle.size / 2;
+    const radius = Math.hypot(centerX - focusX, centerY - focusY);
+    const fraction = Math.min(strength, 105 / Math.max(radius, 1));
+    return {
+      ...circle,
+      x: circle.x - (centerX - focusX) * fraction,
+      y: circle.y - (centerY - focusY) * fraction,
+    };
+  });
+  return spaceCircles(pulled, pinnedId);
 }
