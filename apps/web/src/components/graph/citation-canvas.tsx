@@ -254,7 +254,7 @@ export function CitationCanvas({
       ? { graph: visibleGraph, focusId }
       : null,
   );
-  const animateLayout = useCallback(
+  const settleOverlaps = useCallback(
     (source: PaperNode[], pinnedId: string | null = focusId) => {
       if (animation.current !== null) cancelAnimationFrame(animation.current);
       const circles = source
@@ -321,8 +321,8 @@ export function CitationCanvas({
         return;
       restoredView.current = null;
     }
-    if (nodes.length > 1) animateLayout(nodesRef.current);
-  }, [animateLayout, nodes.length, visibleGraph, focusId]);
+    if (nodes.length > 1) settleOverlaps(nodesRef.current);
+  }, [settleOverlaps, nodes.length, visibleGraph, focusId]);
 
   useEffect(
     () => () => {

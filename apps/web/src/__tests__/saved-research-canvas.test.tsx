@@ -6,12 +6,6 @@ import {
   type CitationCanvasHandle,
 } from "@/components/graph/citation-canvas";
 import { previewInitialGraph } from "@/lib/preview-graph";
-import { gravityLayout } from "@/lib/graph-focus";
-
-vi.mock("@/lib/graph-focus", async (importOriginal) => {
-  const original = await importOriginal<typeof import("@/lib/graph-focus")>();
-  return { ...original, gravityLayout: vi.fn(original.gravityLayout) };
-});
 
 vi.mock("@/components/graph/ambient-links", () => ({
   AmbientLinks: () => null,
@@ -57,7 +51,6 @@ describe("actual React Flow canvas", () => {
     expect(document.querySelector('[data-id="W1"]')).toHaveStyle({
       transform: "translate(120px,-60px)",
     });
-    expect(gravityLayout).not.toHaveBeenCalled();
     rerender(
       <CitationCanvas
         ref={canvas}
@@ -74,6 +67,8 @@ describe("actual React Flow canvas", () => {
         onClearSelection={() => {}}
       />,
     );
-    await waitFor(() => expect(gravityLayout).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(canvas.current?.getLayout().positions).toEqual(layout.positions),
+    );
   });
 });
