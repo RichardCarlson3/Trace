@@ -82,14 +82,14 @@ def test_deduplicates_references_records_and_self_links(client, reference_provid
     responses, calls = reference_provider
     responses.extend(
         [
-            seed("W123", "W100", "https://openalex.org/W100", "W200"),
+            seed("W123", "W100", "https://openalex.org/W100", "W200", "W300", "W400"),
             batch("W100", "W100", "W200", "W999"),
         ]
     )
     data = client.get("/api/v1/papers/W123/references").json()
     assert len(data["papers"]) == 3
     assert len(data["citations"]) == 2
-    assert calls[1].url.params["filter"] == "ids.openalex:W100|W200"
+    assert calls[1].url.params["filter"] == "ids.openalex:W100|W200|W300|W400"
 
 
 def test_bounded_offset_pages(client, reference_provider):
@@ -148,7 +148,7 @@ def test_partial_batch_reports_unresolved_and_advances_by_slice(client, referenc
     responses, _ = reference_provider
     responses.extend(
         [
-            seed("W100", "W200", "W300", "W400"),
+            seed("W100", "W200", "W300", "W400", "W500"),
             httpx.Response(
                 200,
                 json={
@@ -162,11 +162,11 @@ def test_partial_batch_reports_unresolved_and_advances_by_slice(client, referenc
             ),
         ]
     )
-    data = client.get("/api/v1/papers/W123/references?limit=3").json()
+    data = client.get("/api/v1/papers/W123/references?limit=4").json()
     assert [paper["id"] for paper in data["papers"]] == ["W123", "W100"]
     assert len(data["citations"]) == 1
-    assert data["unresolved_reference_ids"] == ["W200", "W300"]
-    assert data["next_offset"] == 3
+    assert data["unresolved_reference_ids"] == ["W200", "W300", "W400"]
+    assert data["next_offset"] == 4
     assert data["has_more"] is True
 
 

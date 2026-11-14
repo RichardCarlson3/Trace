@@ -1,4 +1,7 @@
 import asyncio
+import math
+from datetime import UTC, datetime
+from email.utils import parsedate_to_datetime
 
 import httpx
 
@@ -15,6 +18,28 @@ from app.schemas.contracts import (
     normalize_work_id,
 )
 from app.services.neighbor_cursor import Direction, NeighborCursor
+
+MAX_ATTEMPTS = 3
+REQUEST_TIMEOUT_SECONDS = 10.0
+MAX_RETRY_WAIT_SECONDS = 2.0
+MAX_BASIC_RESULTS = 10_000
+
+
+def retry_after_seconds(value: str | None) -> float | None:
+    """Read delta-seconds or an HTTP date; invalid headers use normal backoff."""
+    if value is None:
+        return None
+    try:
+        seconds = float(value)
+    except ValueError:
+        try:
+            date = parsedate_to_datetime(value)
+            if date.tzinfo is None:
+                date = date.replace(tzinfo=UTC)
+            seconds = (date - datetime.now(UTC)).total_seconds()
+        except (ValueError, TypeError, OverflowError):
+            return None
+    return max(0.0, seconds) if math.isfinite(seconds) else None
 
 
 def normalize_paper(work: dict) -> Paper:
@@ -50,11 +75,20 @@ class OpenAlexService:
         self.settings = settings
 
     async def search(self, query: str, page: int, per_page: int) -> SearchResponse:
+        if not 1 <= per_page <= 25 or page < 1 or page * per_page > MAX_BASIC_RESULTS:
+            raise ServiceError(
+                422,
+                "validation_error",
+                "Search requires per_page 1–25 and page × per_page no greater than 10000",
+            )
         params = {"search": query, "page": page, "per-page": per_page}
         payload = await self._get_json("/works", params=params)
         try:
+            results = payload["results"]
+            if not isinstance(results, list) or len(results) > per_page:
+                raise ValueError("Invalid search page size")
             return SearchResponse(
-                papers=[normalize_paper(work) for work in payload["results"]],
+                papers=[normalize_paper(work) for work in results],
                 total=payload["meta"]["count"],
                 page=page,
                 per_page=per_page,
@@ -113,7 +147,7 @@ class OpenAlexService:
                 params={"filter": f"ids.openalex:{'|'.join(selected)}", "per_page": len(selected)},
             )
             results = payload.get("results")
-            if not isinstance(results, list):
+            if not isinstance(results, list) or len(results) > len(selected):
                 raise self._invalid_response()
             # A partial batch must never produce invented nodes or dangling edges.
             requested = set(selected)
@@ -232,23 +266,41 @@ class OpenAlexService:
                 outgoing_limit = (limit + 1) // 2
                 incoming_limit = limit // 2
 
-        pages = []
+        requests = []
         unresolved = []
         skipped = 0
         if outgoing_limit:
-            outgoing = await self._references_for_seed(
-                work, limit=outgoing_limit, offset=state.outgoing_offset
+            requests.append(
+                asyncio.create_task(
+                    self._references_for_seed(
+                        work, limit=outgoing_limit, offset=state.outgoing_offset
+                    )
+                )
             )
-            state.outgoing_offset = outgoing.next_offset
-            unresolved = outgoing.unresolved_reference_ids
-            pages.append(outgoing)
         if incoming_limit:
-            incoming = await self._citations_for_seed(
-                seed, limit=incoming_limit, cursor=state.incoming_cursor
+            requests.append(
+                asyncio.create_task(
+                    self._citations_for_seed(
+                        seed, limit=incoming_limit, cursor=state.incoming_cursor
+                    )
+                )
             )
-            state.incoming_cursor = incoming.next_cursor
-            skipped = incoming.skipped_record_count
-            pages.append(incoming)
+        try:
+            pages = await asyncio.gather(*requests)
+        finally:
+            # Fail atomically and stop sibling I/O if either direction fails or the caller cancels.
+            for request in requests:
+                if not request.done():
+                    request.cancel()
+            await asyncio.gather(*requests, return_exceptions=True)
+
+        for page in pages:
+            if isinstance(page, ReferenceResponse):
+                state.outgoing_offset = page.next_offset
+                unresolved = page.unresolved_reference_ids
+            else:
+                state.incoming_cursor = page.next_cursor
+                skipped = page.skipped_record_count
 
         papers = {seed.id: seed}
         citations = {}
@@ -283,24 +335,28 @@ class OpenAlexService:
         headers = {}
         if self.settings.openalex_api_key:
             headers["Authorization"] = f"Bearer {self.settings.openalex_api_key}"
-        for attempt in range(3):
+        for attempt in range(MAX_ATTEMPTS):
             try:
-                response = await self.client.get(
-                    f"{self.settings.openalex_base_url.rstrip('/')}{path}",
-                    params=params,
-                    headers=headers,
-                    timeout=10.0,
-                )
-            except httpx.TransportError:
-                if attempt < 2:
+                async with asyncio.timeout(REQUEST_TIMEOUT_SECONDS):
+                    response = await self.client.get(
+                        f"{self.settings.openalex_base_url.rstrip('/')}{path}",
+                        params=params,
+                        headers=headers,
+                        timeout=REQUEST_TIMEOUT_SECONDS,
+                    )
+            except (httpx.TransportError, TimeoutError):
+                if attempt < MAX_ATTEMPTS - 1:
                     await asyncio.sleep(0.25 * 2**attempt)
                     continue
                 raise ServiceError(
                     502, "openalex_unavailable", "OpenAlex could not be reached"
                 ) from None
             if response.status_code == 429 or response.status_code >= 500:
-                if attempt < 2:
-                    await asyncio.sleep(0.25 * 2**attempt)
+                delay = max(
+                    0.25 * 2**attempt, retry_after_seconds(response.headers.get("Retry-After")) or 0
+                )
+                if attempt < MAX_ATTEMPTS - 1 and delay <= MAX_RETRY_WAIT_SECONDS:
+                    await asyncio.sleep(delay)
                     continue
                 raise ServiceError(
                     503, "openalex_unavailable", "OpenAlex is busy. Try again shortly."

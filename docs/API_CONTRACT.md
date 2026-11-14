@@ -17,7 +17,7 @@ Base URL `http://localhost:8000/api/v1`. JSON fields use snake_case. Runtime Ope
 | GET | `/graphs` | 501, intended saved-graph summaries |
 | GET | `/graphs/{id}` | 501, intended saved snapshot, UUID path parameter |
 
-Paper path IDs use normalized `W` plus digits. Input schemas also normalize full `https://openalex.org/W...` IDs. Search requires a nonblank query of at most 300 characters, page at least 1 and per_page between 1 and 25. Search matches title/keyword/DOI text through the provider's search parameter.
+Paper path IDs use normalized `W` plus digits. Input schemas also normalize full `https://openalex.org/W...` IDs. Search requires a nonblank query of at most 300 characters, page at least 1, per_page between 1 and 25, and `page * per_page <= 10000`. Search matches title/keyword/DOI text through the provider's search parameter.
 
 ## Health
 
@@ -60,8 +60,11 @@ An invalid path ID returns 422 `validation_error` without contacting OpenAlex. A
 returns 404 `paper_not_found`. Invalid JSON/metadata returns 502 `openalex_invalid_response`;
 other rejected requests return 502 `openalex_error`. Transport failures return 502
 `openalex_unavailable` after retries. Rate limits and upstream 5xx responses return 503
-`openalex_unavailable` after retries. Requests use a 10-second timeout per network operation
-and at most three attempts, with 0.25- and 0.5-second backoffs. Keys remain backend-only.
+`openalex_unavailable` after retries (or immediately when the provider requests a long wait).
+Each network attempt has both a 10-second HTTPX operation timeout and a 10-second absolute
+deadline. There are at most three attempts, with 0.25- and 0.5-second minimum backoffs.
+For 429/5xx responses, `Retry-After` may lengthen these waits up to two seconds; a longer
+requested wait fails fast with 503 instead of retrying early. Keys remain backend-only.
 
 The endpoint needs neither PostgreSQL nor a model artifact. For an optional live check,
 start `npm run dev` from the root, then run:
@@ -115,7 +118,8 @@ were available from this provider response, not proof that the paper has no bibl
 Missing metadata records (including merged IDs that the batch does not return under the
 requested ID) and malformed batch records are omitted and reported in `unresolved_reference_ids`.
 Unrequested batch IDs are ignored; no relationship is inferred from them. An invalid batch
-envelope or seed/reference list returns 502 `openalex_invalid_response`. A missing seed returns
+envelope, batch larger than its requested size, or invalid seed/reference list returns 502
+`openalex_invalid_response`. A missing seed returns
 404 `paper_not_found`. Whole-request provider failures use the same errors as paper details,
 not a misleading successful empty graph.
 
@@ -249,7 +253,8 @@ Tokens contain pagination state only, with no credentials. They are stateless en
 authentication or authorization. Do not edit them. Start again with `*` to change the query.
 
 Each call fetches the seed exactly once, followed by at most one outgoing metadata batch and
-one incoming page, excluding retries. There is no recursive expansion, per-reference fetch,
+one incoming page, excluding retries. When both directions have work, these two requests run
+concurrently. There is no recursive expansion, per-reference fetch,
 database access, or persistent graph mutation. Existing provider timeout/retry, partial-record,
 missing-seed, and API-key rules still apply. If either requested direction fails, the entire
 request returns a structured error; callers can safely retry the same token. OpenAlex updates
@@ -271,6 +276,56 @@ edges while both sides remain active, with at most seven unique papers. Check th
 edge includes the seed, uses citing-to-cited direction, and has null classification fields.
 Invalid `direction=sideways` and `limit=51` should return 422. This adds backend expansion;
 the frontend canvas does not yet call it.
+
+## Pagination and performance policy (Task 5)
+
+The public response shapes and neighbors token format are unchanged. Limits remain
+conservative: up to 50 neighbors per request (combined across directions), one bounded
+outgoing bulk query, and one incoming cursor page. These are below OpenAlex's supported
+100-record page and bulk-ID limits. References use local offsets over the deduplicated
+`referenced_works` list; they are not presented as a provider cursor. Search uses basic
+pages and rejects `page * per_page > 10000` with 422 before provider I/O. Incoming citations
+use cursor paging instead, including beyond the basic paging window.
+
+After the single seed fetch, active incoming/outgoing neighbor operations run concurrently,
+without changing their page budgets or result order. If either direction fails, the sibling
+operation is cancelled and awaited before returning the error. Cancelling the service call
+also cancels/awaits both children. There are no background refill or traversal requests.
+
+Every provider attempt has a 10-second absolute network deadline in addition to HTTPX's
+per-operation timeouts. Stalled attempts are cancelled and follow the same bounded transport
+retry path (three total attempts, ending in 502 `openalex_unavailable`). Caller cancellation
+propagates; it is not retried as a transport failure. This is a per-attempt limit, not a
+10-second overall endpoint deadline: multiple attempts and the sequential seed phase can
+take longer. With waits capped at two seconds and three attempts, a provider operation has
+at most 34 seconds of network/wait budget; a seed plus its concurrent neighbor phase has at
+most 68 seconds, excluding local scheduling and normalization.
+
+For HTTP 429 and 5xx responses, retry delays are the larger of the normal exponential
+backoff (0.25 then 0.5 seconds) and the provider's `Retry-After`. Both delta-seconds and HTTP
+dates are accepted. Past dates/negative delays become zero; malformed or non-finite headers
+fall back to normal backoff. If the required delay exceeds two seconds, return the existing
+503 `openalex_unavailable` immediately: do not sleep for a long rate-limit reset or retry
+before it. The final failed attempt never sleeps or issues another request. Permanent
+4xx errors are not retried. No global rate limiter or persistent cache is introduced.
+
+Search pages, outgoing batches, and incoming pages larger than their requested size return
+502 `openalex_invalid_response`, rather than processing arbitrary oversized lists. Within
+valid batches, existing partial-response behavior is retained: skip/report malformed or
+unresolved metadata, deduplicate, consume the selected slice, and never invent nodes or
+create dangling edges. A whole direction failing remains an error, not a partial success.
+
+Offline tests in `test_pagination_performance.py` cover Retry-After parsing and bounded
+waits, hard timeout cancellation, the search paging boundary, oversized pages, concurrent
+neighbor operations, and sibling/caller cancellation. Existing relationship tests cover
+complete traversal, slice/cursor progress, total limits, deduplication, and missing records.
+Manual smoke checks remain the two-page examples in the preceding sections. To verify the
+basic-search guard without a large download, request
+`/papers/search?q=test&page=401&per_page=25` and expect 422.
+
+Provider references: [paging limits](https://help.openalex.org/api/paging/),
+[bulk-ID retrieval](https://help.openalex.org/api/get-single-entities/), and
+[rate-limit guidance](https://help.openalex.org/api/errors/).
 
 ## Citation and graph
 
