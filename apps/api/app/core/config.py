@@ -15,7 +15,10 @@ class Settings(BaseSettings):
     api_port: int = Field(default=8000, ge=1, le=65535)
     cors_origins: str = "http://localhost:3000"
     openalex_base_url: str = "https://api.openalex.org"
-    openalex_api_key: str = ""
+    openalex_api_key: str = Field(default="", repr=False)
+    semantic_scholar_base_url: str = "https://api.semanticscholar.org/graph/v1"
+    semantic_scholar_api_key: str = Field(default="", repr=False)
+    semantic_scholar_enabled: bool = False
     database_url: str = ""
     model_artifact_dir: Path = API_ROOT / "artifacts"
 

@@ -1,0 +1,164 @@
+{
+  "format_version": 1,
+  "verified_at": "2026-11-14T08:50:00.605298+00:00",
+  "verification_method": "Successful live responses captured during Milestone 3, with identifier and relationship verification replayed through the service",
+  "attribution": {
+    "citing_paper": "SciBERT: A Pretrained Language Model for Scientific Text",
+    "authors": [
+      "Iz Beltagy",
+      "Kyle Lo",
+      "Arman Cohan"
+    ],
+    "publication_url": "https://aclanthology.org/D19-1371/",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "captures": [
+    {
+      "filename": "openalex-demo-mappings.json",
+      "sha256": "f7f16d3c055e1375b8573582a11d8a700c271c5d72af5f5e03a8f36f07341f83",
+      "captured_at": "2026-11-14T08:34:17.162787+00:00"
+    },
+    {
+      "filename": "openalex-attention-adam.json",
+      "sha256": "2d2135b4fdca3d0317b103e0a9f755f30e0d153c5a7cb15092d709d7ecdba7fc",
+      "captured_at": "2026-11-14T08:39:17.549876+00:00"
+    },
+    {
+      "filename": "semantic-demo-mappings.json",
+      "sha256": "4f05a05a556b82f11b64faacb7ea7bb8c69f2c45528e91781ca19de870a5a56c",
+      "captured_at": "2026-11-14T08:37:34.543915+00:00"
+    },
+    {
+      "filename": "scibert-references-response.json",
+      "sha256": "57add39b0f9d009f267744935d2893f85a9bd52dab2c6298a83c036e2eaa353b",
+      "captured_at": "2026-11-14T08:31:59.549867+00:00"
+    }
+  ],
+  "selection": "First returned nonblank passage per verified pair; observed_context_count records the full source count.",
+  "examples": [
+    {
+      "citing_paper_id": "W2970771982",
+      "cited_paper_id": "W2963341956",
+      "status": "available",
+      "source": "semantic_scholar",
+      "origin": "verified_example",
+      "retrieved_at": "2026-11-14T08:31:59.549867Z",
+      "evidence_urls": [
+        "https://api.semanticscholar.org/graph/v1/paper/DOI:10.18653/v1/D19-1371/references?fields=contexts%2Ctitle%2CexternalIds%2Curl&limit=100"
+      ],
+      "observed_context_count": 7,
+      "citing_mapping": {
+        "openalex_id": "W2970771982",
+        "title": "SciBERT: A Pretrained Language Model for Scientific Text",
+        "doi": "10.18653/v1/d19-1371",
+        "semantic_scholar_paper_id": "156d217b0a911af97fa1b5a71dc909ccef7a8028",
+        "verified": true,
+        "reason": null
+      },
+      "cited_mapping": {
+        "openalex_id": "W2963341956",
+        "title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+        "doi": "10.18653/v1/n19-1423",
+        "semantic_scholar_paper_id": "df2b0e26d0599ce3e70df8a9da02e51594e0e992",
+        "verified": true,
+        "reason": null
+      },
+      "relationship_found": true,
+      "reference_scan_complete": true,
+      "reason": null,
+      "contexts": [
+        {
+          "context_text": "3617 Casing We follow Devlin et al. (2019) in using the cased models for NER and the uncased models for all other tasks.",
+          "source": "semantic_scholar",
+          "source_url": "https://www.semanticscholar.org/paper/156d217b0a911af97fa1b5a71dc909ccef7a8028",
+          "source_url_scope": "paper",
+          "classification": null,
+          "classification_unavailable_reason": null
+        }
+      ]
+    },
+    {
+      "citing_paper_id": "W2970771982",
+      "cited_paper_id": "W2626778328",
+      "status": "available",
+      "source": "semantic_scholar",
+      "origin": "verified_example",
+      "retrieved_at": "2026-11-14T08:31:59.549867Z",
+      "evidence_urls": [
+        "https://api.semanticscholar.org/graph/v1/paper/DOI:10.18653/v1/D19-1371/references?fields=contexts%2Ctitle%2CexternalIds%2Curl&limit=100"
+      ],
+      "observed_context_count": 1,
+      "citing_mapping": {
+        "openalex_id": "W2970771982",
+        "title": "SciBERT: A Pretrained Language Model for Scientific Text",
+        "doi": "10.18653/v1/d19-1371",
+        "semantic_scholar_paper_id": "156d217b0a911af97fa1b5a71dc909ccef7a8028",
+        "verified": true,
+        "reason": null
+      },
+      "cited_mapping": {
+        "openalex_id": "W2626778328",
+        "title": "Attention Is All You Need",
+        "doi": "10.48550/arxiv.1706.03762",
+        "semantic_scholar_paper_id": "204e3073870fae3d05bcbc2f6a8e263d9b72e776",
+        "verified": true,
+        "reason": null
+      },
+      "relationship_found": true,
+      "reference_scan_complete": true,
+      "reason": null,
+      "contexts": [
+        {
+          "context_text": "Background The B ERT model architecture (De-vlin et al., 2019) is based on a multilayer bidirectional Transformer (Vaswani et al., 2017).",
+          "source": "semantic_scholar",
+          "source_url": "https://www.semanticscholar.org/paper/156d217b0a911af97fa1b5a71dc909ccef7a8028",
+          "source_url_scope": "paper",
+          "classification": null,
+          "classification_unavailable_reason": null
+        }
+      ]
+    },
+    {
+      "citing_paper_id": "W2970771982",
+      "cited_paper_id": "W1522301498",
+      "status": "available",
+      "source": "semantic_scholar",
+      "origin": "verified_example",
+      "retrieved_at": "2026-11-14T08:31:59.549867Z",
+      "evidence_urls": [
+        "https://api.semanticscholar.org/graph/v1/paper/DOI:10.18653/v1/D19-1371/references?fields=contexts%2Ctitle%2CexternalIds%2Curl&limit=100"
+      ],
+      "observed_context_count": 2,
+      "citing_mapping": {
+        "openalex_id": "W2970771982",
+        "title": "SciBERT: A Pretrained Language Model for Scientific Text",
+        "doi": "10.18653/v1/d19-1371",
+        "semantic_scholar_paper_id": "156d217b0a911af97fa1b5a71dc909ccef7a8028",
+        "verified": true,
+        "reason": null
+      },
+      "cited_mapping": {
+        "openalex_id": "W1522301498",
+        "title": "Adam: A Method for Stochastic Optimization",
+        "doi": "10.48550/arxiv.1412.6980",
+        "semantic_scholar_paper_id": "cf5cf758f1b00214d70e34f8a57813557dc03e17",
+        "verified": true,
+        "reason": null
+      },
+      "relationship_found": true,
+      "reference_scan_complete": true,
+      "reason": null,
+      "contexts": [
+        {
+          "context_text": "We optimize cross entropy loss using Adam, but holding B ERT weights frozen and applying a dropout of 0.5.",
+          "source": "semantic_scholar",
+          "source_url": "https://www.semanticscholar.org/paper/156d217b0a911af97fa1b5a71dc909ccef7a8028",
+          "source_url_scope": "paper",
+          "classification": null,
+          "classification_unavailable_reason": null
+        }
+      ]
+    }
+  ]
+}
