@@ -30,6 +30,11 @@ class Paper(Contract):
     _normalize_id = field_validator("id")(normalize_work_id)
 
 
+class PaperDetails(Paper):
+    publication_venue: str | None = None
+    reference_count: int | None = Field(default=None, ge=0)
+
+
 class Citation(Contract):
     """source is the citing work, target is the cited work. B cites A means B -> A."""
 
@@ -66,6 +71,23 @@ class Graph(Contract):
         if any(edge.source not in ids or edge.target not in ids for edge in self.citations):
             raise ValueError("Citation endpoints must reference graph papers")
         return self
+
+
+class RelationshipResponse(Graph):
+    seed_paper_id: str
+    has_more: bool = False
+
+    _normalize_seed = field_validator("seed_paper_id")(normalize_work_id)
+
+
+class ReferenceResponse(RelationshipResponse):
+    next_offset: int | None = Field(default=None, ge=0)
+    unresolved_reference_ids: list[str] = Field(default_factory=list)
+
+
+class IncomingCitationResponse(RelationshipResponse):
+    next_cursor: str | None = None
+    skipped_record_count: int = Field(default=0, ge=0)
 
 
 class SearchResponse(Contract):
