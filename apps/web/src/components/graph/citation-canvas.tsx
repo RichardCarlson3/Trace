@@ -17,12 +17,7 @@ import {
   type ReactFlowInstance,
 } from "@xyflow/react";
 import { AmbientLinks } from "./ambient-links";
-import {
-  graphDistances,
-  gravityLayout,
-  paperSize,
-  spaceCircles,
-} from "@/lib/graph-focus";
+import { graphDistances, paperSize, spaceCircles } from "@/lib/graph-focus";
 import type { Graph, Paper } from "@/lib/types";
 
 type PaperNodeData = { paper: Paper };
@@ -217,7 +212,7 @@ export function CitationCanvas({
     () => graphDistances(visibleGraph, focusId),
     [visibleGraph, focusId],
   );
-  const animateLayout = useCallback(
+  const settleOverlaps = useCallback(
     (source: PaperNode[], pinnedId: string | null = focusId) => {
       if (animation.current !== null) cancelAnimationFrame(animation.current);
       const circles = source
@@ -229,8 +224,19 @@ export function CitationCanvas({
           size: paperSize(distances.get(node.id)),
         }));
       if (circles.length < 2) return;
-      const targets = gravityLayout(circles, focusId, distances, pinnedId);
+      const targets = spaceCircles(circles, pinnedId);
       const start = new Map(source.map((node) => [node.id, node.position]));
+      if (
+        circles.every((circle) => {
+          const target = targets.get(circle.id);
+          return (
+            target &&
+            Math.abs(target.x - circle.x) < 0.1 &&
+            Math.abs(target.y - circle.y) < 0.1
+          );
+        })
+      )
+        return;
       const reducedMotion = window.matchMedia?.(
         "(prefers-reduced-motion: reduce)",
       ).matches;
@@ -265,8 +271,8 @@ export function CitationCanvas({
   );
 
   useEffect(() => {
-    if (nodes.length > 1) animateLayout(nodesRef.current);
-  }, [animateLayout, nodes.length]);
+    if (nodes.length > 1) settleOverlaps(nodesRef.current);
+  }, [settleOverlaps, nodes.length]);
 
   useEffect(
     () => () => {
@@ -366,7 +372,7 @@ export function CitationCanvas({
           const settled = nodesRef.current.map((item) =>
             item.id === node.id ? { ...item, position: node.position } : item,
           );
-          animateLayout(settled, node.id);
+          settleOverlaps(settled, node.id);
         }}
         onInit={setInstance}
         onNodeClick={(_, node) => onSelectPaper(node.id)}

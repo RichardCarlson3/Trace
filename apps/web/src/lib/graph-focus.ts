@@ -143,30 +143,3 @@ export function spaceCircles(
     ]),
   );
 }
-
-export function gravityLayout(
-  circles: PositionedCircle[],
-  focusId: string | null,
-  distances: Map<string, number>,
-  pinnedId: string | null = focusId,
-): Map<string, { x: number; y: number }> {
-  const focus = circles.find((circle) => circle.id === focusId);
-  if (!focus) return spaceCircles(circles, pinnedId);
-  const focusX = focus.x + focus.size / 2;
-  const focusY = focus.y + focus.size / 2;
-  const pulled = circles.map((circle) => {
-    if (circle.id === pinnedId || circle.id === focusId) return circle;
-    const depth = distances.get(circle.id) ?? 4;
-    const strength = Math.max(0.04, 0.16 - depth * 0.03);
-    const centerX = circle.x + circle.size / 2;
-    const centerY = circle.y + circle.size / 2;
-    const radius = Math.hypot(centerX - focusX, centerY - focusY);
-    const fraction = Math.min(strength, 105 / Math.max(radius, 1));
-    return {
-      ...circle,
-      x: circle.x - (centerX - focusX) * fraction,
-      y: circle.y - (centerY - focusY) * fraction,
-    };
-  });
-  return spaceCircles(pulled, pinnedId);
-}

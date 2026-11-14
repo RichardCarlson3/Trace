@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   graphDistances,
-  gravityLayout,
   paperSize,
   spaceCircles,
   visibleExpansionGraph,
@@ -63,16 +62,16 @@ describe("graph focus and branch visibility", () => {
     ).toEqual([146, 164, 208, 164]);
   });
 
-  it("pulls related papers inward while keeping the focused paper fixed", () => {
+  it("keeps spaced papers in place when the focused paper changes", () => {
     const circles = [
       { id: "W1", x: 0, y: 0, size: 208 },
       { id: "W2", x: 460, y: 0, size: 164 },
       { id: "W3", x: 900, y: 0, size: 146 },
     ];
-    const positions = gravityLayout(circles, "W1", graphDistances(graph, "W1"));
+    const positions = spaceCircles(circles, "W1");
     expect(positions.get("W1")).toEqual({ x: 0, y: 0 });
-    expect(positions.get("W2")!.x).toBeLessThan(460);
-    expect(positions.get("W3")!.x).toBeLessThan(900);
+    expect(positions.get("W2")).toEqual({ x: 460, y: 0 });
+    expect(positions.get("W3")).toEqual({ x: 900, y: 0 });
   });
 
   it("separates colliding circles and preserves the dragged node", () => {
