@@ -66,18 +66,21 @@ export function PaperDetails({
             <h3>Explore from this paper</h3>
             {(["references", "citations"] as const).map((direction) => {
               const key = `${paper.id}:${direction}`;
-              const done = expanded.has(key);
+              const shown = expanded.has(key);
               return (
                 <button
                   key={direction}
                   className="secondary-button"
                   onClick={() => onExpand(paper.id, direction)}
-                  disabled={Boolean(expanding) || done}
+                  disabled={Boolean(expanding)}
+                  aria-pressed={shown}
                 >
                   {expanding === key
                     ? "Growing connections…"
-                    : done
-                      ? `${direction === "references" ? "References" : "Citing papers"} loaded`
+                    : shown
+                      ? direction === "references"
+                        ? "Hide references"
+                        : "Hide citing papers"
                       : direction === "references"
                         ? "Show references"
                         : "Show citing papers"}

@@ -19,6 +19,10 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
   const [linkError, setLinkError] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(true);
+  const [citationPopup, setCitationPopup] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const [direction, setDirection] = useState<DirectionFilter>("all");
   const [yearFrom, setYearFrom] = useState("");
   const [yearTo, setYearTo] = useState("");
@@ -30,19 +34,26 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
   const visibleGraph = useMemo(
     () =>
       filteredGraph(
-        citationGraph.graph,
+        citationGraph.visibleGraph,
         citationGraph.seed?.id ?? null,
         direction,
         yearFrom,
         yearTo,
       ),
-    [citationGraph.graph, citationGraph.seed?.id, direction, yearFrom, yearTo],
+    [
+      citationGraph.visibleGraph,
+      citationGraph.seed?.id,
+      direction,
+      yearFrom,
+      yearTo,
+    ],
   );
 
   function choose(paper: Paper) {
     setResultsOpen(false);
     setLinkError(null);
     setDetailsOpen(true);
+    setCitationPopup(null);
     setDirection("all");
     setYearFrom("");
     setYearTo("");
@@ -59,6 +70,7 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
     setLinkError(null);
     setFiltersOpen(false);
     setDetailsOpen(true);
+    setCitationPopup(null);
     setDirection("all");
     setYearFrom("");
     setYearTo("");
@@ -174,14 +186,20 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
         loading={citationGraph.loadingSeed}
         onSelectPaper={(id) => {
           citationGraph.selectPaper(id);
+          setCitationPopup(null);
           setDetailsOpen(true);
         }}
-        onSelectCitation={(id) => {
+        onSelectCitation={(id, x, y) => {
           citationGraph.selectCitation(id);
-          setDetailsOpen(true);
+          setCitationPopup({
+            x: Math.max(12, Math.min(x + 16, window.innerWidth - 352)),
+            y: Math.max(12, Math.min(y + 16, window.innerHeight - 300)),
+          });
+          setDetailsOpen(false);
         }}
         onClearSelection={() => {
           citationGraph.clearSelection();
+          setCitationPopup(null);
           setDetailsOpen(false);
         }}
       />
@@ -211,7 +229,10 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
             </button>
             <button
               className="toolbar-button"
-              onClick={() => setDetailsOpen((open) => !open)}
+              onClick={() => {
+                setCitationPopup(null);
+                setDetailsOpen((open) => !open);
+              }}
               aria-expanded={detailsOpen}
             >
               Details
@@ -314,30 +335,38 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
               </p>
             </aside>
           )}
+          {citationPopup && citationGraph.selectedCitation && (
+            <div
+              className="citation-popover-anchor"
+              style={{ left: citationPopup.x, top: citationPopup.y }}
+            >
+              <CitationDetails
+                citation={citationGraph.selectedCitation}
+                papers={citationGraph.graph.papers}
+                onClose={() => {
+                  setCitationPopup(null);
+                  citationGraph.clearSelection();
+                }}
+              />
+            </div>
+          )}
           {detailsOpen && (
             <div className="details-panel floating-panel">
-              {citationGraph.selectedCitation ? (
-                <CitationDetails
-                  citation={citationGraph.selectedCitation}
-                  papers={citationGraph.graph.papers}
-                />
-              ) : (
-                <PaperDetails
-                  paper={citationGraph.selectedPaper}
-                  isPreview={citationGraph.isPreview}
-                  onExpand={citationGraph.expand}
-                  expanding={citationGraph.expanding}
-                  expanded={citationGraph.expanded}
-                  expansionError={citationGraph.expansionError}
-                />
-              )}
+              <PaperDetails
+                paper={citationGraph.selectedPaper}
+                isPreview={citationGraph.isPreview}
+                onExpand={citationGraph.expand}
+                expanding={citationGraph.expanding}
+                expanded={citationGraph.expanded}
+                expansionError={citationGraph.expansionError}
+              />
             </div>
           )}
           <footer className="graph-footer">
             {visibleGraph.papers.length} papers ·{" "}
             {visibleGraph.citations.length} relationships
             {visibleGraph.papers.length < citationGraph.graph.papers.length &&
-              ` · ${citationGraph.graph.papers.length - visibleGraph.papers.length} filtered`}
+              ` · ${citationGraph.graph.papers.length - visibleGraph.papers.length} hidden or filtered`}
             <span>
               {citationGraph.isPreview
                 ? "Sample data"

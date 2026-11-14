@@ -17,6 +17,7 @@ import {
   type ReactFlowInstance,
 } from "@xyflow/react";
 import { AmbientLinks } from "./ambient-links";
+import { graphDistances, paperSize } from "@/lib/graph-focus";
 import type { Graph, Paper } from "@/lib/types";
 
 type PaperNodeData = { paper: Paper };
@@ -126,7 +127,7 @@ export function CitationCanvas({
   expansionOrigin: string | null;
   loading: boolean;
   onSelectPaper: (id: string) => void;
-  onSelectCitation: (id: string) => void;
+  onSelectCitation: (id: string, x: number, y: number) => void;
   onClearSelection: () => void;
 }) {
   const [nodes, setNodes, onNodesChange] = useNodesState<PaperNode>([]);
@@ -198,14 +199,25 @@ export function CitationCanvas({
     }
     return ids;
   }, [hover, selectedCitationId, hoveredCitationId, visibleGraph.citations]);
+  const focusId = visibleIds.has(selectedPaperId ?? "")
+    ? selectedPaperId
+    : seedId;
+  const distances = useMemo(
+    () => graphDistances(visibleGraph, focusId),
+    [visibleGraph, focusId],
+  );
   const shownNodes = useMemo(
     () =>
-      nodes.map((node) => ({
-        ...node,
-        hidden: !visibleIds.has(node.id),
-        className: `paper-node${node.id === selectedPaperId ? " is-selected" : ""}${highlightedIds.has(node.id) ? " is-highlighted" : ""}`,
-      })),
-    [nodes, visibleIds, selectedPaperId, highlightedIds],
+      nodes.map((node) => {
+        const size = paperSize(distances.get(node.id));
+        return {
+          ...node,
+          hidden: !visibleIds.has(node.id),
+          style: { ...node.style, width: size, height: size },
+          className: `paper-node${node.id === focusId ? " is-selected" : ""}${highlightedIds.has(node.id) ? " is-highlighted" : ""}`,
+        };
+      }),
+    [nodes, visibleIds, focusId, highlightedIds, distances],
   );
   const positions = useMemo(
     () => new Map(nodes.map((node) => [node.id, node.position])),
@@ -271,7 +283,10 @@ export function CitationCanvas({
         onNodesChange={onNodesChange}
         onInit={setInstance}
         onNodeClick={(_, node) => onSelectPaper(node.id)}
-        onEdgeClick={(_, edge) => onSelectCitation(edge.id)}
+        onEdgeClick={(event, edge) => {
+          setHover(null);
+          onSelectCitation(edge.id, event.clientX, event.clientY);
+        }}
         onPaneClick={(event) => {
           if (selectedPaperId || selectedCitationId) event.stopPropagation();
           setHover(null);
