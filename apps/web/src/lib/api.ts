@@ -54,4 +54,14 @@ export const api = {
     apiRequest<Paper>(`/papers/${encodeURIComponent(id)}`, signal),
   neighbors: (id: string, signal?: AbortSignal) =>
     apiRequest<Graph>(`/papers/${encodeURIComponent(id)}/neighbors`, signal),
+  references: (id: string, signal?: AbortSignal) =>
+    apiRequest<Graph>(
+      `/papers/${encodeURIComponent(id)}/references?limit=10&offset=0`,
+      signal,
+    ),
+  citations: (id: string, signal?: AbortSignal) =>
+    apiRequest<Graph>(
+      `/papers/${encodeURIComponent(id)}/citations?limit=10`,
+      signal,
+    ),
 };

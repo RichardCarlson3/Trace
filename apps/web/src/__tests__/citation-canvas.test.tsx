@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { CitationCanvas } from "@/components/graph/citation-canvas";
 import { previewInitialGraph } from "@/lib/preview-graph";
@@ -17,7 +17,7 @@ vi.stubGlobal(
 );
 
 describe("actual React Flow canvas", () => {
-  it("initializes the viewport, background and zoom controls", () => {
+  it("initializes a full-page empty viewport without graph controls", () => {
     const { container } = render(
       <CitationCanvas
         seedId={null}
@@ -37,10 +37,7 @@ describe("actual React Flow canvas", () => {
     expect(
       container.querySelector(".react-flow__background"),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /zoom in/i }),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Follow the connections.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /zoom in/i })).toBeNull();
   });
 
   it("renders multiple papers from the graph response", async () => {
@@ -63,5 +60,14 @@ describe("actual React Flow canvas", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/UI sample: Earlier method/)).toBeInTheDocument();
     expect(screen.getByText(/UI sample: Later study/)).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /zoom in/i }),
+    ).toBeInTheDocument();
+    const bubbles = document.querySelectorAll(".paper-bubble");
+    expect(bubbles).toHaveLength(3);
+    fireEvent.mouseEnter(bubbles[0]);
+    expect(screen.getByRole("tooltip")).toHaveTextContent(
+      "Sample data for checking the graph interface",
+    );
   });
 });

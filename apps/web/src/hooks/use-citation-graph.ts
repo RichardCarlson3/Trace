@@ -32,6 +32,29 @@ function matchingNeighbors(
   };
 }
 
+async function fetchNeighbors(id: string, signal: AbortSignal): Promise<Graph> {
+  try {
+    return await api.neighbors(id, signal);
+  } catch (error) {
+    if (!(error instanceof ApiError) || error.status !== 501) throw error;
+    const [references, citations] = await Promise.allSettled([
+      api.references(id, signal),
+      api.citations(id, signal),
+    ]);
+    if (references.status === "rejected" && citations.status === "rejected") {
+      throw error;
+    }
+    return mergeGraphs(
+      references.status === "fulfilled"
+        ? references.value
+        : { papers: [], citations: [] },
+      citations.status === "fulfilled"
+        ? citations.value
+        : { papers: [], citations: [] },
+    );
+  }
+}
+
 export function useCitationGraph() {
   const [seed, setSeed] = useState<Paper | null>(null);
   const [isPreview, setIsPreview] = useState(false);
@@ -79,7 +102,7 @@ export function useCitationGraph() {
     setLoadingSeed(true);
 
     try {
-      const neighbors = await api.neighbors(paper.id, controller.signal);
+      const neighbors = await fetchNeighbors(paper.id, controller.signal);
       if (version.current === requestVersion && !controller.signal.aborted) {
         setGraph((current) => mergeGraphs(current, neighbors));
       }
@@ -130,7 +153,7 @@ export function useCitationGraph() {
       try {
         const neighbors =
           previewNeighbors.current ??
-          (await api.neighbors(id, controller.signal));
+          (await fetchNeighbors(id, controller.signal));
         if (version.current !== requestVersion || controller.signal.aborted)
           return;
         setExpansionOrigin(id);

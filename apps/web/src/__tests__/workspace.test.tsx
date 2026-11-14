@@ -14,13 +14,16 @@ vi.mock("@/lib/api", async (importOriginal) => {
 });
 
 describe("ResearchWorkspace", () => {
-  it("renders search, empty details and a backend connection", async () => {
+  it("centers the starting prompt before a graph is selected", async () => {
     render(<ResearchWorkspace />);
     expect(
-      screen.getByRole("searchbox", { name: "Search scientific papers" }),
+      screen.getByRole("searchbox", {
+        name: "Search scientific papers or paste an article link",
+      }),
     ).toBeDefined();
-    expect(screen.getByText("A closer look")).toBeInTheDocument();
-    expect(await screen.findByText("API connected")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Saved graphs" })).toBeDisabled();
+    expect(
+      screen.getByRole("heading", { name: "Follow the connections." }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("A closer look")).toBeNull();
   });
 });

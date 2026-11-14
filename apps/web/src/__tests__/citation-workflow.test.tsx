@@ -1,6 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { api } from "@/lib/api";
+import { ApiError } from "@/lib/api";
 import { useCitationGraph } from "@/hooks/use-citation-graph";
 import type { Citation, Graph, Paper } from "@/lib/types";
 import { previewFullGraph, previewInitialGraph } from "@/lib/preview-graph";
@@ -9,7 +10,12 @@ vi.mock("@/lib/api", async (importOriginal) => {
   const original = await importOriginal<typeof import("@/lib/api")>();
   return {
     ...original,
-    api: { ...original.api, neighbors: vi.fn() },
+    api: {
+      ...original.api,
+      neighbors: vi.fn(),
+      references: vi.fn(),
+      citations: vi.fn(),
+    },
   };
 });
 
@@ -111,5 +117,25 @@ describe("citation graph workflow", () => {
     expect(result.current.graph).toEqual(initial);
     expect(result.current.expansionError).toBe("Provider unavailable");
     expect(result.current.expanded.has("W2:references")).toBe(false);
+  });
+
+  it("combines the available citation directions when the neighbor endpoint is pending", async () => {
+    vi.mocked(api.neighbors).mockRejectedValue(new ApiError("Pending", 501));
+    vi.mocked(api.references).mockResolvedValue(initial);
+    vi.mocked(api.citations).mockResolvedValue({
+      papers: [seed, paper("W3")],
+      citations: [citation("W3", "W1")],
+    });
+    const { result } = renderHook(() => useCitationGraph());
+    await act(async () => {
+      await result.current.openPaper(seed);
+    });
+    expect(result.current.graph.papers.map((entry) => entry.id)).toEqual([
+      "W1",
+      "W2",
+      "W3",
+    ]);
+    expect(result.current.graph.citations).toHaveLength(2);
+    expect(result.current.loadError).toBeNull();
   });
 });
