@@ -1,0 +1,588 @@
+{
+  "mode": "offline HTTP with recorded Milestone 5 XML and metadata; simulated Semantic Scholar failure",
+  "relationships": [
+    {
+      "request": {
+        "citing_paper_id": "W2911489562",
+        "cited_paper_id": "W1981208470"
+      },
+      "http_status": 200,
+      "response": {
+        "citing_paper_id": "W2911489562",
+        "cited_paper_id": "W1981208470",
+        "status": "provider_unavailable",
+        "source": "semantic_scholar",
+        "fallback_reason": "openalex_tei_http_404",
+        "origin": "unavailable",
+        "retrieved_at": null,
+        "evidence_urls": [],
+        "observed_context_count": null,
+        "citing_mapping": {
+          "openalex_id": "W2911489562",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "cited_mapping": {
+          "openalex_id": "W1981208470",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "relationship_found": null,
+        "reference_scan_complete": false,
+        "reason": "semantic_scholar_rate_limited",
+        "contexts": [],
+        "available": false
+      }
+    },
+    {
+      "request": {
+        "citing_paper_id": "W2911489562",
+        "cited_paper_id": "W2047782770"
+      },
+      "http_status": 200,
+      "response": {
+        "citing_paper_id": "W2911489562",
+        "cited_paper_id": "W2047782770",
+        "status": "provider_unavailable",
+        "source": "semantic_scholar",
+        "fallback_reason": "tei_bibliography_not_verified",
+        "origin": "unavailable",
+        "retrieved_at": null,
+        "evidence_urls": [],
+        "observed_context_count": null,
+        "citing_mapping": {
+          "openalex_id": "W2911489562",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "cited_mapping": {
+          "openalex_id": "W2047782770",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "relationship_found": null,
+        "reference_scan_complete": false,
+        "reason": "semantic_scholar_rate_limited",
+        "contexts": [],
+        "available": false
+      }
+    },
+    {
+      "request": {
+        "citing_paper_id": "W2911489562",
+        "cited_paper_id": "W2052217781"
+      },
+      "http_status": 200,
+      "response": {
+        "citing_paper_id": "W2911489562",
+        "cited_paper_id": "W2052217781",
+        "status": "provider_unavailable",
+        "source": "semantic_scholar",
+        "fallback_reason": "tei_bibliography_not_verified",
+        "origin": "unavailable",
+        "retrieved_at": null,
+        "evidence_urls": [],
+        "observed_context_count": null,
+        "citing_mapping": {
+          "openalex_id": "W2911489562",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "cited_mapping": {
+          "openalex_id": "W2052217781",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "relationship_found": null,
+        "reference_scan_complete": false,
+        "reason": "semantic_scholar_rate_limited",
+        "contexts": [],
+        "available": false
+      }
+    },
+    {
+      "request": {
+        "citing_paper_id": "W2911489562",
+        "cited_paper_id": "W2071879021"
+      },
+      "http_status": 200,
+      "response": {
+        "citing_paper_id": "W2911489562",
+        "cited_paper_id": "W2071879021",
+        "status": "provider_unavailable",
+        "source": "semantic_scholar",
+        "fallback_reason": "tei_bibliography_not_verified",
+        "origin": "unavailable",
+        "retrieved_at": null,
+        "evidence_urls": [],
+        "observed_context_count": null,
+        "citing_mapping": {
+          "openalex_id": "W2911489562",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "cited_mapping": {
+          "openalex_id": "W2071879021",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "relationship_found": null,
+        "reference_scan_complete": false,
+        "reason": "semantic_scholar_rate_limited",
+        "contexts": [],
+        "available": false
+      }
+    },
+    {
+      "request": {
+        "citing_paper_id": "W2911489562",
+        "cited_paper_id": "W2100627415"
+      },
+      "http_status": 200,
+      "response": {
+        "citing_paper_id": "W2911489562",
+        "cited_paper_id": "W2100627415",
+        "status": "provider_unavailable",
+        "source": "semantic_scholar",
+        "fallback_reason": "openalex_tei_http_404",
+        "origin": "unavailable",
+        "retrieved_at": null,
+        "evidence_urls": [],
+        "observed_context_count": null,
+        "citing_mapping": {
+          "openalex_id": "W2911489562",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "cited_mapping": {
+          "openalex_id": "W2100627415",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "relationship_found": null,
+        "reference_scan_complete": false,
+        "reason": "semantic_scholar_rate_limited",
+        "contexts": [],
+        "available": false
+      }
+    },
+    {
+      "request": {
+        "citing_paper_id": "W2911489562",
+        "cited_paper_id": "W2136437513"
+      },
+      "http_status": 200,
+      "response": {
+        "citing_paper_id": "W2911489562",
+        "cited_paper_id": "W2136437513",
+        "status": "provider_unavailable",
+        "source": "semantic_scholar",
+        "fallback_reason": "tei_bibliography_not_verified",
+        "origin": "unavailable",
+        "retrieved_at": null,
+        "evidence_urls": [],
+        "observed_context_count": null,
+        "citing_mapping": {
+          "openalex_id": "W2911489562",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "cited_mapping": {
+          "openalex_id": "W2136437513",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "relationship_found": null,
+        "reference_scan_complete": false,
+        "reason": "semantic_scholar_rate_limited",
+        "contexts": [],
+        "available": false
+      }
+    },
+    {
+      "request": {
+        "citing_paper_id": "W2911489562",
+        "cited_paper_id": "W2149369282"
+      },
+      "http_status": 200,
+      "response": {
+        "citing_paper_id": "W2911489562",
+        "cited_paper_id": "W2149369282",
+        "status": "provider_unavailable",
+        "source": "semantic_scholar",
+        "fallback_reason": "openalex_tei_http_404",
+        "origin": "unavailable",
+        "retrieved_at": null,
+        "evidence_urls": [],
+        "observed_context_count": null,
+        "citing_mapping": {
+          "openalex_id": "W2911489562",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "cited_mapping": {
+          "openalex_id": "W2149369282",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "relationship_found": null,
+        "reference_scan_complete": false,
+        "reason": "semantic_scholar_rate_limited",
+        "contexts": [],
+        "available": false
+      }
+    },
+    {
+      "request": {
+        "citing_paper_id": "W2982399380",
+        "cited_paper_id": "W131533222"
+      },
+      "http_status": 200,
+      "response": {
+        "citing_paper_id": "W2982399380",
+        "cited_paper_id": "W131533222",
+        "status": "provider_unavailable",
+        "source": "semantic_scholar",
+        "fallback_reason": "tei_bibliography_not_verified",
+        "origin": "unavailable",
+        "retrieved_at": null,
+        "evidence_urls": [],
+        "observed_context_count": null,
+        "citing_mapping": {
+          "openalex_id": "W2982399380",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "cited_mapping": {
+          "openalex_id": "W131533222",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "relationship_found": null,
+        "reference_scan_complete": false,
+        "reason": "semantic_scholar_rate_limited",
+        "contexts": [],
+        "available": false
+      }
+    },
+    {
+      "request": {
+        "citing_paper_id": "W2982399380",
+        "cited_paper_id": "W1544827683"
+      },
+      "http_status": 200,
+      "response": {
+        "citing_paper_id": "W2982399380",
+        "cited_paper_id": "W1544827683",
+        "status": "provider_unavailable",
+        "source": "semantic_scholar",
+        "fallback_reason": "tei_bibliography_not_verified",
+        "origin": "unavailable",
+        "retrieved_at": null,
+        "evidence_urls": [],
+        "observed_context_count": null,
+        "citing_mapping": {
+          "openalex_id": "W2982399380",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "cited_mapping": {
+          "openalex_id": "W1544827683",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "relationship_found": null,
+        "reference_scan_complete": false,
+        "reason": "semantic_scholar_rate_limited",
+        "contexts": [],
+        "available": false
+      }
+    },
+    {
+      "request": {
+        "citing_paper_id": "W2982399380",
+        "cited_paper_id": "W1599016936"
+      },
+      "http_status": 200,
+      "response": {
+        "citing_paper_id": "W2982399380",
+        "cited_paper_id": "W1599016936",
+        "status": "provider_unavailable",
+        "source": "semantic_scholar",
+        "fallback_reason": "tei_bibliography_not_verified",
+        "origin": "unavailable",
+        "retrieved_at": null,
+        "evidence_urls": [],
+        "observed_context_count": null,
+        "citing_mapping": {
+          "openalex_id": "W2982399380",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "cited_mapping": {
+          "openalex_id": "W1599016936",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "relationship_found": null,
+        "reference_scan_complete": false,
+        "reason": "semantic_scholar_rate_limited",
+        "contexts": [],
+        "available": false
+      }
+    },
+    {
+      "request": {
+        "citing_paper_id": "W2982399380",
+        "cited_paper_id": "W1614298861"
+      },
+      "http_status": 200,
+      "response": {
+        "citing_paper_id": "W2982399380",
+        "cited_paper_id": "W1614298861",
+        "status": "available",
+        "source": "openalex_tei",
+        "fallback_reason": null,
+        "origin": "memory_cache",
+        "retrieved_at": "2026-11-14T16:33:36.052289Z",
+        "evidence_urls": [
+          "https://content.openalex.org/works/W2982399380.grobid-xml"
+        ],
+        "observed_context_count": 1,
+        "citing_mapping": {
+          "openalex_id": "W2982399380",
+          "title": "BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension",
+          "doi": "10.18653/v1/2020.acl-main.703",
+          "semantic_scholar_paper_id": null,
+          "verified": true,
+          "reason": null
+        },
+        "cited_mapping": {
+          "openalex_id": "W1614298861",
+          "title": "Efficient Estimation of Word Representations in Vector Space",
+          "doi": "10.48550/arxiv.1301.3781",
+          "semantic_scholar_paper_id": null,
+          "verified": true,
+          "reason": null
+        },
+        "relationship_found": true,
+        "reference_scan_complete": false,
+        "reason": null,
+        "contexts": [
+          {
+            "context_text": "Self-supervised methods have achieved remarkable success in a wide range of NLP tasks (Mikolov et al., 2013;Peters et al., 2018;Devlin et al., 2019;Joshi et al., 2019;Yang et al., 2019;Liu et al., 2019).",
+            "source": "openalex_tei",
+            "source_url": "https://content.openalex.org/works/W2982399380.grobid-xml",
+            "source_url_scope": "document",
+            "bibliography_id": "b17",
+            "bibliography_text": "Tomas Mikolov, Kai Chen, Greg Corrado, and Jeffrey Dean. Efficient estimation of word representations in vector space. arXiv preprint arXiv:1301.3781, 2013.",
+            "citation_marker": "(Mikolov et al., 2013;",
+            "citation_targets": [
+              "b17",
+              "b20",
+              "b2",
+              "b11",
+              "b15"
+            ],
+            "section": [
+              "Introduction"
+            ],
+            "document_sha256": "8017bc8c16466aedbd7544a117b8d7b06f9cecbf9da985ff2d9c0e7e91848650",
+            "retrieved_at": "2026-11-14T16:33:36.052289Z",
+            "identity_evidence": [
+              "ARXIV:1301.3781"
+            ],
+            "document_identity_method": "authenticated_provider_binding",
+            "classification": {
+              "intent": "background",
+              "confidence": 0.8843842684202584,
+              "model_version": "scicite-tfidf-logreg-v1"
+            },
+            "classification_unavailable_reason": null
+          }
+        ],
+        "available": true
+      }
+    },
+    {
+      "request": {
+        "citing_paper_id": "W2982399380",
+        "cited_paper_id": "W2130158090"
+      },
+      "http_status": 200,
+      "response": {
+        "citing_paper_id": "W2982399380",
+        "cited_paper_id": "W2130158090",
+        "status": "provider_unavailable",
+        "source": "semantic_scholar",
+        "fallback_reason": "tei_bibliography_not_verified",
+        "origin": "unavailable",
+        "retrieved_at": null,
+        "evidence_urls": [],
+        "observed_context_count": null,
+        "citing_mapping": {
+          "openalex_id": "W2982399380",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "cited_mapping": {
+          "openalex_id": "W2130158090",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "relationship_found": null,
+        "reference_scan_complete": false,
+        "reason": "semantic_scholar_rate_limited",
+        "contexts": [],
+        "available": false
+      }
+    },
+    {
+      "request": {
+        "citing_paper_id": "W2982399380",
+        "cited_paper_id": "W2251939518"
+      },
+      "http_status": 200,
+      "response": {
+        "citing_paper_id": "W2982399380",
+        "cited_paper_id": "W2251939518",
+        "status": "provider_unavailable",
+        "source": "semantic_scholar",
+        "fallback_reason": "tei_bibliography_not_verified",
+        "origin": "unavailable",
+        "retrieved_at": null,
+        "evidence_urls": [],
+        "observed_context_count": null,
+        "citing_mapping": {
+          "openalex_id": "W2982399380",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "cited_mapping": {
+          "openalex_id": "W2251939518",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "relationship_found": null,
+        "reference_scan_complete": false,
+        "reason": "semantic_scholar_rate_limited",
+        "contexts": [],
+        "available": false
+      }
+    },
+    {
+      "request": {
+        "citing_paper_id": "W2982399380",
+        "cited_paper_id": "W2418388682"
+      },
+      "http_status": 200,
+      "response": {
+        "citing_paper_id": "W2982399380",
+        "cited_paper_id": "W2418388682",
+        "status": "provider_unavailable",
+        "source": "semantic_scholar",
+        "fallback_reason": "tei_bibliography_not_verified",
+        "origin": "unavailable",
+        "retrieved_at": null,
+        "evidence_urls": [],
+        "observed_context_count": null,
+        "citing_mapping": {
+          "openalex_id": "W2982399380",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "cited_mapping": {
+          "openalex_id": "W2418388682",
+          "title": null,
+          "doi": null,
+          "semantic_scholar_paper_id": null,
+          "verified": false,
+          "reason": "semantic_scholar_rate_limited"
+        },
+        "relationship_found": null,
+        "reference_scan_complete": false,
+        "reason": "semantic_scholar_rate_limited",
+        "contexts": [],
+        "available": false
+      }
+    }
+  ],
+  "content_downloads": 2,
+  "recovered_relationships": 1,
+  "classified_passages": 1
+}
