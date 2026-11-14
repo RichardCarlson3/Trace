@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     semantic_scholar_base_url: str = "https://api.semanticscholar.org/graph/v1"
     semantic_scholar_api_key: str = Field(default="", repr=False)
     semantic_scholar_enabled: bool = False
+    openalex_tei_enabled: bool = True
     database_url: str = ""
     model_artifact_dir: Path = API_ROOT / "artifacts"
 

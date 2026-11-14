@@ -30,9 +30,18 @@ class CitationContextRequest(CitationPair):
 
 class CitationPassage(Contract):
     context_text: str = Field(strict=True, min_length=1)
-    source: Literal["semantic_scholar"] = "semantic_scholar"
+    source: Literal["semantic_scholar", "openalex_tei"] = "semantic_scholar"
     source_url: str
-    source_url_scope: Literal["paper"] = "paper"
+    source_url_scope: Literal["paper", "document"] = "paper"
+    bibliography_id: str | None = None
+    bibliography_text: str | None = None
+    citation_marker: str | None = None
+    citation_targets: list[str] | None = None
+    section: list[str] | None = None
+    document_sha256: str | None = None
+    retrieved_at: datetime | None = None
+    identity_evidence: list[str] | None = None
+    document_identity_method: str | None = None
     classification: Classification | None = None
     classification_unavailable_reason: Literal["context_too_long"] | None = None
 
@@ -54,7 +63,8 @@ class CitationContexts(CitationPair):
         "provider_unavailable",
         "example_not_found",
     ]
-    source: Literal["semantic_scholar"] = "semantic_scholar"
+    source: Literal["semantic_scholar", "openalex_tei"] = "semantic_scholar"
+    fallback_reason: str | None = None
     origin: Literal["live", "memory_cache", "verified_example", "unavailable"] = "live"
     retrieved_at: datetime | None = None
     evidence_urls: list[str] = Field(default_factory=list)

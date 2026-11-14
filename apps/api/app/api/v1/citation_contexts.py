@@ -25,7 +25,9 @@ async def retrieve_contexts(query: Annotated[CitationContextRequest, Query()], r
 
 @router.post("/classify", response_model=CitationContexts)
 async def classify_pair(body: CitationContextRequest, request: Request):
-    """Retrieve genuine passages and classify each through the existing inference service."""
+    """Classify verified passages, trying Semantic Scholar then exact-identity OpenAlex TEI."""
     pair = CitationPair(citing_paper_id=body.citing_paper_id, cited_paper_id=body.cited_paper_id)
-    result = await request.app.state.citation_contexts.retrieve(pair, mode=body.mode)
+    result = await request.app.state.citation_contexts.retrieve_for_classification(
+        pair, mode=body.mode
+    )
     return await run_in_threadpool(classify_contexts, result, request.app.state.inference)

@@ -2,6 +2,8 @@
 
 ResearchGraph keeps OpenAlex as its scholarly-data integration. Citation passages come from an optional Semantic Scholar provider or a small set of recorded, verified examples. The main application starts and paper search operates with Semantic Scholar disabled, without a key or model artifacts.
 
+Milestone 6 adds an authenticated OpenAlex TEI fallback to the existing **classification POST**, after the primary source cannot supply a usable verified passage. `OPENALEX_TEI_ENABLED=true` is the default; it additionally requires a valid backend `OPENALEX_API_KEY`. Set the flag false to preserve primary-only classification. No full-text downloads occur at startup, during search or graph expansion, or in `examples` mode. The GET interface initiates primary retrieval only; it can reuse cached TEI evidence from POST. See [the fallback report](OPENALEX_FALLBACK.md) for limits, source enums, unavailable behavior and the demonstrated recovery.
+
 The repository default is `SEMANTIC_SCHOLAR_ENABLED=false`. Configure a backend-only API key and enable the provider locally for authenticated retrieval. The three bundled examples work offline. Their contexts were captured from successful live API responses on 2026-11-14. Later anonymous requests returned HTTP 429, so identifier and reference matching were also verified by replaying those recorded responses through the service. A replay is recorded evidence and is labeled `verified_example` in the API. Authenticated verification of previously unrecorded pairs is reported separately in [the live retrieval report](LIVE_CITATION_VERIFICATION.md).
 
 ## Run the demo in PowerShell
@@ -46,7 +48,7 @@ Live results use the bounded process-local caches below. Cached results preserve
 | Resource | Capacity | Lifetime | Cache key |
 | --- | ---: | --- | --- |
 | Verified paper mappings | 512 | 24 hours; unresolved mappings 5 minutes | OpenAlex work ID |
-| Semantic Scholar DOI metadata | 512 | 24 hours; missing records 5 minutes | Normalized DOI |
+| Semantic Scholar identifier metadata | 512 | 24 hours; missing records 5 minutes | Namespace and normalized exact identifier |
 | Reference pages | 128 | 15 minutes | Citing Semantic Scholar ID, fields, limit and offset |
 | Final relationship evidence | 128 | 5 minutes | Directed OpenAlex ID pair |
 
@@ -88,7 +90,9 @@ The command requires an enabled provider and a nonempty key. It starts cold cach
 
 ## Identifier and relationship verification
 
-The service reads each requested work's explicit DOI from OpenAlex. It normalizes DOI strings, resolver URLs, case and URL encoding, and detects conflicting DOI fields. It requests the Semantic Scholar record with `DOI:<doi>` and requires its returned `externalIds.DOI` to match. Missing, conflicting or unverified mappings produce `unresolved_identifiers`. This first provider supports DOI-based mappings. Works without a usable DOI remain unresolved.
+The service reads each requested work's explicit identifiers and locations from OpenAlex. It attempts at most one identifier per namespace in order: DOI, arXiv, PMID, PMCID, MAG. arXiv identifiers may come from the work's explicit arXiv repository location or arxiv.org landing/PDF URL. Other alternatives come from `ids`. It never searches titles or guesses an identifier. Each candidate must echo the exact queried identifier in Semantic Scholar `externalIds`, return a valid paper hash, and agree with other comparable known identifiers. An alternate returned DOI must match a DOI explicitly recorded by OpenAlex, including a location DOI. Conflicting identifiers fail closed. Missing/unverified candidates retain `unresolved_identifiers`; provider errors retain their existing error handling rather than triggering more namespaces. See [Milestone 4 results](IDENTIFIER_RESOLUTION.md).
+
+DOIs retain punctuation and Unicode characters; only ASCII case folds. Resolver URL paths are decoded once with strict UTF-8, surrounding whitespace and `doi:` prefixes are handled, and malformed encodings, controls and deceptive resolver hosts are rejected. Bare DOI percent sequences are not decoded again. URL queries/fragments remain resolver metadata and are excluded from the DOI. arXiv version suffixes normalize to the work-level identifier. PMCID lookup values omit the `PMC` prefix per the provider specification. These helpers are scoped to citation retrieval; Developer 2's Paper/DOI normalization is unchanged.
 
 Once both mappings are verified, the service requests the citing paper's references with `contexts,externalIds`. It matches the cited paper by its verified Semantic Scholar ID or an exact verified DOI when the reference lacks an ID. Conflicting IDs/DOIs remain unresolved. Titles are display metadata and are excluded from matching.
 
