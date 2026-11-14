@@ -16,33 +16,33 @@ import { ResearchWorkspace } from "@/components/layout/research-workspace";
 const chapters = [
   {
     number: "01 / THE QUESTION",
-    title: "One question. Too many tabs.",
-    body: "It is late. The answer is somewhere in the literature, but every paper opens another trail.",
+    title: "One question. A thousand papers.",
+    body: "Late at night, one student follows a trail of research that keeps branching.",
     refrain: "the bigger picture",
   },
   {
-    number: "02 / THE PAST",
-    title: "Every idea has roots.",
-    body: "Follow the references to see the work a paper builds upon. The arrows point from the citing paper to its sources.",
-    refrain: "what came before",
+    number: "02 / THE IDEA",
+    title: "What if the links were visible?",
+    body: "A single thought turns citations into a map of the ideas behind an idea.",
+    refrain: "the connections",
   },
   {
-    number: "03 / THE CONNECTION",
-    title: "A link can tell a story.",
-    body: "Open a citation to inspect the relationship. When a genuine passage is available, TRACE can show its context and predicted intent.",
-    refrain: "why they connect",
+    number: "03 / THE MAP",
+    title: "Past and future come into focus.",
+    body: "Follow references backward. Follow citing papers forward. See how research grows.",
+    refrain: "every direction",
   },
   {
-    number: "04 / THE FUTURE",
-    title: "Research keeps moving.",
-    body: "See the later papers that cite this one, then follow their paths to the next question.",
-    refrain: "what came next",
+    number: "04 / THE TOOL",
+    title: "Give the idea a place to live.",
+    body: "The student opens TRACE and turns a paper into a living research network.",
+    refrain: "a new way in",
   },
   {
     number: "05 / YOUR TURN",
     title: "Past. Present. Future. One map.",
-    body: "Start with a real paper and watch its research network grow around you.",
-    refrain: "the whole story",
+    body: "Start with a real paper. Follow the connections wherever curiosity leads.",
+    refrain: "your own path",
   },
 ];
 
@@ -145,17 +145,26 @@ function StudentScene({ reduced }: { reduced: boolean }) {
         stroke="#8b76b5"
         strokeWidth="3"
       />
-      <circle cx="594" cy="215" r="43" fill="#c69c8d" />
-      <path
-        d="M554 211c-2-50 24-74 57-68 36 5 47 39 33 73-17-15-23-26-26-42-17 27-42 33-64 37z"
-        fill="#29243e"
-      />
-      <path
+      <motion.g
+        animate={reduced ? undefined : { rotate: [-2, 2, -2] }}
+        transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut" }}
+        style={{ transformOrigin: "594px 258px" }}
+      >
+        <circle cx="594" cy="215" r="43" fill="#c69c8d" />
+        <path
+          d="M554 211c-2-50 24-74 57-68 36 5 47 39 33 73-17-15-23-26-26-42-17 27-42 33-64 37z"
+          fill="#29243e"
+        />
+      </motion.g>
+      <motion.path
         d="M548 329c-45 10-53 42-85 67l-29-7"
         fill="none"
         stroke="#c69c8d"
         strokeWidth="19"
         strokeLinecap="round"
+        animate={reduced ? undefined : { rotate: [0, -3, 0] }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        style={{ transformOrigin: "548px 329px" }}
       />
       <path d="M491 431c-12-25-17-50-15-72l82-39 83 22 16 89" fill="#342b50" />
       <path d="M68 409h114l-9 20H76z" fill="#5f658c" />
@@ -180,6 +189,26 @@ function StudentScene({ reduced }: { reduced: boolean }) {
         />
       </motion.g>
       <path d="M85 458h104m-52-25v25" stroke="#756e98" strokeWidth="4" />
+      <motion.g
+        className="story-bulb"
+        animate={reduced ? undefined : { y: [0, -7, 0], rotate: [-3, 3, -3] }}
+        transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+        style={{ transformOrigin: "594px 80px" }}
+      >
+        <circle cx="594" cy="80" r="54" fill="#f5ce74" opacity=".08" />
+        <path
+          d="M594 38c-24 0-39 18-39 38 0 17 10 25 18 34 4 4 7 11 7 17h28c0-6 3-13 7-17 8-9 18-17 18-34 0-20-15-38-39-38z"
+          fill="#d0b4a3"
+          stroke="#f3ddb8"
+          strokeWidth="3"
+        />
+        <path
+          d="M580 127h28m-25 9h22m-19 8h16"
+          stroke="#f3ddb8"
+          strokeWidth="5"
+          strokeLinecap="round"
+        />
+      </motion.g>
       <text x="84" y="488" fill="#aca9d1" fontSize="15" letterSpacing="3">
         1:47 AM
       </text>
@@ -369,106 +398,185 @@ function StoryIntro({ onExplore }: { onExplore: () => void }) {
     offset: ["start start", "end end"],
   });
   const progress = useSpring(scrollYProgress, {
-    stiffness: 110,
-    damping: 28,
+    stiffness: 115,
+    damping: 30,
     restDelta: 0.001,
   });
-  const visualScale = useTransform(progress, [0, 0.8, 1], [1, 1, 1.08]);
   useMotionValueEvent(scrollYProgress, "change", (value) => {
     const next =
-      value < 0.2
+      value < 0.17
         ? 0
-        : value < 0.42
+        : value < 0.35
           ? 1
-          : value < 0.64
+          : value < 0.57
             ? 2
-            : value < 0.84
+            : value < 0.79
               ? 3
               : 4;
     setScene((current) => (current === next ? current : next));
   });
   const active = reduced ? 4 : scene;
   const chapter = chapters[active];
+  const roomScale = useTransform(
+    progress,
+    [0, 0.17, 0.34, 0.54, 0.65, 0.79],
+    [1, 1.05, 1.16, 1.16, 1.2, 3.7],
+  );
+  const roomOpacity = useTransform(
+    progress,
+    [0, 0.26, 0.35, 0.48, 0.58, 0.72, 0.82],
+    [1, 1, 0, 0, 1, 1, 0],
+  );
+  const roomX = useTransform(progress, [0, 0.58, 0.79], [0, 0, "-30%"]);
+  const bulbGlow = useTransform(
+    progress,
+    [0, 0.12, 0.22, 0.31],
+    [0, 0.15, 1, 1],
+  );
+  const thoughtScale = useTransform(
+    progress,
+    [0, 0.16, 0.31, 0.48, 0.59],
+    [0.15, 0.4, 1.15, 1.42, 2.1],
+  );
+  const thoughtOpacity = useTransform(
+    progress,
+    [0, 0.16, 0.25, 0.49, 0.58],
+    [0, 0, 1, 1, 0],
+  );
+  const screenScale = useTransform(
+    progress,
+    [0, 0.57, 0.67, 0.79, 0.89],
+    [0.45, 0.45, 0.85, 2.8, 7],
+  );
+  const screenOpacity = useTransform(
+    progress,
+    [0, 0.59, 0.68, 0.81, 0.9],
+    [0, 0, 1, 1, 0],
+  );
+  const finaleOpacity = useTransform(progress, [0, 0.83, 0.91], [0, 0, 1]);
+  const finaleScale = useTransform(progress, [0, 0.84, 1], [0.8, 0.8, 1]);
+  const copyOpacity = useTransform(progress, [0, 0.65, 0.81], [1, 1, 0]);
 
   return (
     <motion.div
       ref={storyRef}
       className={`story-shell${reduced ? " is-reduced" : ""}`}
-      exit={{ opacity: 0, scale: 1.08 }}
-      transition={{ duration: reduced ? 0.15 : 0.75, ease: [0.22, 1, 0.36, 1] }}
+      exit={{ opacity: 0, scale: reduced ? 1 : 1.75 }}
+      transition={{ duration: reduced ? 0.12 : 0.75, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="story-sticky">
         <div className="story-sky" aria-hidden="true" />
+        <motion.div
+          className="story-room"
+          style={
+            reduced
+              ? { opacity: 0 }
+              : { scale: roomScale, opacity: roomOpacity, x: roomX }
+          }
+        >
+          <StudentScene reduced={reduced} />
+          <motion.div
+            className="story-idea-glow"
+            style={reduced ? { opacity: 0 } : { opacity: bulbGlow }}
+            aria-hidden="true"
+          />
+        </motion.div>
+        <motion.div
+          className="story-thought"
+          style={
+            reduced
+              ? { opacity: 0 }
+              : { scale: thoughtScale, opacity: thoughtOpacity }
+          }
+          aria-hidden="true"
+        >
+          <div className="story-thought-bubble">
+            <NetworkScene phase={active >= 2 ? 3 : 1} reduced={reduced} />
+          </div>
+        </motion.div>
+        <motion.div
+          className="story-computer"
+          style={
+            reduced
+              ? { opacity: 0 }
+              : { scale: screenScale, opacity: screenOpacity }
+          }
+          aria-hidden="true"
+        >
+          <div className="story-computer-chrome">
+            <span />
+            <span />
+            <span />
+          </div>
+          <div className="story-computer-screen">
+            <span className="story-terminal-label">RESEARCH, CONNECTED</span>
+            <span className={`story-typed${active >= 3 ? " is-typing" : ""}`}>
+              TRACE<span className="story-caret">_</span>
+            </span>
+            <span className="story-terminal-subtitle">
+              See where every idea leads.
+            </span>
+          </div>
+        </motion.div>
+        <motion.div
+          className={`story-finale${active === 4 ? " is-active" : ""}`}
+          style={
+            reduced
+              ? { opacity: 1, scale: 1 }
+              : { opacity: finaleOpacity, scale: finaleScale }
+          }
+        >
+          <div className="story-finale-orbit" aria-hidden="true">
+            <i />
+            <i />
+            <i />
+            <i />
+            <i />
+          </div>
+          <span className="story-finale-eyebrow">PAST · PRESENT · FUTURE</span>
+          <h1>Every idea has a path.</h1>
+          <p>
+            Start with a paper. Find the connections that move research forward.
+          </p>
+          <button
+            className="story-enter"
+            onClick={onExplore}
+            tabIndex={active === 4 ? 0 : -1}
+          >
+            Explore now <span aria-hidden="true">↗</span>
+          </button>
+        </motion.div>
         <header className="story-nav">
           <span className="story-brand">
             <span aria-hidden="true">◎</span> TRACE
           </span>
           <button className="story-skip" onClick={onExplore}>
-            Explore now <span aria-hidden="true">↗</span>
+            Skip to graph <span aria-hidden="true">↗</span>
           </button>
         </header>
-        <div className="story-content">
-          <div className="story-copy">
-            <span className="story-chapter">{chapter.number}</span>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={active}
-                initial={{ opacity: 0, y: reduced ? 0 : 26 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: reduced ? 0 : -18 }}
-                transition={{
-                  duration: reduced ? 0.12 : 0.46,
-                  ease: "easeOut",
-                }}
-              >
-                <h1>{chapter.title}</h1>
-                <p>{chapter.body}</p>
-              </motion.div>
-            </AnimatePresence>
-            <div className="story-refrain">
-              <strong>Explore now</strong>
-              <span> {chapter.refrain}.</span>
-            </div>
-            {active === 4 && (
-              <motion.button
-                className="story-enter"
-                initial={{ opacity: 0, y: reduced ? 0 : 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                onClick={onExplore}
-              >
-                Explore the graph <span aria-hidden="true">→</span>
-              </motion.button>
-            )}
+        <motion.div
+          className="story-narration"
+          style={reduced ? { opacity: 0 } : { opacity: copyOpacity }}
+          aria-live="polite"
+        >
+          <span className="story-chapter">{chapter.number}</span>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={active}
+              initial={{ opacity: 0, y: reduced ? 0 : 28 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: reduced ? 0 : -18 }}
+              transition={{ duration: reduced ? 0.01 : 0.42 }}
+            >
+              <h2>{chapter.title}</h2>
+              <p>{chapter.body}</p>
+            </motion.div>
+          </AnimatePresence>
+          <div className="story-refrain">
+            <strong>Explore now</strong>
+            <span> {chapter.refrain}.</span>
           </div>
-          <motion.div
-            className="story-visual"
-            style={reduced ? undefined : { scale: visualScale }}
-          >
-            <AnimatePresence mode="wait">
-              {active === 0 ? (
-                <motion.div
-                  key="student"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.45 }}
-                >
-                  <StudentScene reduced={reduced} />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="network"
-                  initial={{ opacity: 0, scale: 0.92 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <NetworkScene phase={active} reduced={reduced} />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        </div>
+        </motion.div>
         <div
           className="story-progress"
           aria-label={`Story chapter ${active + 1} of 5`}

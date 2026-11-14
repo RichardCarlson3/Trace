@@ -26,6 +26,7 @@
     "concurrently": "^9.2.1"
   },
   "dependencies": {
+    "gsap": "^3.15.1",
     "motion": "^14.14.0"
   }
 }
