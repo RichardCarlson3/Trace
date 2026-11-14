@@ -1,0 +1,28 @@
+{
+  "name": "researchgraph",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/web"
+  ],
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n web,api \"npm run dev:web\" \"npm run dev:api\"",
+    "dev:web": "npm run dev --workspace apps/web",
+    "dev:api": "uv run --project apps/api python -m app.dev",
+    "build": "npm run build --workspace apps/web",
+    "lint": "npm run lint:web && npm run lint:api",
+    "lint:web": "npm run lint --workspace apps/web",
+    "lint:api": "uv run --project apps/api ruff check apps/api && uv run --project apps/api ruff format --check apps/api",
+    "format:api": "uv run --project apps/api ruff format apps/api",
+    "typecheck": "npm run typecheck --workspace apps/web",
+    "test": "npm run test:web && npm run test:api",
+    "test:web": "npm run test --workspace apps/web",
+    "test:api": "uv run --project apps/api pytest apps/api/tests"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
