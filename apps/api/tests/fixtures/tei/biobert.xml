@@ -1,0 +1,942 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Data and text mining BioBERT: a pre-trained biomedical language representation model for biomedical text mining</title>
+				<funder ref="#_maHTn4Z">
+					<orgName type="full">Korea government</orgName>
+				</funder>
+				<funder ref="#_VQkMyzk #_WkZyVBs">
+					<orgName type="full">unknown</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">National Research Foundation of Korea</orgName>
+					<orgName type="abbreviated">NRF</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability  status="unknown">
+					<licence/>
+				</availability>
+				<date type="published" when="2019-09-10">10 September 2019</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct status="extracted">
+					<analytic>
+						<author>
+							<persName><forename type="first">Jinhyuk</forename><surname>Lee</surname></persName>
+							<affiliation key="aff0">
+								<note type="raw_affiliation"><label>1</label> Department of Computer Science and Engineering , Korea University , Seoul 02841 , Korea,</note>
+								<orgName type="department">Department of Computer Science and Engineering</orgName>
+								<orgName type="institution">Korea University</orgName>
+								<address>
+									<postCode>02841</postCode>
+									<settlement>Seoul</settlement>
+									<country key="KR">Korea</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Wonjin</forename><surname>Yoon</surname></persName>
+							<affiliation key="aff0">
+								<note type="raw_affiliation"><label>1</label> Department of Computer Science and Engineering , Korea University , Seoul 02841 , Korea,</note>
+								<orgName type="department">Department of Computer Science and Engineering</orgName>
+								<orgName type="institution">Korea University</orgName>
+								<address>
+									<postCode>02841</postCode>
+									<settlement>Seoul</settlement>
+									<country key="KR">Korea</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Sungdong</forename><surname>Kim</surname></persName>
+							<affiliation key="aff1">
+								<note type="raw_affiliation"><label>2</label> Clova AI Research , Naver Corp , Seong- Nam 13561 , Korea and</note>
+								<orgName type="department">Clova AI Research</orgName>
+								<orgName type="institution">Naver Corp</orgName>
+								<address>
+									<postCode>13561</postCode>
+									<settlement>Seong- Nam</settlement>
+									<country>Korea and</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Donghyeon</forename><surname>Kim</surname></persName>
+							<affiliation key="aff0">
+								<note type="raw_affiliation"><label>1</label> Department of Computer Science and Engineering , Korea University , Seoul 02841 , Korea,</note>
+								<orgName type="department">Department of Computer Science and Engineering</orgName>
+								<orgName type="institution">Korea University</orgName>
+								<address>
+									<postCode>02841</postCode>
+									<settlement>Seoul</settlement>
+									<country key="KR">Korea</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Sunkyu</forename><surname>Kim</surname></persName>
+							<affiliation key="aff0">
+								<note type="raw_affiliation"><label>1</label> Department of Computer Science and Engineering , Korea University , Seoul 02841 , Korea,</note>
+								<orgName type="department">Department of Computer Science and Engineering</orgName>
+								<orgName type="institution">Korea University</orgName>
+								<address>
+									<postCode>02841</postCode>
+									<settlement>Seoul</settlement>
+									<country key="KR">Korea</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Chan</forename><forename type="middle">Ho</forename><surname>So</surname></persName>
+							<affiliation key="aff2">
+								<note type="raw_affiliation"><label>3</label> Interdisciplinary Graduate Program in Bioinformatics , Korea University , Seoul 02841 , Korea</note>
+								<orgName type="department">Interdisciplinary Graduate Program in Bioinformatics</orgName>
+								<orgName type="institution">Korea University</orgName>
+								<address>
+									<postCode>02841</postCode>
+									<settlement>Seoul</settlement>
+									<country key="KR">Korea</country>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Jaewoo</forename><surname>Kang</surname></persName>
+							<email>kangj@korea.ac.kr</email>
+							<affiliation key="aff0">
+								<note type="raw_affiliation"><label>1</label> Department of Computer Science and Engineering , Korea University , Seoul 02841 , Korea,</note>
+								<orgName type="department">Department of Computer Science and Engineering</orgName>
+								<orgName type="institution">Korea University</orgName>
+								<address>
+									<postCode>02841</postCode>
+									<settlement>Seoul</settlement>
+									<country key="KR">Korea</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff2">
+								<note type="raw_affiliation"><label>3</label> Interdisciplinary Graduate Program in Bioinformatics , Korea University , Seoul 02841 , Korea</note>
+								<orgName type="department">Interdisciplinary Graduate Program in Bioinformatics</orgName>
+								<orgName type="institution">Korea University</orgName>
+								<address>
+									<postCode>02841</postCode>
+									<settlement>Seoul</settlement>
+									<country key="KR">Korea</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Data and text mining BioBERT: a pre-trained biomedical language representation model for biomedical text mining</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date type="published" when="2019-09-10">10 September 2019</date>
+						</imprint>
+					</monogr>
+					<idno type="MD5">0FB85EE4E9DA7EB926E359AC867E767B</idno>
+					<idno type="DOI">10.1093/bioinformatics/btz682</idno>
+					<note type="submission">Received on May 16, 2019; revised on July 29, 2019; editorial decision on August 25, 2019; accepted on September 5, 2019</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.9.1" ident="GROBID" when="2026-08-10T14:52+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<label type="revision">0.9.1</label>
+					<label type="parameters">startPage=-1, endPage=-1, consolidateCitations=0, consolidateHeader=0, consolidateFunders=0, includeRawAffiliations=true, includeRawCitations=true, includeRawCopyrights=false, generateTeiIds=false, generateTeiCoordinates=[], flavor=null, debugLabelingCollector=disabled</label>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p><s>Motivation: Biomedical text mining is becoming increasingly important as the number of biomedical documents rapidly grows.</s><s>With the progress in natural language processing (NLP), extracting valuable information from biomedical literature has gained popularity among researchers, and deep learning has boosted the development of effective biomedical text mining models.</s><s>However, directly applying the advancements in NLP to biomedical text mining often yields unsatisfactory results due to a word distribution shift from general domain corpora to biomedical corpora.</s><s>In this article, we investigate how the recently introduced pre-trained language model BERT can be adapted for biomedical corpora.</s><s>Results: We introduce BioBERT (Bidirectional Encoder Representations from Transformers for Biomedical Text Mining), which is a domain-specific language representation model pre-trained on large-scale biomedical corpora.</s><s>With almost the same architecture across tasks, BioBERT largely outperforms BERT and previous state-of-the-art models in a variety of biomedical text mining tasks when pre-trained on biomedical corpora.</s><s>While BERT obtains performance comparable to that of previous state-of-the-art models, BioBERT significantly outperforms them on the following three representative biomedical text mining tasks: biomedical named entity recognition (0.62% F1 score improvement), biomedical relation extraction (2.80% F1 score improvement) and biomedical question answering (12.24%</s><s>MRR improvement).</s><s>Our analysis results show that pre-training BERT on biomedical corpora helps it to understand complex biomedical texts.</s></p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p><s>The volume of biomedical literature continues to rapidly increase.</s><s>On average, more than 3000 new articles are published every day in peer-reviewed journals, excluding pre-prints and technical reports such as clinical trial reports in various archives.</s><s>PubMed alone has a total of 29M articles as of January 2019.</s><s>Reports containing valuable information about new discoveries and new insights are continuously added to the already overwhelming amount of literature.</s><s>Consequently, there is increasingly more demand for accurate biomedical text mining tools for extracting information from the literature.</s></p><p><s>Recent progress of biomedical text mining models was made possible by the advancements of deep learning techniques used in natural language processing (NLP).</s><s>For instance, Long Short-Term Memory (LSTM) and Conditional Random Field (CRF) have greatly improved performance in biomedical named entity recognition (NER) over the last few years <ref type="bibr" target="#b6">(Giorgi and Bader, 2018;</ref><ref type="bibr" target="#b7">Habibi et al., 2017;</ref><ref type="bibr" target="#b32">Wang et al., 2018;</ref><ref type="bibr" target="#b36">Yoon et al., 2019)</ref>.</s><s>Other deep learning based models have made improvements in biomedical text mining tasks such as relation extraction (RE) <ref type="bibr" target="#b1">(Bhasuran and Natarajan, 2018;</ref><ref type="bibr" target="#b12">Lim and Kang, 2018)</ref> and question answering (QA) <ref type="bibr" target="#b33">(Wiese et al., 2017)</ref>.</s></p><p><s>However, directly applying state-of-the-art NLP methodologies to biomedical text mining has limitations.</s><s>First, as recent word representation models such as Word2Vec <ref type="bibr" target="#b17">(Mikolov et al., 2013)</ref>, ELMo <ref type="bibr" target="#b21">(Peters et al., 2018)</ref> and BERT <ref type="bibr" target="#b3">(Devlin et al., 2019)</ref> are trained and tested mainly on datasets containing general domain texts (e.g.</s><s>Wikipedia), it is difficult to estimate their performance on datasets containing biomedical texts.</s><s>Also, the word distributions of general and biomedical corpora are quite different, which can often be a problem for biomedical text mining models.</s><s>As a result, recent models in biomedical text mining rely largely on adapted versions of word representations <ref type="bibr" target="#b7">(Habibi et al., 2017;</ref><ref type="bibr" target="#b22">Pyysalo et al., 2013)</ref>.</s></p><p><s>In this study, we hypothesize that current state-of-the-art word representation models such as BERT need to be trained on biomedical corpora to be effective in biomedical text mining tasks.</s><s>Previously, Word2Vec, which is one of the most widely known context independent word representation models, was trained on biomedical corpora which contain terms and expressions that are usually not included in a general domain corpus <ref type="bibr" target="#b22">(Pyysalo et al., 2013)</ref>.</s><s>While ELMo and BERT have proven the effectiveness of contextualized word representations, they cannot obtain high performance on biomedical corpora because they are pre-trained on only general domain corpora.</s><s>As BERT achieves very strong results on various NLP tasks while using almost the same structure across the tasks, adapting BERT for the biomedical domain could potentially benefit numerous biomedical NLP researches.</s></p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Approach</head><p><s>In this article, we introduce BioBERT, which is a pre-trained language representation model for the biomedical domain.</s><s>The overall process of pre-training and fine-tuning BioBERT is illustrated in Figure <ref type="figure" target="#fig_0">1</ref>.</s><s>First, we initialize BioBERT with weights from BERT, which was pretrained on general domain corpora (English Wikipedia and BooksCorpus).</s><s>Then, BioBERT is pre-trained on biomedical domain corpora (PubMed abstracts and PMC full-text articles).</s><s>To show the effectiveness of our approach in biomedical text mining, BioBERT is fine-tuned and evaluated on three popular biomedical text mining tasks (NER, RE and QA).</s><s>We test various pre-training strategies with different combinations and sizes of general domain corpora and biomedical corpora, and analyze the effect of each corpus on pre-training.</s><s>We also provide in-depth analyses of BERT and BioBERT to show the necessity of our pre-training strategies.</s></p><p><s>The contributions of our paper are as follows:</s></p><p><s>• BioBERT is the first domain-specific BERT based model pretrained on biomedical corpora for 23 days on eight NVIDIA V100 GPUs.</s></p><p><s>• We show that pre-training BERT on biomedical corpora largely improves its performance.</s><s>BioBERT obtains higher F1 scores in biomedical NER (0.62) and biomedical RE (2.80), and a higher MRR score (12.24) in biomedical QA than the current state-ofthe-art models.</s></p><p><s>• Compared with most previous biomedical text mining models that are mainly focused on a single task such as NER or QA, our model BioBERT achieves state-of-the-art performance on various biomedical text mining tasks, while requiring only minimal architectural modifications.</s></p><p><s>• We make our pre-processed datasets, the pre-trained weights of BioBERT and the source code for fine-tuning BioBERT publicly available.</s></p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Materials and methods</head><p><s>BioBERT basically has the same structure as BERT.</s><s>We briefly discuss the recently proposed BERT, and then we describe in detail the pre-training and fine-tuning process of BioBERT.</s></p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">BERT: bidirectional encoder representations from transformers</head><p><s>Learning word representations from a large amount of unannotated text is a long-established method.</s><s>While previous models (e.g.</s><s>Word2Vec <ref type="bibr" target="#b17">(Mikolov et al., 2013)</ref>, GloVe <ref type="bibr" target="#b20">(Pennington et al., 2014)</ref>) focused on learning context independent word representations, recent works have focused on learning context dependent word representations.</s><s>For instance, ELMo <ref type="bibr" target="#b21">(Peters et al., 2018)</ref> uses a bidirectional language model, while <ref type="bibr">CoVe (McCann et al., 2017)</ref> uses machine translation to embed context information into word representations.</s><s>BERT <ref type="bibr" target="#b3">(Devlin et al., 2019)</ref> is a contextualized word representation model that is based on a masked language model and pretrained using bidirectional transformers <ref type="bibr" target="#b31">(Vaswani et al., 2017)</ref>.</s><s>Due to the nature of language modeling where future words cannot be seen, previous language models were limited to a combination of two unidirectional language models (i.e.</s><s>left-to-right and right-toleft).</s><s>BERT uses a masked language model that predicts randomly masked words in a sequence, and hence can be used for learning bidirectional representations.</s><s>Also, it obtains state-of-the-art performance on most NLP tasks, while requiring minimal task-specific architectural modification.</s><s>According to the authors of BERT, incorporating information from bidirectional representations, rather than unidirectional representations, is crucial for representing words in natural language.</s><s>We hypothesize that such bidirectional representations are also critical in biomedical text mining as complex relationships between biomedical terms often exist in a biomedical corpus <ref type="bibr" target="#b10">(Krallinger et al., 2017)</ref>.</s><s>Due to the space limitations, we refer readers to <ref type="bibr" target="#b3">Devlin et al. (2019)</ref> for a more detailed description of BERT.</s></p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Pre-training BioBERT</head><p><s>As a general purpose language representation model, BERT was pretrained on English Wikipedia and BooksCorpus.</s><s>However, biomedical domain texts contain a considerable number of domain-specific proper nouns (e.g.</s><s>BRCA1, c.248T&gt;C) and terms (e.g.</s><s>transcriptional, antimicrobial), which are understood mostly by biomedical researchers.</s><s>As a result, NLP models designed for general purpose language understanding often obtains poor performance in biomedical text mining tasks.</s><s>In this work, we pre-train BioBERT on PubMed abstracts (PubMed) and PubMed Central full-text articles (PMC).</s><s>The text corpora used for pre-training of BioBERT are listed in Table <ref type="table" target="#tab_0">1</ref>, and the tested combinations of text corpora are listed in Table <ref type="table">2</ref>.</s><s>For computational efficiency, whenever the Wiki þ Books corpora were used for pre-training, we initialized BioBERT with the pre-trained BERT model provided by <ref type="bibr" target="#b3">Devlin et al. (2019)</ref>.</s><s>We define BioBERT as a language representation model whose pre-training corpora includes biomedical corpora (e.g.</s><s>BioBERT (þ PubMed)).</s></p><p><s>For tokenization, BioBERT uses WordPiece tokenization <ref type="bibr" target="#b34">(Wu et al., 2016)</ref>, which mitigates the out-of-vocabulary issue.</s><s>With WordPiece tokenization, any new words can be represented by frequent subwords (e.g.</s></p><formula xml:id="formula_0">Immunoglobulin ¼&gt; I ##mm ##uno ##g ##lo ##bul ##in).</formula><p><s>We found that using cased vocabulary (not lowercasing) results in slightly better performances in downstream tasks.</s><s>Although we could have constructed new WordPiece vocabulary based on biomedical corpora, we used the original vocabulary of BERT BASE for the following reasons: (i) compatibility of BioBERT with BERT, which allows BERT pre-trained on general domain corpora to be re-used, and makes it easier to interchangeably use existing models based on BERT and BioBERT and (ii) any new words may still be represented and fine-tuned for the biomedical domain using the original WordPiece vocabulary of BERT.</s></p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Fine-tuning BioBERT</head><p><s>With minimal architectural modification, BioBERT can be applied to various downstream text mining tasks.</s><s>We fine-tune BioBERT on the following three representative biomedical text mining tasks: NER, RE and QA.</s></p><p><s>Named entity recognition is one of the most fundamental biomedical text mining tasks, which involves recognizing numerous domain-specific proper nouns in a biomedical corpus.</s><s>While most previous works were built upon different combinations of LSTMs and CRFs <ref type="bibr" target="#b6">(Giorgi and Bader, 2018;</ref><ref type="bibr" target="#b7">Habibi et al., 2017;</ref><ref type="bibr" target="#b32">Wang et al., 2018)</ref>, BERT has a simple architecture based on bidirectional transformers.</s><s>BERT uses a single output layer based on the representations from its last layer to compute only token level BIO2 probabilities.</s><s>Note that while previous works in biomedical NER often used word embeddings trained on PubMed or PMC corpora <ref type="bibr" target="#b7">(Habibi et al., 2017;</ref><ref type="bibr" target="#b36">Yoon et al., 2019)</ref>, BioBERT directly learns WordPiece embeddings during pre-training and fine-tuning.</s><s>For the evaluation metrics of NER, we used entity level precision, recall and F1 score.</s></p><p><s>Relation extraction is a task of classifying relations of named entities in a biomedical corpus.</s><s>We utilized the sentence classifier of the original version of BERT, which uses a [CLS] token for the classification of relations.</s><s>Sentence classification is performed using a single output layer based on a [CLS] token representation from BERT.</s><s>We anonymized target named entities in a sentence using pre-defined tags such as @GENE$ or @DISEASE$.</s><s>For instance, a sentence with two target entities (gene and disease in this case) is represented as "Serine at position 986 of @GENE$ may be an independent genetic predictor of angiographic @DISEASE$."</s><s>The precision, recall and F1 scores on the RE task are reported.</s></p><p><s>Question answering is a task of answering questions posed in natural language given related passages.</s><s>To fine-tune BioBERT for QA, we used the same BERT architecture used for SQuAD <ref type="bibr" target="#b23">(Rajpurkar et al., 2016)</ref>.</s><s>We used the BioASQ factoid datasets because their format is similar to that of SQuAD.</s><s>Token level probabilities for the start/end location of answer phrases are computed using a single output layer.</s><s>However, we observed that about 30% of the BioASQ factoid questions were unanswerable in an extractive QA setting as the exact answers did not appear in the given passages.</s><s>Like <ref type="formula">Wiese et al. (2017)</ref>, we excluded the samples with unanswerable questions from the training sets.</s><s>Also, we used the same pre-training process of <ref type="bibr" target="#b33">Wiese et al. (2017)</ref>, which uses SQuAD, and it largely improved the performance of both BERT and BioBERT.</s><s>We used the following evaluation metrics from BioASQ: strict accuracy, lenient accuracy and mean reciprocal rank.</s></p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Results</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Datasets</head><p><s>The statistics of biomedical NER datasets are listed in Table <ref type="table" target="#tab_1">3</ref>.</s><s>We used the pre-processed versions of all the NER datasets provided by <ref type="bibr" target="#b32">Wang et al. (2018)</ref> except the 2010 i2b2/VA, JNLPBA and Species-800 datasets.</s><s>The pre-processed NCBI Disease dataset has fewer annotations than the original dataset due to the removal of duplicate articles from its training set.</s><s>We used the CoNLL format (<ref type="url" target="https://github.com/spyysalo/standoff2conll">https://  github.com/spyysalo/standoff2conll</ref>)</s><s>for pre-processing the 2010 i2b2/VA and JNLPBA datasets.</s><s>The Species-800 dataset was preprocessed and split based on the dataset of Pyysalo (<ref type="url" target="https://github.com/spyysalo/s800">https://github.  com/spyysalo/s800</ref>).</s><s>We did not use alternate annotations for the BC2GM dataset, and all NER evaluations are based on entity-level exact matches.</s><s>Note that although there are several other recently introduced high quality biomedical NER datasets <ref type="bibr" target="#b18">(Mohan and Li, 2019)</ref>, we use datasets that are frequently used by many biomedical NLP researchers, which makes it much easier to compare our work with theirs.</s><s>The RE datasets contain gene-disease relations and protein-chemical relations (Table <ref type="table">4</ref>).</s><s>Pre-processed GAD and EU-ADR datasets are available with our provided codes.</s><s>For the CHEMPROT dataset, we used the same pre-processing procedure described in <ref type="bibr" target="#b12">Lim and Kang (2018)</ref>.</s><s>We used the BioASQ factoid datasets, which can be converted into the same format as the SQuAD dataset (Table <ref type="table" target="#tab_2">5</ref>).</s><s>We used full abstracts (PMIDs) and related questions and answers provided by the BioASQ organizers.</s><s>We have made the pre-processed BioASQ datasets publicly available.</s><s>For all the datasets, we used the same dataset splits used in previous works <ref type="bibr" target="#b12">(Lim and Kang, 2018;</ref><ref type="bibr" target="#b28">Tsatsaronis et al., 2015;</ref><ref type="bibr" target="#b32">Wang et al., 2018)</ref> for a fair evaluation; however, the splits of LINAAEUS and Species-800 could not be found from <ref type="bibr" target="#b6">Giorgi and Bader (2018)</ref> and may be different.</s><s>Like previous work <ref type="bibr" target="#b1">(Bhasuran and Natarajan, 2018)</ref>, we reported the performance of 10-fold cross-validation on datasets that do not have separate test sets (e.g.</s><s>GAD, EU-ADR).</s></p><p><s>We compare BERT and BioBERT with the current state-of-theart models and report their scores.</s><s>Note that the state-of-the-art models each have a different architecture and training procedure.</s><s>For instance, the state-of-the-art model by <ref type="bibr" target="#b36">Yoon et al. (2019)</ref> trained on the JNLPBA dataset is based on multiple Bi-LSTM CRF models with character level CNNs, while the state-of-the-art model by <ref type="bibr" target="#b6">Giorgi and Bader (2018)</ref> trained on the LINNAEUS dataset uses a Bi-LSTM CRF model with character level LSTMs and is additionally trained on silver-standard datasets.</s><s>On the other hand, BERT and</s></p><formula xml:id="formula_1">Wiki þ Books BioBERT (þPubMed) Wiki þ Books þ PubMed BioBERT (þPMC) Wiki þ Books þ PMC BioBERT (þPubMed þ PMC) Wiki þ Books þ PubMed þ PMC</formula><p><s>BioBERT have exactly the same structure, and use only the gold standard datasets and not any additional datasets.</s></p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Experimental setups</head><p><s>We used the BERT BASE model pre-trained on English Wikipedia and BooksCorpus for 1M steps.</s><s>BioBERT v1.0 (þ PubMed þ PMC) is the version of BioBERT (þ PubMed þ PMC) trained for 470 K steps.</s><s>When using both the PubMed and PMC corpora, we found that 200K and 270K pre-training steps were optimal for PubMed and PMC, respectively.</s><s>We also used the ablated versions of BioBERT v1.0, which were pre-trained on only PubMed for 200K steps (BioBERT v1.0 (þ PubMed)) and PMC for 270K steps (BioBERT v1.0 (þ PMC)).</s><s>After our initial release of BioBERT v1.0, we pre-trained BioBERT on PubMed for 1M steps, and we refer to this version as BioBERT v1.1 (þ PubMed).</s><s>Other hyper-parameters such as batch size and learning rate scheduling for pre-training BioBERT are the same as those for pre-training BERT unless stated otherwise.</s></p><p><s>We pre-trained BioBERT using Naver Smart Machine Learning (NSML) <ref type="bibr" target="#b27">(Sung et al., 2017)</ref>, which is utilized for large-scale experiments that need to be run on several GPUs.</s><s>We used eight NVIDIA V100 (32GB) GPUs for the pre-training.</s><s>The maximum sequence length was fixed to 512 and the mini-batch size was set to 192, resulting in 98 304 words per iteration.</s><s>It takes more than 10 days to pre-train BioBERT v1.0 (þ PubMed þ PMC) nearly 23 days for BioBERT v1.1 (þ PubMed) in this setting.</s><s>Despite our best efforts to use BERT LARGE , we used only BERT BASE due to the computational complexity of BERT LARGE .</s></p><p><s>We used a single NVIDIA Titan Xp (12GB) GPU to fine-tune BioBERT on each task.</s><s>Note that the fine-tuning process is more computationally efficient than pre-training BioBERT.</s><s>For finetuning, a batch size of 10, 16, 32 or 64 was selected, and a learning rate of 5eÀ5, 3eÀ5 or 1eÀ5 was selected.</s><s>Fine-tuning BioBERT on QA and RE tasks took less than an hour as the size of the training data is much smaller than that of the training data used by <ref type="bibr" target="#b3">Devlin et al. (2019)</ref>.</s><s>On the other hand, it takes more than 20 epochs for BioBERT to reach its highest performance on the NER datasets.</s></p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">Experimental results</head><p><s>The results of NER are shown in Table <ref type="table" target="#tab_3">6</ref>.</s><s>First, we observe that BERT, which was pre-trained on only the general domain corpus is quite effective, but the micro averaged F1 score of BERT was lower (2.01 lower) than that of the state-of-the-art models.</s><s>On the other hand, BioBERT achieves higher scores than BERT on all the datasets.</s><s>BioBERT outperformed the state-of-the-art models on six out of nine datasets, and BioBERT v1.1 (þ PubMed) outperformed the state-of-the-art models by 0.62 in terms of micro averaged F1 score.</s><s>The relatively low scores on the LINNAEUS dataset can be attributed to the following: (i) the lack of a silver-standard dataset for training previous state-of-the-art models and (ii) different training/ test set splits used in previous work <ref type="bibr" target="#b6">(Giorgi and Bader, 2018)</ref>, which were unavailable.</s></p><p><s>The RE results of each model are shown in Table <ref type="table" target="#tab_4">7</ref>. BERT achieved better performance than the state-of-the-art model on the CHEMPROT dataset, which demonstrates its effectiveness in RE.</s><s>On average (micro), BioBERT v1.0 (þ PubMed) obtained a higher F1 score (2.80 higher) than the state-of-the-art models.</s><s>Also, BioBERT achieved the highest F1 scores on 2 out of 3 biomedical datasets.</s></p><p><s>The QA results are shown in Table <ref type="table" target="#tab_5">8</ref>.</s><s>We micro averaged the best scores of the state-of-the-art models from each batch.</s><s>BERT obtained a higher micro averaged MRR score (7.0 higher) than the state-of-the-art models.</s><s>All versions of BioBERT significantly outperformed BERT and the state-of-the-art models, and in particular, BioBERT v1.1 (þ PubMed) obtained a strict accuracy of 38.77, a lenient accuracy of 53.81 and a mean reciprocal rank score of 44.77, all of which were micro averaged.</s><s>On all the biomedical QA datasets, BioBERT achieved new state-of-the-art performance in terms of MRR.</s></p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Discussion</head><p><s>We used additional corpora of different sizes for pre-training and investigated their effect on performance.</s><s>For BioBERT v1.0 (þ PubMed), we set the number of pre-training steps to 200K and varied the size of the PubMed corpus.</s><s>Figure <ref type="figure" target="#fig_1">2(a)</ref> shows that the performance of BioBERT v1.0 (þ PubMed) on three NER datasets (NCBI Disease, BC2GM, BC4CHEMD) changes in relation to the size of the PubMed corpus.</s><s>Pre-training on 1 billion words is quite effective, and the performance on each dataset mostly improves until 4.5 billion words.</s><s>We also saved the pre-trained weights from BioBERT v1.0 (þ PubMed) at different pre-training steps to measure how the number of pre-training steps affects its performance on fine-tuning tasks.</s><s>Figure <ref type="figure" target="#fig_1">2(b)</ref> shows the performance changes of BioBERT v1.0 (þ PubMed) on the same three NER datasets in relation to the number of pre-training steps.</s><s>The results clearly show that the performance on each dataset improves as the number of pre-training steps increases.</s><s>Finally, Figure <ref type="figure" target="#fig_1">2</ref>(c) shows the absolute performance improvements of BioBERT v1.0 (þ PubMed þ PMC) over BERT on all 15 datasets.</s><s>F1 scores were used for NER/RE, and MRR scores were used for QA.</s><s>BioBERT significantly improves performance on most of the datasets.</s></p><p><s>As shown in Table <ref type="table" target="#tab_6">9</ref>, we sampled predictions from BERT and BioBERT v1.1 (þPubMed) to see the effect of pre-training on downstream tasks.</s><s>BioBERT can recognize biomedical named entities that BERT cannot and can find the exact boundaries of named  <ref type="bibr" target="#b29">(Uzuner et al., 2011)</ref> Disease 19 665 BC5CDR <ref type="bibr" target="#b11">(Li et al., 2016)</ref> Disease 12 694 BC5CDR <ref type="bibr" target="#b11">(Li et al., 2016)</ref> Drug/Chem.</s><s>15 411 BC4CHEMD <ref type="bibr" target="#b9">(Krallinger et al., 2015)</ref> Drug/Chem.</s><s>79 842 BC2GM <ref type="bibr" target="#b25">(Smith et al., 2008)</ref> Gene/Protein 20 703 JNLPBA <ref type="bibr" target="#b8">(Kim et al., 2004)</ref> Gene/Protein 35 460 LINNAEUS <ref type="bibr" target="#b5">(Gerner et al., 2010)</ref> Species 4077 Species-800 <ref type="bibr" target="#b19">(Pafilis et al., 2013)</ref> Species 3708</s></p><p><s>Note: The number of annotations from <ref type="bibr" target="#b7">Habibi et al. (2017)</ref> and <ref type="bibr" target="#b37">Zhu et al. (2018)</ref> is provided.</s></p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Table 4. Statistics of the biomedical relation extraction datasets</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Dataset</head><p><s>Entity type Number of relations GAD <ref type="bibr" target="#b2">(Bravo et al., 2015)</ref> Gene-disease 5330 EU-ADR <ref type="bibr" target="#b30">(Van Mulligen et al., 2012)</ref> Gene-disease 355 CHEMPROT <ref type="bibr" target="#b10">(Krallinger et al., 2017)</ref> Protein-chemical 10 031</s></p><p><s>Note: For the CHEMPROT dataset, the number of relations in the training, validation and test sets was summed.</s><s><ref type="bibr" target="#b28">(Tsatsaronis et al., 2015)</ref> 486 150 BioASQ 6b-factoid <ref type="bibr" target="#b28">(Tsatsaronis et al., 2015)</ref> 618 161 entities.</s><s>While BERT often gives incorrect answers to simple biomedical questions, BioBERT provides correct answers to such questions.</s><s>Also, BioBERT can provide longer named entities as answers.</s></p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Conclusion</head><p><s>In this article, we introduced BioBERT, which is a pre-trained language representation model for biomedical text mining.</s><s>We showed that pre-training BERT on biomedical corpora is crucial in applying it to the biomedical domain.</s><s>Requiring minimal task-specific architectural modification, BioBERT outperforms previous models on biomedical text mining tasks such as NER, RE and QA.</s><s>The pre-released version of BioBERT (January 2019) has already been shown to be very effective in many biomedical text mining tasks such as NER for clinical notes <ref type="bibr" target="#b0">(Alsentzer et al., 2019)</ref>, human phenotype-gene RE <ref type="bibr" target="#b26">(Sousa et al., 2019)</ref> and clinical temporal RE <ref type="bibr" target="#b13">(Lin et al., 2019)</ref>.</s><s>The following updated versions of BioBERT will be available to the bioNLP community: (i) BioBERT BASE and BioBERT LARGE trained on only PubMed abstracts without initialization from the existing BERT model and (ii) BioBERT BASE and BioBERT LARGE trained on domain-specific vocabulary based on WordPiece.</s></p><formula xml:id="formula_2">(Wiki þ Books) (þ PubMed) (þ PMC) (þ PubMed þ PMC) (þ</formula><p><s>PubMed) Disease NCBI disease P 88.30 84.12 86.76 86.16 89.04 88.22 R 89.00 87.19 88.02 89.48 89.69 91.25 F 88.60 85.63 87.38 87.79 89.36 89.71 2010 i2b2/VA P 87.44 84.04 85.37 85.55 87.50 86.93 R 86.25 84.08 85.64 85.72 85.44 86.53 F 86.84 84.06 85.51 85.64 86.46 86.73 BC5CDR P 89.61 81.97 85.80 84.67 85.86 86.47 R 83.09 82.48 86.60 85.87 87.27 87.84 F 86.23 82.41 86.20 85.27 86.56 87.15 Drug/chem.</s><s>BC5CDR P 94.26 90.94 92.52 92.46 93.27 93.68 R 92.38 91.38 92.76 92.63 93.61 93.26 F 93.31 91.16 92.64 92.54 93.44 93.47 BC4CHEMD P 92.29 91.19 91.77 91.65 92.23 92.80 R 90.01 88.92 90.77 90.30 90.61 91.92 F 91.14 90.04 91.26 90.97 91.41 92.36 Gene/protein BC2GM P 81.81 81.17 81.72 82.86 85.16 84.32 R 81.57</s><s>82.42 83.38 84.21 83.65 85.12 F 81.69 81.79 82.54 83.53 84.40 84.72 JNLPBA P 74.43 69.57</s><s>71.11 71.17 72.68 72.24 R 83.22 81.20 83.11 82.76 83.21 83.56 F 78.58 74.94 76.65 76.53 77.59 77.49</s><s>Species LINNAEUS P 92.80 91.17 91.83 91.62 93.84 90.77</s><s>R 94.29 84.30 84.72 85.48 86.11 85.83 F 93.54 87.60 88.13 88.45 89.81 88.24 Species-800 P 74.34 69.35 70.60 71.54 72.84 72.80 R 75.96 74.05 75.75 74.71 77.97 75.36 F 74.98 71.63 73.08 73.09 75.31 74.06 Notes: Precision (P), Recall (R) and F1 (F) scores on each dataset are reported.</s><s>The best scores are in bold, and the second best scores are underlined.</s><s>We list the scores of the state-of-the-art (SOTA) models on different datasets as follows: scores of Xu et al. (2019) on NCBI Disease, scores of Sachan et al. (2018) on BC2GM, scores of Zhu et al. (2018) (single model) on 2010 i2b2/VA, scores of Lou et al. (2017) on BC5CDR-disease, scores of Luo et al. (2018) on BC4CHEMD, scores of Yoon et al. (2019) on BC5CDR-chemical and JNLPBA and scores of Giorgi and Bader (2018) on LINNAEUS and Species-800.</s></p><formula xml:id="formula_3">(Wiki þ Books) (þ PubMed) (þ PMC) (þ PubMed þ PMC) (þ</formula><p><s>PubMed) Gene-disease GAD P 79.21 74.28 76.43 75.20 75.95 77.32 R 89.25 85.11 87.65 86.15 88.08 82.68 F 83.93 79.29 81.61 80.24 81.52 79.83 EU-ADR P 76.43 75.45 78.04 81.05 80.92 77.86 R 98.01 96.55 93.86 93.90 90.81 83.55 F 85.34 84.62 84.44 86.51 84.83 79.74 Protein-chemical CHEMPROT P 74.80 76.02 76.05 77.46 75.20 77.02 R 56.00 71.60 74.33 72.94 75.09 75.90 F 64.10 73.74 75.18 75.13 75.14 76.46</s></p><p><s>Notes: Precision (P), Recall (R) and F1 (F) scores on each dataset are reported.</s><s>The best scores are in bold, and the second best scores are underlined.</s><s>The scores on GAD and EU-ADR were obtained from <ref type="bibr" target="#b1">Bhasuran and Natarajan (2018)</ref>, and the scores on CHEMPROT were obtained from <ref type="bibr" target="#b12">Lim and Kang (2018)</ref>.</s></p><p><s>(a) ( b) ( c)</s></p><formula xml:id="formula_4">(Wiki þ Books) (þ PubMed) (þ PMC) (þ PubMed þ PMC) (þ</formula><p><s>PubMed) BioASQ 4b S 20.01 27.33 25.47 26.09 28.57</s><s>27.95 L 28.81 44.72 44.72 42.24 47.82 44.10 M 23.52 33.77 33.28 32.42 35.17 34.72 BioASQ 5b S 41.33 39.33 41.33 42.00 44.00 46.00 L 56.67 52.67 55.33 54.67 56.67 60.00 M 47.24 44.27 46.73 46.93 49.38 51.64 BioASQ 6b S 24.22 33.54 43.48 41.61 40.37 42.86 L 37.89 51.55 55.90 55.28 57.77 57.77</s><s>M 27.84 40.88 48.11 47.02 47.48 48.43 Notes: Strict Accuracy (S), Lenient Accuracy (L) and Mean Reciprocal Rank (M) scores on each dataset are reported.</s><s>The best scores are in bold, and the second best scores are underlined.</s><s>The best BioASQ 4b/5b/6b scores were obtained from the BioASQ leaderboard (<ref type="url" target="http://participants-area.bioasq.org">http://participants-area.bioasq.org</ref>).</s></p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc><div><p><s>Fig. 1.</s><s>Overview of the pre-training and fine-tuning of BioBERT</s></p></div></figDesc><graphic coords="2,189.81,617.42,83.80,78.16" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc><div><p><s>Fig. 2. (a) Effects of varying the size of the PubMed corpus for pre-training.</s><s>(b) NER performance of BioBERT at different checkpoints.</s><s>(c) Performance improvement of BioBERT v1.0 (þ PubMed þ PMC) over BERT</s></p></div></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc><div><p><s>List of text corpora used for BioBERT</s></p></div></figDesc><table><row><cell></cell><cell></cell><cell></cell><cell cols="2">Table 2. Pre-training BioBERT on different combinations of the fol-</cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="2">lowing text corpora: English Wikipedia (Wiki), BooksCorpus</cell></row><row><cell>Corpus</cell><cell>Number of words</cell><cell>Domain</cell><cell cols="2">(Books), PubMed abstracts (PubMed) and PMC full-text articles</cell></row><row><cell>English Wikipedia</cell><cell>2.5B</cell><cell>General</cell><cell>(PMC)</cell><cell></cell></row><row><cell>BooksCorpus</cell><cell>0.8B</cell><cell>General</cell><cell>Model</cell><cell>Corpus combination</cell></row><row><cell>PubMed Abstracts</cell><cell>4.5B</cell><cell>Biomedical</cell><cell></cell><cell></cell></row><row><cell>PMC Full-text articles</cell><cell>13.5B</cell><cell>Biomedical</cell><cell>BERT (Devlin et al., 2019)</cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 3 .</head><label>3</label><figDesc><div><p><s>Statistics of the biomedical named entity recognition datasets</s></p></div></figDesc><table><row><cell>Dataset</cell><cell>Entity type</cell><cell>Number of</cell></row><row><cell></cell><cell></cell><cell>annotations</cell></row><row><cell>NCBI Disease (Do gan et al., 2014)</cell><cell>Disease</cell><cell>6881</cell></row><row><cell>2010 i2b2/VA</cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 5 .</head><label>5</label><figDesc><div><p><s>Statistics of biomedical question answering datasets</s></p></div></figDesc><table><row><cell>Dataset</cell><cell>Number</cell><cell>Number</cell></row><row><cell></cell><cell>of train</cell><cell>of test</cell></row><row><cell>BioASQ 4b-factoid (Tsatsaronis et al., 2015)</cell><cell>327</cell><cell>161</cell></row><row><cell>BioASQ 5b-factoid</cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 6 .</head><label>6</label><figDesc><div><p><s>Test results in biomedical named entity recognition</s></p></div></figDesc><table><row><cell>BERT</cell><cell>BioBERT v1.0</cell><cell>BioBERT v1.1</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4"><head>Table 7 .</head><label>7</label><figDesc><div><p><s>Biomedical relation extraction test results</s></p></div></figDesc><table><row><cell>BERT</cell><cell>BioBERT v1.0</cell><cell>BioBERT v1.1</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5"><head>Table 8 .</head><label>8</label><figDesc><div><p><s>Biomedical question answering test results</s></p></div></figDesc><table><row><cell></cell><cell></cell><cell>BERT</cell><cell>BioBERT v1.0</cell><cell>BioBERT v1.1</cell></row><row><cell>Datasets</cell><cell>Metrics</cell><cell>SOTA</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_6"><head>Table 9 .</head><label>9</label><figDesc><div><p><s>Prediction samples from BERT and BioBERT on NER and QA datasets , associated with male pseudohermaphroditism in Denys-Drash syndrome, fail to . . .</s><s>BioBERT WT1 missense mutations, associated with male pseudohermaphroditism in Denys-Drash syndrome, fail to . . .</s><s>BC5CDR (Drug/Chem.)</s><s>BERT . . .</s><s>a case of oral penicillin anaphylaxis is described, and the terminology . . .</s><s>BioBERT . . .</s><s>a case of oral penicillin anaphylaxis is described, and the terminology . . .</s><s>BC2GM BERT Like the DMA, but unlike all other mammalian class II A genes, the zebrafish gene codes for two cysteine residues . . .</s><s>BioBERT Like the DMA, but unlike all other mammalian class II A genes, the zebrafish gene codes for two cysteine residues . . .</s><s>QA BioASQ 6b-factoid Q: Which type of urinary incontinence is diagnosed with the Q tip test?</s><s>BERT A total of 25 women affected by clinical stress urinary incontinence (SUI) were enrolled.</s><s>After undergoing (. .</s><s>.)</s><s>Q-tip test, . . .</s><s>BioBERT A total of 25 women affected by clinical stress urinary incontinence (SUI) were enrolled.</s><s>After undergoing (. .</s><s>.)</s><s>Q-tip test, . . .</s><s>Q: Which bacteria causes erythrasma?</s><s>BERT Corynebacterium minutissimum is the bacteria that leads to cutaneous eruptions of erythrasma . . .</s><s>BioBERT Corynebacterium minutissimum is the bacteria that leads to cutaneous eruptions of erythrasma . . .</s></p></div></figDesc><table><row><cell>Task</cell><cell>Dataset</cell><cell>Model</cell><cell>Sample</cell></row><row><cell>NER</cell><cell>NCBI disease</cell><cell>BERT</cell><cell>WT1 missense mutations</cell></row></table><note><p><s>Note: Predicted named entities for NER and predicted answers for QA are in bold.</s></p></note></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" xml:id="foot_0"><p><s>Downloaded from https://academic.oup.com/bioinformatics/article/36/4/1234/5566506 by guest on 10 August 2026</s></p></note>
+		</body>
+		<back>
+
+			<div type="funding">
+<div><head>Funding</head><p><s>This research was supported by the <rs type="funder">National Research Foundation of Korea(NRF)</rs> funded by the <rs type="funder">Korea government</rs> (<rs type="grantNumber">NRF-2017R1A2A1A17069645</rs>, <rs type="grantNumber">NRF-2017M3C4A7065887</rs>, <rs type="grantNumber">NRF-2014M3C9A3063541</rs>).</s></p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_maHTn4Z">
+					<idno type="grant-number">NRF-2017R1A2A1A17069645</idno>
+				</org>
+				<org type="funding" xml:id="_VQkMyzk">
+					<idno type="grant-number">NRF-2017M3C4A7065887</idno>
+				</org>
+				<org type="funding" xml:id="_WkZyVBs">
+					<idno type="grant-number">NRF-2014M3C9A3063541</idno>
+				</org>
+			</listOrg>
+
+			<div type="availability">
+<div xmlns="http://www.tei-c.org/ns/1.0"><p><s>We make the pre-trained weights of BioBERT freely available at <ref type="url" target="https://github.com/naver/biobert-pretrained">https://github.  com/naver/biobert-pretrained</ref>, and the source code for fine-tuning BioBERT available at <ref type="url" target="https://github.com/dmis-lab/biobert">https://github.com/dmis-lab/  biobert</ref>.</s></p></div>
+			</div>
+
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct status="extracted" xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Publicly available clinical bert embeddings</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Alsentzer</surname></persName>
+		</author>
+		<ptr target="https://www.aclweb.org/anthology/W19-1909" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2nd Clinical Natural Language Processing Workshop</title>
+		<meeting>the 2nd Clinical Natural Language Processing Workshop<address><addrLine>Minneapolis, MN, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="72" to="78" />
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Alsentzer,E. et al. (2019) Publicly available clinical bert embeddings. In: Proceedings of the 2nd Clinical Natural Language Processing Workshop, Minneapolis, MN, USA. pp. 72-78. Association for Computational Linguistics. https://www.acl web.org/anthology/W19-1909.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Automatic extraction of gene-disease associations from literature using joint ensemble learning</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Bhasuran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Natarajan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PLoS One</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="page">200699</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bhasuran,B. and Natarajan,J. (2018) Automatic extraction of gene-disease associations from literature using joint ensemble learning. PLoS One, 13, e0200699.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Extraction of relations between genes and diseases from text and large-scale data analysis: implications for translational research</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">`</forename><surname>Bravo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">BMC Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="page">55</biblScope>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bravo,A `. et al. (2015) Extraction of relations between genes and diseases from text and large-scale data analysis: implications for translational research. BMC Bioinformatics, 16, 55.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Bert: pre-training of deep bidirectional transformers for language understanding</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Devlin</surname></persName>
+		</author>
+		<ptr target="https://www.aclweb.org/anthology/N19-1423" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies</title>
+		<meeting>the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies<address><addrLine>Minneapolis, MN, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="4171" to="4186" />
+		</imprint>
+	</monogr>
+	<note>Long and Short Papers)</note>
+	<note type="raw_reference">Devlin,J. et al. (2019) Bert: pre-training of deep bidirectional transformers for lan- guage understanding. In: Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers), Minneapolis, MN, USA. pp. 4171-4186. Association for Computational Linguistics. https:// www.aclweb.org/anthology/N19-1423.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b4">
+	<analytic>
+		<title level="a" type="main">NCBI disease corpus: a resource for disease name recognition and concept normalization</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">I</forename><surname>Do Gan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Biomed. Inform</title>
+		<imprint>
+			<biblScope unit="volume">47</biblScope>
+			<biblScope unit="page" from="1" to="10" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Do gan,R.I. et al. (2014) NCBI disease corpus: a resource for disease name rec- ognition and concept normalization. J. Biomed. Inform., 47, 1-10.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Linnaeus: a species name identification system for biomedical literature</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gerner</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">BMC Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="page">85</biblScope>
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Gerner,M. et al. (2010) Linnaeus: a species name identification system for bio- medical literature. BMC Bioinformatics, 11, 85.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Transfer learning for biomedical named entity recognition with neural networks</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Giorgi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">D</forename><surname>Bader</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page">4087</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Giorgi,J.M. and Bader,G.D. (2018) Transfer learning for biomedical named entity recognition with neural networks. Bioinformatics, 34, 4087.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Deep learning with word embeddings improves biomedical named entity recognition</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Habibi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="37" to="48" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Habibi,M. et al. (2017) Deep learning with word embeddings improves bio- medical named entity recognition. Bioinformatics, 33, i37-i48.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Introduction to the bio-entity recognition task at JNLPBA</title>
+		<author>
+			<persName><forename type="first">J.-D</forename><surname>Kim</surname></persName>
+		</author>
+		<ptr target="https://www.aclweb.org/anthology/W04-1213" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the International Joint Workshop on Natural Language Processing in Biomedicine and its Applications (NLPBA/BioNLP)</title>
+		<meeting>the International Joint Workshop on Natural Language Processing in Biomedicine and its Applications (NLPBA/BioNLP)<address><addrLine>Geneva, Switzerland</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2004">2004</date>
+			<biblScope unit="page" from="73" to="78" />
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Kim,J.-D. et al. (2004) Introduction to the bio-entity recognition task at JNLPBA. In: Proceedings of the International Joint Workshop on Natural Language Processing in Biomedicine and its Applications (NLPBA/BioNLP), Geneva, Switzerland. pp. 73-78. COLING. https:// www.aclweb.org/anthology/W04-1213.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b9">
+	<analytic>
+		<title level="a" type="main">The chemdner corpus of chemicals and drugs and its annotation principles</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Krallinger</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Cheminform</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Krallinger,M. et al. (2015) The chemdner corpus of chemicals and drugs and its annotation principles. J. Cheminform., 7.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Overview of the BioCreative VI chemical-protein interaction track</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Krallinger</surname></persName>
+		</author>
+		<idno type="DOI">10.1093/database/bay073/5055578</idno>
+		<ptr target="https://academic.oup.com/database/article/doi/10.1093/database/bay073/5055578" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the BioCreative VI Workshop</title>
+		<meeting>the BioCreative VI Workshop<address><addrLine>Bethesda, MD, USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="141" to="146" />
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Krallinger,M. et al. (2017) Overview of the BioCreative VI chemical-protein interaction track. In: Proceedings of the BioCreative VI Workshop, Bethesda, MD, USA, pp. 141-146. https://academic.oup.com/database/art icle/doi/10.1093/database/bay073/5055578.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Biocreative V CDR task corpus: a resource for chemical disease relation extraction</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Database</title>
+		<imprint>
+			<date type="published" when="2016">2016. 2016</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Li,J. et al. (2016) Biocreative V CDR task corpus: a resource for chemical dis- ease relation extraction. Database, 2016.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Chemical-gene relation extraction using recursive neural network</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Lim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Database</title>
+		<imprint>
+			<date type="published" when="2018">2018. 2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lim,S. and Kang,J. (2018) Chemical-gene relation extraction using recursive neural network. Database, 2018.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b13">
+	<analytic>
+		<title level="a" type="main">A bert-based universal model for both within-and cross-sentence clinical temporal relation extraction</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Lin</surname></persName>
+		</author>
+		<ptr target="https://www.aclweb.org/anthology/W19-1908" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2nd Clinical Natural Language Processing Workshop</title>
+		<meeting>the 2nd Clinical Natural Language Processing Workshop<address><addrLine>Minneapolis, MN, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="65" to="71" />
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lin,C. et al. (2019) A bert-based universal model for both within-and cross-sentence clinical temporal relation extraction. In: Proceedings of the 2nd Clinical Natural Language Processing Workshop, Minneapolis, MN, USA. pp. 65-71. Association for Computational Linguistics. https://www. aclweb.org/anthology/W19-1908.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b14">
+	<analytic>
+		<title level="a" type="main">A transition-based joint model for disease named entity recognition and normalization</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="2363" to="2371" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lou,Y. et al. (2017) A transition-based joint model for disease named entity recognition and normalization. Bioinformatics, 33, 2363-2371.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b15">
+	<analytic>
+		<title level="a" type="main">An attention-based BiLSTM-CRF approach to document-level chemical named entity recognition</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Luo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="1381" to="1388" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Luo,L. et al. (2018) An attention-based BiLSTM-CRF approach to document-level chemical named entity recognition. Bioinformatics, 34, 1381-1388.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Learned in translation: contextualized word vectors</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Mccann</surname></persName>
+		</author>
+		<ptr target="http://papers.nips.cc/paper/7209-learned-in-translation-contextualized-word-vectors.pdf" />
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<editor>
+			<persName><forename type="first">I</forename><surname>Guyon</surname></persName>
+		</editor>
+		<imprint>
+			<publisher>Curran Associates, Inc</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="page" from="6294" to="6305" />
+		</imprint>
+	</monogr>
+	<note type="raw_reference">McCann,B. et al. (2017) Learned in translation: contextualized word vectors. In: Guyon,I. et al. (eds.), Advances in Neural Information Processing Systems 30, Curran Associates, Inc., pp. 6294-6305. http://papers.nips.cc/ paper/7209-learned-in-translation-contextualized-word-vectors.pdf.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Distributed representations of words and phrases and their compositionality</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Mikolov</surname></persName>
+		</author>
+		<ptr target="http://papers.nips.cc/paper/5021-distributed-representations-of-words-and-phrases-and-their-compositionality.pdf" />
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<editor>
+			<persName><forename type="first">C</forename><forename type="middle">J C</forename><surname>Burges</surname></persName>
+		</editor>
+		<imprint>
+			<publisher>Curran Associates, Inc</publisher>
+			<date type="published" when="2013">2013</date>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="page" from="3111" to="3119" />
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Mikolov,T. et al. (2013) Distributed representations of words and phrases and their compositionality. In: Burges,C.J.C. (eds.), Advances in Neural Information Processing Systems 26, Curran Associates, Inc., pp. 3111-3119. http://papers.nips.cc/paper/5021-distributed-representations- of-words-and-phrases-and-their-compositionality.pdf.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b18">
+	<monogr>
+		<title level="m" type="main">Medmentions: a large biomedical corpus annotated with UMLS concepts</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Mohan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Li</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1902.09476</idno>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+	<note type="raw_reference">Mohan,S. and Li,D. (2019) Medmentions: a large biomedical corpus anno- tated with UMLS concepts. arXiv preprint arXiv: 1902.09476.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b19">
+	<analytic>
+		<title level="a" type="main">The species and organisms resources for fast and accurate identification of taxonomic names in text</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Pafilis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PLoS One</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page">65390</biblScope>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Pafilis,E. et al. (2013) The species and organisms resources for fast and accur- ate identification of taxonomic names in text. PLoS One, 8, e65390.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Glove: Global vectors for word representation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Pennington</surname></persName>
+		</author>
+		<ptr target="https://www.aclweb.org/anthology/D14-1162" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP)</title>
+		<meeting>the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP)<address><addrLine>Doha, Qatar</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="2014">2014</date>
+			<biblScope unit="page" from="1532" to="1543" />
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Pennington,J. et al. (2014) Glove: Global vectors for word representation. In: Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP), Doha, Qatar. pp. 1532-1543. Association for Computational Linguistics. https://www.aclweb.org/anthology/D14-1162.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Deep contextualized word representations</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">E</forename><surname>Peters</surname></persName>
+		</author>
+		<ptr target="https://www.aclweb.org/anthology/N18-1202" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2018 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies</title>
+		<meeting>the 2018 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies<address><addrLine>New Orleans, LA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="2227" to="2237" />
+		</imprint>
+	</monogr>
+	<note>Long Papers</note>
+	<note type="raw_reference">Peters,M.E. et al. (2018) Deep contextualized word representations. In: Proceedings of the 2018 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long Papers), New Orleans, LA. pp. 2227-2237. Association for Computational Linguistics. https://www.aclweb.org/anthol ogy/N18-1202.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Distributional semantics resources for biomedical text processing</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Pyysalo</surname></persName>
+		</author>
+		<ptr target="https://academic.oup.com/bioinformatics/article/33/14/i37/3953940" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 5th International Symposium on Languages in Biology and Medicine</title>
+		<meeting>the 5th International Symposium on Languages in Biology and Medicine<address><addrLine>Tokyo, Japan</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2013">2013</date>
+			<biblScope unit="page" from="39" to="43" />
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Pyysalo,S. et al. (2013) Distributional semantics resources for biomedical text processing. In: Proceedings of the 5th International Symposium on Languages in Biology and Medicine, Tokyo, Japan, pp. 39-43. https://aca demic.oup.com/bioinformatics/article/33/14/i37/3953940.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Squad: 100,000þ questions for machine comprehension of text</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Rajpurkar</surname></persName>
+		</author>
+		<ptr target="https://www.aclweb.org/anthology/D16-1264" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2016 Conference on Empirical Methods in Natural Language Processing</title>
+		<meeting>the 2016 Conference on Empirical Methods in Natural Language Processing<address><addrLine>Austin, TX</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="2383" to="2392" />
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Rajpurkar,P. et al. (2016) Squad: 100,000þ questions for machine compre- hension of text. In: Proceedings of the 2016 Conference on Empirical Methods in Natural Language Processing, Austin, TX. pp. 2383-2392. Association for Computational Linguistics. https://www.aclweb.org/anthol ogy/D16-1264.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Effective use of bidirectional language modeling for transfer learning in biomedical named entity recognition</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">S</forename><surname>Sachan</surname></persName>
+		</author>
+		<ptr target="http://proceedings.mlr.press/v85/sachan18a.html" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of Machine Learning Research</title>
+		<editor>
+			<persName><forename type="first">D.-V</forename><surname>Finale</surname></persName>
+		</editor>
+		<meeting>Machine Learning Research<address><addrLine>Palo Alto, CA</addrLine></address></meeting>
+		<imprint>
+			<publisher>PMLR</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">85</biblScope>
+			<biblScope unit="page" from="383" to="402" />
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Sachan,D.S. et al. (2018) Effective use of bidirectional language modeling for transfer learning in biomedical named entity recognition. In: Finale,D.-V. et al. (eds.), Proceedings of Machine Learning Research, Palo Alto, CA, Vol. 85, pp. 383-402. PMLR. http://proceedings.mlr.press/v85/sachan18a.html.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Overview of biocreative ii gene mention recognition</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Smith</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Genome Biol</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Smith,L. et al. (2008) Overview of biocreative ii gene mention recognition. Genome Biol., 9, S2.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b26">
+	<analytic>
+		<title level="a" type="main">A silver standard corpus of human phenotype-gene relations</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Sousa</surname></persName>
+		</author>
+		<ptr target="https://www.aclweb.org/anthology/N19-1152" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies</title>
+		<meeting>the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies<address><addrLine>Minneapolis, MN</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="1487" to="1492" />
+		</imprint>
+	</monogr>
+	<note>Long and Short Papers)</note>
+	<note type="raw_reference">Sousa,D. et al. (2019) A silver standard corpus of human phenotype-gene rela- tions. In: Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers), Minneapolis, MN. pp. 1487-1492. Association for Computational Linguistics. https://www.aclweb. org/anthology/N19-1152.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b27">
+	<monogr>
+		<title level="m" type="main">NSML: A machine learning platform that enables you to focus on your models</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Sung</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1712.05902</idno>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+	<note type="raw_reference">Sung,N. et al. (2017) NSML: A machine learning platform that enables you to focus on your models. arXiv preprint arXiv: 1712.05902.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b28">
+	<analytic>
+		<title level="a" type="main">An overview of the BIOASQ large-scale biomedical semantic indexing and question answering competition</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Tsatsaronis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">BMC Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="page">138</biblScope>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Tsatsaronis,G. et al. (2015) An overview of the BIOASQ large-scale biomed- ical semantic indexing and question answering competition. BMC Bioinformatics, 16, 138.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b29">
+	<analytic>
+		<title level="a" type="main">2010 i2b2/VA challenge on concepts, assertions, and relations in clinical text</title>
+		<author>
+			<persName><forename type="first">O</forename><forename type="middle">¨</forename><surname>Uzuner</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Am. Med. Inform. Assoc</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="page" from="552" to="556" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Uzuner,O ¨. et al. (2011) 2010 i2b2/VA challenge on concepts, assertions, and relations in clinical text. J. Am. Med. Inform. Assoc., 18, 552-556.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b30">
+	<analytic>
+		<title level="a" type="main">The EU-ADR corpus: annotated drugs, diseases, targets, and their relationships</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">M</forename><surname>Van Mulligen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Biomed. Inform</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="page" from="879" to="884" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Van Mulligen,E.M. et al. (2012) The EU-ADR corpus: annotated drugs, dis- eases, targets, and their relationships. J. Biomed. Inform., 45, 879-884.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Attention is all you need</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<editor>
+			<persName><forename type="first">I</forename><surname>Guyon</surname></persName>
+		</editor>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="5998" to="6008" />
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Vaswani,A. et al. (2017) Attention is all you need. In: Guyon,I. et al. (eds.), Advances in Neural Information Processing Systems, pp. 5998-6008.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Cross-type biomedical named entity recognition with deep multi-task learning</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="page" from="1745" to="1752" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Wang,X. et al. (2018) Cross-type biomedical named entity recognition with deep multi-task learning. Bioinformatics, 35, 1745-1752.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Neural domain adaptation for biomedical question answering</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wiese</surname></persName>
+		</author>
+		<ptr target="https://www.aclweb.org/anthology/K17-1029" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 21st Conference on Computational Natural Language Learning (CoNLL 2017)</title>
+		<meeting>the 21st Conference on Computational Natural Language Learning (CoNLL 2017)<address><addrLine>Vancouver, Canada</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="281" to="289" />
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Wiese,G. et al. (2017) Neural domain adaptation for biomedical question answering. In: Proceedings of the 21st Conference on Computational Natural Language Learning (CoNLL 2017), Vancouver, Canada. pp. 281-289. Association for Computational Linguistics. https://www.aclweb. org/anthology/K17-1029.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b34">
+	<monogr>
+		<title level="m" type="main">Google&apos;s neural machine translation system: Bridging the gap between human and machine translation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1609.08144</idno>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+	<note type="raw_reference">Wu,Y. et al. (2016) Google&apos;s neural machine translation system: Bridging the gap between human and machine translation. arXiv preprint arXiv: 1609.08144.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Document-level attention-based BiLSTM-CRF incorporating disease dictionary for disease named entity recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Xu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Biol. Med</title>
+		<imprint>
+			<biblScope unit="volume">108</biblScope>
+			<biblScope unit="page" from="122" to="132" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Xu,K. et al. (2019) Document-level attention-based BiLSTM-CRF incorporat- ing disease dictionary for disease named entity recognition. Comput. Biol. Med., 108, 122-132.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Collabonet: collaboration of deep neural networks for biomedical named entity recognition</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Yoon</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">BMC Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="page">249</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Yoon,W. et al. (2019) Collabonet: collaboration of deep neural networks for biomedical named entity recognition. BMC Bioinformatics, 20, 249.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Clinical concept extraction with contextual word embedding</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhu</surname></persName>
+		</author>
+		<ptr target="http://par.nsf.gov/biblio/10098080" />
+	</analytic>
+	<monogr>
+		<title level="m">NIPS Machine Learning for Health Workshop</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Zhu,H. et al. (2018) Clinical concept extraction with contextual word embed- ding. NIPS Machine Learning for Health Workshop. http://par.nsf.gov/bib lio/10098080.</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,4 +1,4 @@
-"""Retrieve citation evidence after verifying explicit cross-provider DOI mappings."""
+"""Retrieve citation evidence after verifying explicit cross-provider identifiers."""
 
 import asyncio
 import json
@@ -13,7 +13,7 @@ from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import Literal
-from urllib.parse import quote, unquote, urlsplit
+from urllib.parse import quote
 
 import httpx
 from pydantic import ValidationError
@@ -27,7 +27,9 @@ from app.schemas.citation_contexts import (
     PaperMapping,
 )
 from app.schemas.contracts import ClassifyRequest, normalize_work_id
+from app.services.citation_identifiers import identity_matches, normalize_doi, work_identifiers
 from app.services.inference import InferenceService
+from app.services.openalex_tei import OpenAlexTEIService
 from app.services.resource_cache import ResourceCache
 
 SEMANTIC_INTERVAL_SECONDS = 1.5
@@ -44,22 +46,6 @@ SEMANTIC_QUEUE_TIMEOUT_SECONDS = 30.0
 MAX_SEMANTIC_INTERVAL_SECONDS = 4.5
 EXAMPLES_PATH = Path(__file__).resolve().parents[1] / "examples" / "citation_contexts.json"
 logger = logging.getLogger(__name__)
-
-
-def normalize_doi(value: str) -> str:
-    if not isinstance(value, str):
-        raise ValueError("DOI must be a string")
-    value = value.strip()
-    if value.lower().startswith("doi:"):
-        value = value[4:].strip()
-    if value.lower().startswith(("http://", "https://")):
-        parsed = urlsplit(value)
-        if parsed.hostname not in ("doi.org", "dx.doi.org"):
-            raise ValueError("Expected a DOI resolver URL")
-        value = unquote(parsed.path.lstrip("/"))
-    if not re.fullmatch(r"10\.\d+/\S+", value):
-        raise ValueError("Invalid DOI")
-    return value.lower()
 
 
 def _invalid_response(provider: str) -> ServiceError:
@@ -88,19 +74,6 @@ def _backoff(attempt: int) -> float:
     return min(MAX_RETRY_DELAY_SECONDS, 2.0**attempt + random.uniform(0, 0.25))
 
 
-def _metadata_lifetime(paper: dict | None, doi: str) -> float:
-    if paper is None:
-        return 300
-    try:
-        matches = normalize_doi(paper["externalIds"]["DOI"]) == doi
-        valid_id = isinstance(paper.get("paperId"), str) and re.fullmatch(
-            r"[a-fA-F0-9]{40}", paper["paperId"]
-        )
-        return MAPPING_CACHE_SECONDS if matches and valid_id else 0
-    except (ValueError, TypeError, KeyError):
-        return 0
-
-
 @dataclass
 class ReferencePage:
     payload: dict
@@ -117,6 +90,7 @@ class CitationContextService:
         self._semantic_interval = SEMANTIC_INTERVAL_SECONDS
         self._semantic_successes = 0
         self._cache: OrderedDict[tuple[str, str], tuple[float, CitationContexts]] = OrderedDict()
+        self._doi_aliases: OrderedDict[str, set[str]] = OrderedDict()
         self._examples: dict[tuple[str, str], CitationContexts] | None = None
         self._mappings = ResourceCache[PaperMapping](MAPPING_CACHE_ENTRIES, MAPPING_CACHE_SECONDS)
         self._semantic_papers = ResourceCache[dict | None](
@@ -127,6 +101,43 @@ class CitationContextService:
         )
         # No stored pair values here: the existing pair cache owns their TTL.
         self._pairs = ResourceCache[CitationContexts](CONTEXT_CACHE_ENTRIES, 0)
+        self.tei = OpenAlexTEIService(client, settings)
+        self._tei_pairs = ResourceCache(128, 300, max_pending=16)
+
+    async def retrieve_for_classification(self, pair: CitationPair, mode="auto"):
+        """Keep the primary provider behavior; fallback only on selected classification requests."""
+        primary_error = None
+        try:
+            result = await self.retrieve(pair, mode=mode)
+        except ServiceError as exc:
+            primary_error = exc
+            result = self._unavailable(pair, "provider_unavailable", exc.code)
+        if mode == "examples":
+            if primary_error:
+                raise primary_error
+            return result
+        if (
+            result.relationship_found is True
+            and result.citing_mapping.verified
+            and result.cited_mapping.verified
+            and any(len(c.context_text) <= 20000 for c in result.contexts)
+        ):
+            return result
+        if not self.settings.openalex_tei_enabled or not self.settings.openalex_api_key.strip():
+            if primary_error:
+                raise primary_error
+            return result
+        key = (pair.citing_paper_id, pair.cited_paper_id)
+        (fallback, reason), _ = await self._tei_pairs.get(key, lambda: self.tei.retrieve(pair))
+        if fallback is not None:
+            result = fallback
+        else:
+            result.fallback_reason = reason
+        self._cache[key] = (time.monotonic() + CONTEXT_CACHE_SECONDS, result.model_copy(deep=True))
+        self._cache.move_to_end(key)
+        if len(self._cache) > CONTEXT_CACHE_ENTRIES:
+            self._cache.popitem(last=False)
+        return result
 
     def _example(self, key: tuple[str, str]) -> CitationContexts | None:
         if self._examples is None:
@@ -304,7 +315,9 @@ class CitationContextService:
 
     async def _resolve_paper(self, work_id: str) -> PaperMapping:
         mapping = PaperMapping(openalex_id=work_id)
-        work = await self._get("openalex", f"works/{work_id}", {"select": "id,doi,ids,title"})
+        work = await self._get(
+            "openalex", f"works/{work_id}", {"select": "id,doi,ids,title,locations"}
+        )
         if work is None:
             return mapping.model_copy(update={"reason": "openalex_work_not_found"})
         try:
@@ -315,49 +328,68 @@ class CitationContextService:
             ids = work.get("ids") or {}
             if not isinstance(ids, dict):
                 raise TypeError("Invalid OpenAlex identifiers")
-            doi_values = [value for value in (work.get("doi"), ids.get("doi")) if value]
-            dois = {normalize_doi(value) for value in doi_values}
         except (KeyError, TypeError):
             raise _invalid_response("openalex") from None
         except ValueError:
             return mapping.model_copy(update={"reason": "invalid_openalex_identifier"})
         if isinstance(work.get("title"), str):
             mapping.title = work["title"]
-        if not dois:
-            mapping.reason = "missing_doi"
-            return mapping
-        if len(dois) != 1:
-            mapping.reason = "ambiguous_openalex_doi"
-            return mapping
-        mapping.doi = dois.pop()
-        paper, _ = await self._semantic_papers.get(
-            mapping.doi,
-            lambda: self._get(
-                "semantic_scholar",
-                f"paper/DOI:{quote(mapping.doi, safe='')}",
-                {"fields": "paperId,externalIds"},
-            ),
-            lifetime=lambda paper: _metadata_lifetime(paper, mapping.doi),
-        )
-        if paper is None:
-            mapping.reason = "semantic_scholar_work_not_found"
-            return mapping
-        external_ids = paper.get("externalIds") or {}
-        if not isinstance(external_ids, dict):
-            raise _invalid_response("semantic_scholar")
         try:
-            returned_doi = normalize_doi(external_ids.get("DOI"))
-        except ValueError:
-            mapping.reason = "unverified_semantic_scholar_doi"
+            known, aliases = work_identifiers(work)
+        except ValueError as exc:
+            reason = (
+                "ambiguous_openalex_doi" if str(exc) == "ambiguous_doi_identifier" else str(exc)
+            )
+            return mapping.model_copy(update={"reason": reason})
+        mapping.doi = known.get("DOI")
+        mapping.reason = "missing_doi" if not mapping.doi else "semantic_scholar_work_not_found"
+        for kind, value in known.items():
+            paper, _ = await self._semantic_papers.get(
+                (kind, value),
+                lambda: self._get(
+                    "semantic_scholar",
+                    f"paper/{kind}:{quote(value, safe='')}",
+                    {"fields": "paperId,externalIds"},
+                ),
+                lifetime=lambda paper: (
+                    300
+                    if paper is None
+                    else MAPPING_CACHE_SECONDS
+                    if identity_matches(paper, kind, value, known, aliases)
+                    and isinstance(paper.get("paperId"), str)
+                    and re.fullmatch(r"[a-fA-F0-9]{40}", paper["paperId"])
+                    else 0
+                ),
+            )
+            if paper is None:
+                mapping.reason = "semantic_scholar_work_not_found"
+                continue
+            external_ids = paper.get("externalIds") or {}
+            if not isinstance(external_ids, dict):
+                raise _invalid_response("semantic_scholar")
+            if not identity_matches(paper, kind, value, known, aliases):
+                mapping.reason = "unverified_alternative_identifier"
+                if kind == "DOI":
+                    try:
+                        normalize_doi(external_ids.get("DOI"))
+                        mapping.reason = "semantic_scholar_doi_mismatch"
+                    except ValueError:
+                        mapping.reason = "unverified_semantic_scholar_doi"
+                continue
+            paper_id = paper.get("paperId")
+            if not isinstance(paper_id, str) or not re.fullmatch(r"[a-fA-F0-9]{40}", paper_id):
+                raise _invalid_response("semantic_scholar")
+            mapping.semantic_scholar_paper_id = paper_id.lower()
+            mapping.verified = True
+            mapping.reason = None
+            accepted_dois = set(aliases)
+            if external_ids.get("DOI"):
+                accepted_dois.add(normalize_doi(external_ids["DOI"]))
+            self._doi_aliases[paper_id.lower()] = accepted_dois
+            self._doi_aliases.move_to_end(paper_id.lower())
+            if len(self._doi_aliases) > MAPPING_CACHE_ENTRIES:
+                self._doi_aliases.popitem(last=False)
             return mapping
-        if returned_doi != mapping.doi:
-            mapping.reason = "semantic_scholar_doi_mismatch"
-            return mapping
-        paper_id = paper.get("paperId")
-        if not isinstance(paper_id, str) or not re.fullmatch(r"[a-fA-F0-9]{40}", paper_id):
-            raise _invalid_response("semantic_scholar")
-        mapping.semantic_scholar_paper_id = paper_id.lower()
-        mapping.verified = True
         return mapping
 
     async def _reference_page(self, paper_id: str, offset: int) -> tuple[ReferencePage, bool]:
@@ -461,10 +493,16 @@ class CitationContextService:
                     raise _invalid_response("semantic_scholar") from None
                 reference_id = paper.get("paperId")
                 matches_id = reference_id == cited.semantic_scholar_paper_id
-                matches_doi = reference_doi == cited.doi
-                if (matches_id and reference_doi and not matches_doi) or (
-                    matches_doi and reference_id not in (None, cited.semantic_scholar_paper_id)
-                ):
+                matches_doi = bool(cited.doi and reference_doi == cited.doi)
+                accepted_dois = self._doi_aliases.get(
+                    cited.semantic_scholar_paper_id, {cited.doi} if cited.doi else set()
+                )
+                if (
+                    matches_id
+                    and accepted_dois
+                    and reference_doi
+                    and reference_doi not in accepted_dois
+                ) or (matches_doi and reference_id not in (None, cited.semantic_scholar_paper_id)):
                     result.reason = "ambiguous_reference_identity"
                     return result
                 if not matches_id and not (matches_doi and reference_id is None):
