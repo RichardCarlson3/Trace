@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
 from pathlib import Path
+from time import perf_counter
 from typing import Literal
 from urllib.parse import quote
 
@@ -28,6 +29,7 @@ from app.schemas.citation_contexts import (
 )
 from app.schemas.contracts import ClassifyRequest, normalize_work_id
 from app.services.citation_identifiers import identity_matches, normalize_doi, work_identifiers
+from app.services.citation_timing import record_timing, timed, timing
 from app.services.inference import InferenceService
 from app.services.openalex_tei import OpenAlexTEIService
 from app.services.resource_cache import ResourceCache
@@ -89,6 +91,8 @@ class CitationContextService:
         self._next_semantic_request = 0.0
         self._semantic_interval = SEMANTIC_INTERVAL_SECONDS
         self._semantic_successes = 0
+        self._semantic_cooldown_until = 0.0
+        self._semantic_cooldown = asyncio.Event()
         self._cache: OrderedDict[tuple[str, str], tuple[float, CitationContexts]] = OrderedDict()
         self._doi_aliases: OrderedDict[str, set[str]] = OrderedDict()
         self._examples: dict[tuple[str, str], CitationContexts] | None = None
@@ -104,40 +108,125 @@ class CitationContextService:
         self.tei = OpenAlexTEIService(client, settings)
         self._tei_pairs = ResourceCache(128, 300, max_pending=16)
 
+    @timed("classification_retrieval")
     async def retrieve_for_classification(self, pair: CitationPair, mode="auto"):
-        """Keep the primary provider behavior; fallback only on selected classification requests."""
-        primary_error = None
-        try:
-            result = await self.retrieve(pair, mode=mode)
-        except ServiceError as exc:
-            primary_error = exc
-            result = self._unavailable(pair, "provider_unavailable", exc.code)
+        """Overlap fallback with an observed cooldown, retaining the primary retry path."""
         if mode == "examples":
-            if primary_error:
-                raise primary_error
+            return await self.retrieve(pair, mode=mode)
+        key = (pair.citing_paper_id, pair.cited_paper_id)
+        can_fallback = self.settings.openalex_tei_enabled and bool(
+            self.settings.openalex_api_key.strip()
+        )
+
+        async def primary():
+            try:
+                return await self.retrieve(pair, mode=mode), None
+            except ServiceError as exc:
+                return self._unavailable(pair, "provider_unavailable", exc.code), exc
+
+        async def load_fallback():
+            started = perf_counter()
+            value, reused = await self._tei_pairs.get(key, lambda: self.tei.retrieve(pair))
+            record_timing("fallback_cache", started, reused=reused)
+            return value
+
+        primary_task = asyncio.create_task(primary())
+        tasks = [primary_task]
+        fallback_task = None
+        speculative = False
+        try:
+            if can_fallback and self.settings.semantic_scholar_enabled:
+                cooldown = asyncio.create_task(self._wait_for_semantic_cooldown())
+                tasks.append(cooldown)
+                await asyncio.wait([primary_task, cooldown], return_when=asyncio.FIRST_COMPLETED)
+                if not primary_task.done():
+                    record_timing(
+                        "cooldown_fallback",
+                        perf_counter(),
+                        remaining_ms=max(0, self._semantic_cooldown_until - time.monotonic())
+                        * 1000,
+                    )
+                    speculative = True
+                    fallback_task = asyncio.create_task(load_fallback())
+                    tasks.append(fallback_task)
+                    await asyncio.wait(
+                        [primary_task, fallback_task], return_when=asyncio.FIRST_COMPLETED
+                    )
+                    if not primary_task.done():
+                        # An unsuccessful speculative fallback must not replace
+                        # a primary success or remove its remaining retry chances.
+                        try:
+                            fallback, _ = fallback_task.result()
+                        except Exception:
+                            fallback = None
+                        if fallback is not None and self._classifiable(fallback):
+                            # A resumed primary keeps its success chance. Return
+                            # early only during an actual provider cooldown;
+                            # otherwise wait for its result or another 429.
+                            cooldown = asyncio.create_task(self._wait_for_semantic_cooldown())
+                            tasks.append(cooldown)
+                            await asyncio.wait(
+                                [primary_task, cooldown], return_when=asyncio.FIRST_COMPLETED
+                            )
+                            if not primary_task.done():
+                                self._remember(key, fallback)
+                                return fallback
+
+            result, primary_error = await primary_task
+            if self._classifiable(result):
+                return result
+            if not can_fallback:
+                if primary_error:
+                    raise primary_error
+                return result
+            if fallback_task is None:
+                fallback_task = asyncio.create_task(load_fallback())
+                tasks.append(fallback_task)
+            try:
+                fallback, reason = await fallback_task
+            except ServiceError as exc:
+                if not speculative or exc.code != "citation_context_busy":
+                    raise
+                # Early capacity rejection sent no I/O and is not cached. Keep
+                # the original late fallback opportunity once the primary fails.
+                fallback, reason = await load_fallback()
+            if fallback is not None:
+                result = fallback
+            else:
+                result.fallback_reason = reason
+            # Re-reading a negative pair must not indefinitely extend its TTL.
+            self._remember(
+                key, result, refresh=fallback is not None or result.origin != "memory_cache"
+            )
             return result
-        if (
+        finally:
+            for task in tasks:
+                if not task.done():
+                    task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
+
+    async def _wait_for_semantic_cooldown(self):
+        while self._semantic_cooldown_until <= time.monotonic():
+            self._semantic_cooldown.clear()
+            await self._semantic_cooldown.wait()
+
+    @staticmethod
+    def _classifiable(result):
+        return (
             result.relationship_found is True
             and result.citing_mapping.verified
             and result.cited_mapping.verified
             and any(len(c.context_text) <= 20000 for c in result.contexts)
-        ):
-            return result
-        if not self.settings.openalex_tei_enabled or not self.settings.openalex_api_key.strip():
-            if primary_error:
-                raise primary_error
-            return result
-        key = (pair.citing_paper_id, pair.cited_paper_id)
-        (fallback, reason), _ = await self._tei_pairs.get(key, lambda: self.tei.retrieve(pair))
-        if fallback is not None:
-            result = fallback
-        else:
-            result.fallback_reason = reason
-        self._cache[key] = (time.monotonic() + CONTEXT_CACHE_SECONDS, result.model_copy(deep=True))
+        )
+
+    def _remember(self, key, result, *, refresh=True):
+        expires = time.monotonic() + CONTEXT_CACHE_SECONDS
+        if not refresh and key in self._cache:
+            expires = self._cache[key][0]
+        self._cache[key] = (expires, result.model_copy(deep=True))
         self._cache.move_to_end(key)
         if len(self._cache) > CONTEXT_CACHE_ENTRIES:
             self._cache.popitem(last=False)
-        return result
 
     def _example(self, key: tuple[str, str]) -> CitationContexts | None:
         if self._examples is None:
@@ -182,13 +271,16 @@ class CitationContextService:
     async def retrieve(
         self, pair: CitationPair, mode: Literal["auto", "live", "examples"] = "auto"
     ) -> CitationContexts:
+        started = perf_counter()
         key = (pair.citing_paper_id, pair.cited_paper_id)
         if mode == "auto" and key in self._cache:
             expires_at, result = self._cache[key]
             if expires_at > time.monotonic():
                 self._cache.move_to_end(key)
+                record_timing("pair_cache", started, reused=True)
                 return result.model_copy(deep=True, update={"origin": "memory_cache"})
             del self._cache[key]
+        record_timing("pair_cache", started, reused=False)
         if mode in ("auto", "examples"):
             example = self._example(key)
             if example is not None:
@@ -209,29 +301,31 @@ class CitationContextService:
             return self._unavailable(pair, "provider_unavailable", exc.code)
         if result.retrieved_at is None:
             result.retrieved_at = datetime.now(UTC)
-        self._cache[key] = (time.monotonic() + CONTEXT_CACHE_SECONDS, result.model_copy(deep=True))
-        self._cache.move_to_end(key)
-        if len(self._cache) > CONTEXT_CACHE_ENTRIES:
-            self._cache.popitem(last=False)
+        self._remember(key, result)
         return result
 
     async def _send(self, provider: str, url: str, params: dict, headers: dict) -> httpx.Response:
         if provider != "semantic_scholar":
-            return await self.client.get(url, params=params, headers=headers, timeout=10.0)
+            with timing("mapping_metadata_http"):
+                return await self.client.get(url, params=params, headers=headers, timeout=10.0)
         try:
             async with asyncio.timeout(SEMANTIC_QUEUE_TIMEOUT_SECONDS):
+                queued_at = perf_counter()
                 async with self._semantic_lock:
+                    record_timing("semantic_queue", queued_at)
                     delay = self._next_semantic_request - time.monotonic()
                     if delay > MAX_RETRY_DELAY_SECONDS:
                         raise ServiceError(
                             503, "semantic_scholar_rate_limited", "Semantic Scholar is rate limited"
                         )
                     if delay > 0:
-                        await asyncio.sleep(delay)
+                        with timing("semantic_pacing"):
+                            await asyncio.sleep(delay)
                     self._next_semantic_request = time.monotonic() + self._semantic_interval
-                    response = await self.client.get(
-                        url, params=params, headers=headers, timeout=10.0
-                    )
+                    with timing("semantic_http"):
+                        response = await self.client.get(
+                            url, params=params, headers=headers, timeout=10.0
+                        )
                     # Publish cooldown before releasing the shared scheduler lock.
                     if response.status_code == 429:
                         self._semantic_successes = 0
@@ -244,6 +338,8 @@ class CitationContextService:
                             time.monotonic()
                             + max(_retry_delay(response, 0), self._semantic_interval),
                         )
+                        self._semantic_cooldown_until = self._next_semantic_request
+                        self._semantic_cooldown.set()
                     elif response.is_success:
                         self._semantic_successes += 1
                         if self._semantic_successes >= 8:
@@ -268,17 +364,27 @@ class CitationContextService:
             if self.settings.openalex_api_key:
                 headers["Authorization"] = f"Bearer {self.settings.openalex_api_key}"
         for attempt in range(3):
+            started = perf_counter()
             try:
                 response = await self._send(
                     provider, f"{base_url.rstrip('/')}/{path}", params, headers
                 )
             except httpx.TransportError:
                 if attempt < 2:
-                    await asyncio.sleep(_backoff(attempt))
+                    with timing("provider_backoff", provider=provider):
+                        await asyncio.sleep(_backoff(attempt))
                     continue
                 raise ServiceError(
                     502, f"{provider}_unavailable", f"{provider} could not be reached"
                 ) from None
+            record_timing(
+                "provider_attempt",
+                started,
+                provider=provider,
+                operation="references" if path.endswith("/references") else "mapping",
+                attempt=attempt + 1,
+                status=response.status_code,
+            )
             if response.status_code == 404:
                 return None
             if response.status_code == 429 or response.status_code >= 500:
@@ -288,7 +394,8 @@ class CitationContextService:
                     raise ServiceError(
                         503, f"{provider}_{code}", f"{provider} is temporarily unavailable"
                     )
-                await asyncio.sleep(delay)
+                with timing("provider_backoff", provider=provider):
+                    await asyncio.sleep(delay)
                 continue
             if response.status_code in (401, 403):
                 raise ServiceError(
@@ -305,12 +412,15 @@ class CitationContextService:
             return payload
         raise AssertionError("Retry loop exhausted unexpectedly")
 
+    @timed("identifier_resolution")
     async def _map_paper(self, work_id: str) -> PaperMapping:
-        mapping, _ = await self._mappings.get(
+        started = perf_counter()
+        mapping, reused = await self._mappings.get(
             work_id,
             lambda: self._resolve_paper(work_id),
             lifetime=lambda mapping: MAPPING_CACHE_SECONDS if mapping.verified else 300,
         )
+        record_timing("mapping_cache", started, reused=reused)
         return mapping
 
     async def _resolve_paper(self, work_id: str) -> PaperMapping:
@@ -392,6 +502,7 @@ class CitationContextService:
             return mapping
         return mapping
 
+    @timed("semantic_references")
     async def _reference_page(self, paper_id: str, offset: int) -> tuple[ReferencePage, bool]:
         parameters = {
             "fields": "contexts,externalIds",
@@ -443,7 +554,10 @@ class CitationContextService:
             )
             return ReferencePage(payload, url, datetime.now(UTC))
 
-        return await self._references.get(key, load)
+        started = perf_counter()
+        page, reused = await self._references.get(key, load)
+        record_timing("reference_cache", started, reused=reused)
+        return page, reused
 
     async def _retrieve_live(self, pair: CitationPair) -> CitationContexts:
         citing = await self._map_paper(pair.citing_paper_id)
@@ -543,6 +657,7 @@ class CitationContextService:
         return result
 
 
+@timed("model_inference")
 def classify_contexts(result: CitationContexts, inference: InferenceService) -> CitationContexts:
     """Classify retrieved evidence for this pair only, preserving its exact attribution."""
     classified = result.model_copy(deep=True)
