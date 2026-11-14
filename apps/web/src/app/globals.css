@@ -959,17 +959,28 @@ h3 {
 }
 .citation-edge .react-flow__edge-path {
   stroke-linecap: round;
-  stroke-dasharray: 450;
+  stroke-dasharray: 1;
   stroke-dashoffset: 0;
-  animation: edge-grow 850ms ease-out both;
+  animation: edge-attach 700ms ease-out both;
   transition:
     stroke-width 180ms,
     filter 180ms;
 }
 .citation-edge:hover .react-flow__edge-path,
+.citation-edge.is-highlighted .react-flow__edge-path,
 .citation-edge.is-selected .react-flow__edge-path {
   stroke-width: 4 !important;
   filter: drop-shadow(0 0 6px #bbaaff);
+}
+@keyframes edge-attach {
+  from {
+    stroke-dashoffset: 1;
+    opacity: 0.2;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
 }
 .paper-hover {
   position: fixed;

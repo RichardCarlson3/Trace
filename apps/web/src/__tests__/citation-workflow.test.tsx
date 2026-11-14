@@ -138,4 +138,18 @@ describe("citation graph workflow", () => {
     expect(result.current.graph.citations).toHaveLength(2);
     expect(result.current.loadError).toBeNull();
   });
+
+  it("clears selection on the canvas and resets to the home state", () => {
+    const { result } = renderHook(() => useCitationGraph());
+    act(() =>
+      result.current.openPreview(previewInitialGraph, previewFullGraph),
+    );
+    expect(result.current.seed).not.toBeNull();
+    act(() => result.current.clearSelection());
+    expect(result.current.selectedPaper).toBeNull();
+    expect(result.current.selectedCitation).toBeNull();
+    act(() => result.current.reset());
+    expect(result.current.seed).toBeNull();
+    expect(result.current.graph.papers).toHaveLength(0);
+  });
 });

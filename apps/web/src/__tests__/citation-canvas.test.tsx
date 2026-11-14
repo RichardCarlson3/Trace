@@ -29,6 +29,7 @@ describe("actual React Flow canvas", () => {
         loading={false}
         onSelectPaper={() => {}}
         onSelectCitation={() => {}}
+        onClearSelection={() => {}}
       />,
     );
     expect(
@@ -41,6 +42,7 @@ describe("actual React Flow canvas", () => {
   });
 
   it("renders multiple papers from the graph response", async () => {
+    const clearSelection = vi.fn();
     render(
       <CitationCanvas
         seedId="W1"
@@ -52,6 +54,7 @@ describe("actual React Flow canvas", () => {
         loading={false}
         onSelectPaper={() => {}}
         onSelectCitation={() => {}}
+        onClearSelection={clearSelection}
       />,
     );
 
@@ -69,5 +72,9 @@ describe("actual React Flow canvas", () => {
     expect(screen.getByRole("tooltip")).toHaveTextContent(
       "Sample data for checking the graph interface",
     );
+    const pane = document.querySelector(".react-flow__pane");
+    expect(pane).not.toBeNull();
+    fireEvent.click(pane!);
+    expect(clearSelection).toHaveBeenCalledOnce();
   });
 });

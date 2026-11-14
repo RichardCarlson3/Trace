@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
+import { useMemo, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { CitationCanvas } from "@/components/graph/citation-canvas";
 import { CitationDetails } from "@/components/papers/citation-details";
@@ -22,7 +22,9 @@ export function ResearchWorkspace() {
   const [direction, setDirection] = useState<DirectionFilter>("all");
   const [yearFrom, setYearFrom] = useState("");
   const [yearTo, setYearTo] = useState("");
-  const { connection, result, loading, error, search } = useResearch();
+  const linkVersion = useRef(0);
+  const { connection, result, loading, error, search, clearSearch } =
+    useResearch();
   const citationGraph = useCitationGraph();
   const hasGraph = Boolean(citationGraph.seed);
   const visibleGraph = useMemo(
@@ -47,24 +49,43 @@ export function ResearchWorkspace() {
     void citationGraph.openPaper(paper);
   }
 
+  function goHome() {
+    ++linkVersion.current;
+    clearSearch();
+    citationGraph.reset();
+    setQuery("");
+    setResultsOpen(false);
+    setResolving(false);
+    setLinkError(null);
+    setFiltersOpen(false);
+    setDetailsOpen(true);
+    setDirection("all");
+    setYearFrom("");
+    setYearTo("");
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const value = query.trim();
     if (!value) return;
+    const requestVersion = ++linkVersion.current;
     setLinkError(null);
     if (isPaperLink(value)) {
       setResultsOpen(false);
       setResolving(true);
       try {
-        choose(await resolvePaper(value));
+        const paper = await resolvePaper(value);
+        if (requestVersion === linkVersion.current) choose(paper);
       } catch (caught) {
-        setLinkError(
-          caught instanceof Error
-            ? caught.message
-            : "Could not open that article link.",
-        );
+        if (requestVersion === linkVersion.current) {
+          setLinkError(
+            caught instanceof Error
+              ? caught.message
+              : "Could not open that article link.",
+          );
+        }
       } finally {
-        setResolving(false);
+        if (requestVersion === linkVersion.current) setResolving(false);
       }
     } else {
       setResultsOpen(true);
@@ -158,9 +179,21 @@ export function ResearchWorkspace() {
           citationGraph.selectCitation(id);
           setDetailsOpen(true);
         }}
+        onClearSelection={() => {
+          citationGraph.clearSelection();
+          setDetailsOpen(false);
+        }}
       />
       <header className="topbar">
-        <Link className="brand" href="/" aria-label="TRACE home">
+        <Link
+          className="brand"
+          href="/"
+          aria-label="TRACE home"
+          onClick={(event) => {
+            event.preventDefault();
+            goHome();
+          }}
+        >
           <span className="brand-mark" aria-hidden="true">
             ◎
           </span>

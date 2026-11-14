@@ -53,5 +53,12 @@ export function useResearch() {
     }
   }, []);
 
-  return { connection, result, loading, error, search };
+  const clearSearch = useCallback(() => {
+    activeRequest.current?.abort();
+    setResult(null);
+    setLoading(false);
+    setError(null);
+  }, []);
+
+  return { connection, result, loading, error, search, clearSearch };
 }

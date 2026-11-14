@@ -189,6 +189,30 @@ export function useCitationGraph() {
     setSelectedPaperId(null);
   }, []);
 
+  const clearSelection = useCallback(() => {
+    setSelectedPaperId(null);
+    setSelectedCitationId(null);
+    setExpansionError(null);
+  }, []);
+
+  const reset = useCallback(() => {
+    ++version.current;
+    seedRequest.current?.abort();
+    expansionRequest.current?.abort();
+    previewNeighbors.current = null;
+    setSeed(null);
+    setIsPreview(false);
+    setGraph({ papers: [], citations: [] });
+    setSelectedPaperId(null);
+    setSelectedCitationId(null);
+    setLoadingSeed(false);
+    setLoadError(null);
+    setExpanding(null);
+    setExpansionError(null);
+    setExpanded(new Set());
+    setExpansionOrigin(null);
+  }, []);
+
   const selectedPaper =
     graph.papers.find((paper) => paper.id === selectedPaperId) ?? null;
   const selectedCitation: Citation | null =
@@ -214,5 +238,7 @@ export function useCitationGraph() {
     expand,
     selectPaper,
     selectCitation,
+    clearSelection,
+    reset,
   };
 }

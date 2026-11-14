@@ -2,13 +2,16 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  BaseEdge,
   Background,
   Controls,
   Handle,
   MarkerType,
   Position,
   ReactFlow,
+  getBezierPath,
   useNodesState,
+  type EdgeProps,
   type Node,
   type NodeProps,
   type ReactFlowInstance,
@@ -27,6 +30,10 @@ function PaperBubble({ data }: NodeProps<PaperNode>) {
       <Handle type="source" id="source-left" position={Position.Left} />
       <Handle type="target" id="target-right" position={Position.Right} />
       <Handle type="source" id="source-right" position={Position.Right} />
+      <Handle type="target" id="target-top" position={Position.Top} />
+      <Handle type="source" id="source-top" position={Position.Top} />
+      <Handle type="target" id="target-bottom" position={Position.Bottom} />
+      <Handle type="source" id="source-bottom" position={Position.Bottom} />
       <span className="paper-bubble-year">{paper.year ?? "Year unknown"}</span>
       <span className="paper-bubble-title">{paper.title}</span>
     </div>
@@ -34,6 +41,26 @@ function PaperBubble({ data }: NodeProps<PaperNode>) {
 }
 
 const nodeTypes = { paperBubble: PaperBubble };
+function CitationEdge(props: EdgeProps) {
+  const [path] = getBezierPath({
+    sourceX: props.sourceX,
+    sourceY: props.sourceY,
+    sourcePosition: props.sourcePosition,
+    targetX: props.targetX,
+    targetY: props.targetY,
+    targetPosition: props.targetPosition,
+  });
+  return (
+    <BaseEdge
+      path={path}
+      pathLength={1}
+      markerEnd={props.markerEnd}
+      style={props.style}
+      interactionWidth={props.interactionWidth}
+    />
+  );
+}
+const edgeTypes = { citation: CitationEdge };
 const intentColors = {
   background: "#ad98ff",
   method: "#6fafff",
@@ -89,6 +116,7 @@ export function CitationCanvas({
   loading,
   onSelectPaper,
   onSelectCitation,
+  onClearSelection,
 }: {
   seedId: string | null;
   graph: Graph;
@@ -99,12 +127,16 @@ export function CitationCanvas({
   loading: boolean;
   onSelectPaper: (id: string) => void;
   onSelectCitation: (id: string) => void;
+  onClearSelection: () => void;
 }) {
   const [nodes, setNodes, onNodesChange] = useNodesState<PaperNode>([]);
   const [instance, setInstance] = useState<ReactFlowInstance<PaperNode> | null>(
     null,
   );
   const [hover, setHover] = useState<Hover | null>(null);
+  const [hoveredCitationId, setHoveredCitationId] = useState<string | null>(
+    null,
+  );
   const fitted = useRef(false);
 
   useEffect(() => {
@@ -157,8 +189,15 @@ export function CitationCanvas({
       ids.add(citation.source);
       ids.add(citation.target);
     }
+    const hoveredCitation = visibleGraph.citations.find(
+      (item) => item.id === hoveredCitationId,
+    );
+    if (hoveredCitation) {
+      ids.add(hoveredCitation.source);
+      ids.add(hoveredCitation.target);
+    }
     return ids;
-  }, [hover, selectedCitationId, visibleGraph.citations]);
+  }, [hover, selectedCitationId, hoveredCitationId, visibleGraph.citations]);
   const shownNodes = useMemo(
     () =>
       nodes.map((node) => ({
@@ -175,18 +214,34 @@ export function CitationCanvas({
   const edges = useMemo(
     () =>
       visibleGraph.citations.map((citation) => {
-        const sourceX = positions.get(citation.source)?.x ?? 0;
-        const targetX = positions.get(citation.target)?.x ?? 0;
-        const towardRight = targetX >= sourceX;
+        const source = positions.get(citation.source) ?? { x: 0, y: 0 };
+        const target = positions.get(citation.target) ?? { x: 0, y: 0 };
+        const dx = target.x - source.x;
+        const dy = target.y - source.y;
+        const horizontal = Math.abs(dx) >= Math.abs(dy);
+        const sourceSide = horizontal
+          ? dx >= 0
+            ? "right"
+            : "left"
+          : dy >= 0
+            ? "bottom"
+            : "top";
+        const targetSide = horizontal
+          ? dx >= 0
+            ? "left"
+            : "right"
+          : dy >= 0
+            ? "top"
+            : "bottom";
         const color = intentColors[citation.intent ?? "unknown"];
         return {
           id: citation.id,
           source: citation.source,
           target: citation.target,
-          sourceHandle: towardRight ? "source-right" : "source-left",
-          targetHandle: towardRight ? "target-left" : "target-right",
-          type: "default",
-          className: `citation-edge${citation.id === selectedCitationId ? " is-selected" : ""}`,
+          sourceHandle: `source-${sourceSide}`,
+          targetHandle: `target-${targetSide}`,
+          type: "citation",
+          className: `citation-edge${citation.id === selectedCitationId ? " is-selected" : ""}${citation.id === hoveredCitationId ? " is-highlighted" : ""}`,
           style: { stroke: color, strokeWidth: 2.2 },
           markerEnd: {
             type: MarkerType.ArrowClosed,
@@ -197,7 +252,7 @@ export function CitationCanvas({
           interactionWidth: 28,
         };
       }),
-    [visibleGraph.citations, positions, selectedCitationId],
+    [visibleGraph.citations, positions, selectedCitationId, hoveredCitationId],
   );
 
   function showHover(paper: Paper | undefined, event: React.MouseEvent) {
@@ -207,15 +262,22 @@ export function CitationCanvas({
 
   return (
     <div className="graph-container" role="region" aria-label="Citation graph">
-      <AmbientLinks />
+      <AmbientLinks canDraw={!selectedPaperId && !selectedCitationId} />
       <ReactFlow
         nodes={shownNodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
         onInit={setInstance}
         onNodeClick={(_, node) => onSelectPaper(node.id)}
         onEdgeClick={(_, edge) => onSelectCitation(edge.id)}
+        onPaneClick={(event) => {
+          if (selectedPaperId || selectedCitationId) event.stopPropagation();
+          setHover(null);
+          setHoveredCitationId(null);
+          onClearSelection();
+        }}
         onNodeMouseEnter={(event, node) =>
           showHover(
             graph.papers.find((paper) => paper.id === node.id),
@@ -229,19 +291,23 @@ export function CitationCanvas({
           )
         }
         onNodeMouseLeave={() => setHover(null)}
-        onEdgeMouseEnter={(event, edge) =>
+        onEdgeMouseEnter={(event, edge) => {
+          setHoveredCitationId(edge.id);
           showHover(
             graph.papers.find((paper) => paper.id === edge.target),
             event,
-          )
-        }
+          );
+        }}
         onEdgeMouseMove={(event, edge) =>
           showHover(
             graph.papers.find((paper) => paper.id === edge.target),
             event,
           )
         }
-        onEdgeMouseLeave={() => setHover(null)}
+        onEdgeMouseLeave={() => {
+          setHover(null);
+          setHoveredCitationId(null);
+        }}
         nodesConnectable={false}
         fitView
         minZoom={0.15}

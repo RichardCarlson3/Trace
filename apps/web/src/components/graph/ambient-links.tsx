@@ -10,10 +10,16 @@ const dots = Array.from({ length: DOT_COUNT }, (_, index) => ({
   phase: index * 0.82,
 }));
 
-type Link = { from: number; to: number; createdAt: number };
+type Point = { x: number; y: number; createdAt: number };
+type Link = { from: Point; to: Point; createdAt: number };
 
-export function AmbientLinks() {
+export function AmbientLinks({ canDraw = true }: { canDraw?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canDrawRef = useRef(canDraw);
+
+  useEffect(() => {
+    canDrawRef.current = canDraw;
+  }, [canDraw]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -33,8 +39,10 @@ export function AmbientLinks() {
     let width = 0;
     let height = 0;
     let frame = 0;
+    const expiryTimers: number[] = [];
     let cursor: { x: number; y: number } | null = null;
-    let lastDot: number | null = null;
+    let lastPoint: Point | null = null;
+    let points: Point[] = [];
     let links: Link[] = [];
 
     function resize() {
@@ -57,6 +65,9 @@ export function AmbientLinks() {
     function draw(time: number) {
       ctx.clearRect(0, 0, width, height);
       links = links.filter((link) => time - link.createdAt < LINK_LIFETIME);
+      points = points.filter((point) => time - point.createdAt < LINK_LIFETIME);
+      if (lastPoint && time - lastPoint.createdAt >= LINK_LIFETIME)
+        lastPoint = null;
 
       // A quiet network moves behind the real citation graph at all times.
       dots.forEach((_, index) => {
@@ -84,14 +95,29 @@ export function AmbientLinks() {
 
       for (const link of links) {
         const age = (time - link.createdAt) / LINK_LIFETIME;
-        const from = dotPosition(link.from, time);
-        const to = dotPosition(link.to, time);
+        const from = { x: link.from.x * width, y: link.from.y * height };
+        const to = { x: link.to.x * width, y: link.to.y * height };
         ctx.beginPath();
         ctx.moveTo(from.x, from.y);
         ctx.lineTo(to.x, to.y);
         ctx.strokeStyle = `rgba(150, 139, 255, ${0.62 * (1 - age)})`;
         ctx.lineWidth = 1.5;
         ctx.stroke();
+      }
+
+      for (const point of points) {
+        const age = (time - point.createdAt) / LINK_LIFETIME;
+        const x = point.x * width;
+        const y = point.y * height;
+        ctx.beginPath();
+        ctx.arc(x, y, 7, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(190, 175, 255, ${0.7 * (1 - age)})`;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(x, y, 2.8, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(220, 210, 255, ${1 - age})`;
+        ctx.fill();
       }
 
       dots.forEach((dot, index) => {
@@ -112,13 +138,6 @@ export function AmbientLinks() {
         ctx.arc(position.x, position.y, 2.3 + pulse, 0, Math.PI * 2);
         ctx.fillStyle = distance < 140 ? "#b8caff" : "#6e719e";
         ctx.fill();
-        if (index === lastDot) {
-          ctx.beginPath();
-          ctx.arc(position.x, position.y, 8, 0, Math.PI * 2);
-          ctx.strokeStyle = "rgba(190, 175, 255, 0.75)";
-          ctx.lineWidth = 1.5;
-          ctx.stroke();
-        }
       });
 
       if (cursor && !reduceMotion) {
@@ -155,8 +174,14 @@ export function AmbientLinks() {
           : null;
     }
 
-    function connect(event: PointerEvent) {
-      if (reduceMotion || !(event.target instanceof Element)) return;
+    function connect(event: MouseEvent) {
+      if (
+        !canDrawRef.current ||
+        event.button !== 0 ||
+        event.detail > 1 ||
+        !(event.target instanceof Element)
+      )
+        return;
       if (!host!.contains(event.target)) return;
       if (
         event.target.closest(
@@ -166,39 +191,41 @@ export function AmbientLinks() {
         return;
       }
       const rect = host!.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
+      const x = (event.clientX - rect.left) / rect.width;
+      const y = (event.clientY - rect.top) / rect.height;
       const time = performance.now();
-      let nearest = 0;
-      let distance = Infinity;
-      dots.forEach((_, index) => {
-        const point = dotPosition(index, time);
-        const nextDistance = Math.hypot(point.x - x, point.y - y);
-        if (nextDistance < distance) {
-          nearest = index;
-          distance = nextDistance;
-        }
-      });
-      if (lastDot !== null && lastDot !== nearest) {
-        links.push({ from: lastDot, to: nearest, createdAt: time });
-        links = links.slice(-40);
+      if (x < 0 || x > 1 || y < 0 || y > 1) return;
+      const point = { x, y, createdAt: time };
+      if (lastPoint && time - lastPoint.createdAt < LINK_LIFETIME) {
+        lastPoint.createdAt = time;
+        links.push({ from: lastPoint, to: point, createdAt: time });
+        links = links.slice(-80);
       }
-      lastDot = nearest;
+      points.push(point);
+      points = points.slice(-81);
+      lastPoint = point;
+      if (reduceMotion) {
+        draw(time);
+        expiryTimers.push(
+          window.setTimeout(() => draw(performance.now()), LINK_LIFETIME + 20),
+        );
+      }
     }
 
     const observer = new ResizeObserver(resize);
     observer.observe(host);
     resize();
+    window.addEventListener("click", connect);
     if (!reduceMotion) {
       window.addEventListener("pointermove", move, { passive: true });
-      window.addEventListener("pointerdown", connect, { passive: true });
       frame = requestAnimationFrame(animate);
     }
     return () => {
       observer.disconnect();
       cancelAnimationFrame(frame);
+      expiryTimers.forEach((timer) => window.clearTimeout(timer));
       window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerdown", connect);
+      window.removeEventListener("click", connect);
     };
   }, []);
 
