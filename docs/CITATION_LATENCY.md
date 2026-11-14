@@ -142,3 +142,30 @@ uv run --offline --project apps/api pytest apps/api/tests/test_citation_latency.
 ```
 
 All work remains uncommitted on `dev-ml`; no branch operations or pushes occurred.
+
+## Batched Semantic Scholar identifier resolution (2026-11-14)
+
+**Bottleneck.** Semantic Scholar requests are paced 1.5 s apart, rising to 4.5 s after a 429. Each cold click used to resolve the citing paper and then the cited paper strictly in sequence, with one paced lookup per identifier kind until one verified. BART needs two (its DOI is unknown to Semantic Scholar; arXiv matches). A cold click therefore queued 3–6 paced lookups before the references request, and every extra request was another 429 opportunity.
+
+**Change.**
+- Both OpenAlex identities are fetched concurrently and cached for 300 s.
+- All of their uncached identifiers are resolved by one `POST /paper/batch` request through the same scheduler, pacing, retries and cooldown publication.
+- Each batch item replaces only the corresponding individual GET. The per-identifier verification loop, its order, contradiction checks and cache lifetimes are unchanged.
+- Throttling, outages and access errors propagate exactly as individual lookups would. Only a rejected or malformed batch falls back to individual lookups.
+- A single remaining identifier still uses the individual lookup.
+- The TEI trigger is unchanged: it still starts on an observed 429 cooldown or after the primary finishes.
+
+**Measured live (paired, interleaved, fresh process per cold click, 7 real relationships × 2 rounds):**
+
+| | Before | After |
+| --- | ---: | ---: |
+| Median cold click | 8.77 s | 3.26 s |
+| Mean / worst cold click | 13.30 s / 36.8 s | 3.74 s / 6.7 s |
+| Semantic Scholar requests per click | 5.6 | 2.2 |
+| Semantic Scholar 429s | 28 | 11 |
+| Mean pacing + backoff wait | 11.41 s | 2.54 s |
+| Warm click | 7 ms | 6 ms |
+
+Where both versions produced evidence from the same source, passages and SciCite outputs were identical. In the offline virtual-clock scenarios, every outcome is unchanged. A completed Semantic Scholar path is 1.50 s faster, or 2.25 s after a 429, with one fewer request. TEI-led paths keep their timing and fetch the cited identity in parallel, which costs one extra free OpenAlex metadata request.
+
+**OpenAlex credit budget.** The OpenAlex key has a daily budget of 10,000 credits ($1/day). Each TEI content download costs 100 credits ($0.01); single-work metadata lookups cost nothing. When the budget is exhausted, content requests return 429 with a multi-hour `Retry-After`, and the TEI fallback reports `openalex_tei_http_429` until the reset. For this reason TEI is not started eagerly on every click. Avoid repeated cold-process benchmarks against live content.

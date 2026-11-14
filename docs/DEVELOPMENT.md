@@ -57,6 +57,12 @@ npm run build
 
 `npm run dev` starts both servers. Ctrl+C stops the session. Run `npm run start --workspace apps/web` after a production build to smoke-test production serving with a separately running API. Frontend tests isolate React Flow for the basic render test. Browser verification exercises the actual graph canvas.
 
+### Known development-console messages
+
+- **Hydration mismatch mentioning `bis_skin_checked`.** A browser extension adds this attribute to page `<div>` elements before React hydrates. The application never renders it. It does not appear in a clean browser profile; the 2026-11-14 headless Chrome check with no extensions showed no hydration warning. Test in a private window or with extensions disabled. Don't change application code to silence it.
+- **React Flow warning 002 ("new nodeTypes or edgeTypes object").** `nodeTypes` and `edgeTypes` are module-level constants in `citation-canvas.tsx`, which follows React Flow's guidance. Each Fast Refresh hot edit re-executes that module and creates new component references, and React Flow's development-only check reports that once. A fresh page load does not warn. Reload the page after hot edits if the message is distracting.
+- **Only one `next dev` may run per project directory.** A leftover dev server, for example from browser automation on another port, blocks `npm run dev`. Find it with `netstat -ano | findstr LISTENING` and stop only the process you started.
+
 CI uses `npm ci` and `uv sync --locked` with committed lockfiles. To add a frontend package use `npm install <package> --workspace apps/web`. To add a backend runtime package use `uv add --project apps/api <package>`. Use `--group training` for training-only additions.
 
 ## Configuration

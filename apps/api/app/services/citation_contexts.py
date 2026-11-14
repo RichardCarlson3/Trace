@@ -11,6 +11,7 @@ from collections import OrderedDict
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
+from functools import partial
 from pathlib import Path
 from time import perf_counter
 from typing import Literal
@@ -86,6 +87,11 @@ def _invalid_response(
     return ServiceError(502, f"{provider}_invalid_response", f"{provider} returned invalid data")
 
 
+async def _resolved(value):
+    """Loader for a value already obtained by a batch request."""
+    return value
+
+
 def _retry_delay(response: httpx.Response, attempt: int) -> float:
     header = response.headers.get("Retry-After")
     if header:
@@ -129,6 +135,7 @@ class CitationContextService:
         self._doi_aliases: OrderedDict[str, set[str]] = OrderedDict()
         self._examples: dict[tuple[str, str], CitationContexts] | None = None
         self._mappings = ResourceCache[PaperMapping](MAPPING_CACHE_ENTRIES, MAPPING_CACHE_SECONDS)
+        self._identities = ResourceCache(MAPPING_CACHE_ENTRIES, 300)
         self._semantic_papers = ResourceCache[dict | None](
             MAPPING_CACHE_ENTRIES, MAPPING_CACHE_SECONDS
         )
@@ -336,7 +343,9 @@ class CitationContextService:
         self._remember(key, result)
         return result
 
-    async def _send(self, provider: str, url: str, params: dict, headers: dict) -> httpx.Response:
+    async def _send(
+        self, provider: str, url: str, params: dict, headers: dict, body: dict | None = None
+    ) -> httpx.Response:
         if provider != "semantic_scholar":
             with timing("mapping_metadata_http"):
                 return await self.client.get(url, params=params, headers=headers, timeout=10.0)
@@ -355,8 +364,14 @@ class CitationContextService:
                             await asyncio.sleep(delay)
                     self._next_semantic_request = time.monotonic() + self._semantic_interval
                     with timing("semantic_http"):
-                        response = await self.client.get(
-                            url, params=params, headers=headers, timeout=10.0
+                        # A batch lookup is one POST through the same paced scheduler.
+                        response = await self.client.request(
+                            "POST" if body is not None else "GET",
+                            url,
+                            params=params,
+                            headers=headers,
+                            json=body,
+                            timeout=10.0,
                         )
                     # Publish cooldown before releasing the shared scheduler lock.
                     if response.status_code == 429:
@@ -385,7 +400,9 @@ class CitationContextService:
                 503, "semantic_scholar_busy", "Semantic Scholar request queue is busy"
             ) from None
 
-    async def _get(self, provider: str, path: str, params: dict) -> dict | None:
+    async def _get(
+        self, provider: str, path: str, params: dict, body: dict | None = None
+    ) -> dict | list | None:
         headers = {}
         if provider == "semantic_scholar":
             base_url = self.settings.semantic_scholar_base_url
@@ -399,7 +416,7 @@ class CitationContextService:
             started = perf_counter()
             try:
                 response = await self._send(
-                    provider, f"{base_url.rstrip('/')}/{path}", params, headers
+                    provider, f"{base_url.rstrip('/')}/{path}", params, headers, body
                 )
             except httpx.TransportError:
                 if attempt < 2:
@@ -440,6 +457,8 @@ class CitationContextService:
                 payload = response.json()
             except ValueError:
                 raise _invalid_response(provider, stage, "undecodable_json") from None
+            if body is not None and isinstance(payload, list):
+                return payload  # Batch responses are arrays; callers validate each item.
             if not isinstance(payload, dict):
                 raise _invalid_response(
                     provider, stage, "non_object_body", observed=type(payload).__name__
@@ -448,56 +467,97 @@ class CitationContextService:
         raise AssertionError("Retry loop exhausted unexpectedly")
 
     @timed("identifier_resolution")
-    async def _map_paper(self, work_id: str) -> PaperMapping:
+    async def _map_paper(self, work_id: str, prefetched: dict | None = None) -> PaperMapping:
         started = perf_counter()
         mapping, reused = await self._mappings.get(
             work_id,
-            lambda: self._resolve_paper(work_id),
+            lambda: self._resolve_paper(work_id, prefetched),
             lifetime=lambda mapping: MAPPING_CACHE_SECONDS if mapping.verified else 300,
         )
         record_timing("mapping_cache", started, reused=reused)
         return mapping
 
-    async def _resolve_paper(self, work_id: str) -> PaperMapping:
-        mapping = PaperMapping(openalex_id=work_id)
-        work = await self._get(
-            "openalex", f"works/{work_id}", {"select": "id,doi,ids,title,locations"}
+    async def _identity(self, work_id: str):
+        """OpenAlex identity and explicit identifiers for one work (no Semantic Scholar I/O).
+
+        Returns a terminal PaperMapping when the work cannot be resolved, otherwise
+        ``(mapping, known, aliases)``. Briefly cached so batching and verification
+        share one OpenAlex request.
+        """
+        value, _ = await self._identities.get(
+            work_id, lambda: self._load_identity(work_id), lifetime=lambda _: 300
         )
-        if work is None:
-            return mapping.model_copy(update={"reason": "openalex_work_not_found"})
+        return value
+
+    @timed("semantic_batch_lookup")
+    async def _prefetch_semantic(self, work_ids: list[str]) -> dict:
+        """Look up every uncached identifier of these works in one paced request.
+
+        Results only replace the individual GET lookups; the per-identifier
+        verification in ``_resolve_paper`` is unchanged. Any batch problem other
+        than throttling falls back to those individual lookups.
+        """
+        pending = [w for w in dict.fromkeys(work_ids) if not self._mappings.contains(w)]
+        if not pending:
+            return {}
+        identities = await asyncio.gather(
+            *(self._identity(w) for w in pending), return_exceptions=True
+        )
+        keys = []
+        for identity in identities:
+            # Errors and unresolved works resurface unchanged in _map_paper.
+            if isinstance(identity, tuple):
+                keys.extend(
+                    key for key in identity[1].items() if not self._semantic_papers.contains(key)
+                )
+        keys = list(dict.fromkeys(keys))
+        if len(keys) < 2:
+            return {}  # One lookup gains nothing from batching.
         try:
-            if not isinstance(work.get("id"), str):
-                raise TypeError("Missing OpenAlex work identity")
-            if normalize_work_id(work["id"]) != work_id:
-                return mapping.model_copy(update={"reason": "openalex_id_mismatch"})
-            ids = work.get("ids") or {}
-            if not isinstance(ids, dict):
-                raise TypeError("Invalid OpenAlex identifiers")
-        except (KeyError, TypeError):
-            raise _invalid_response(
-                "openalex", "mapping", "invalid_work_identity", "id/ids"
-            ) from None
-        except ValueError:
-            return mapping.model_copy(update={"reason": "invalid_openalex_identifier"})
-        if isinstance(work.get("title"), str):
-            mapping.title = work["title"]
-        try:
-            known, aliases = work_identifiers(work)
-        except ValueError as exc:
-            reason = (
-                "ambiguous_openalex_doi" if str(exc) == "ambiguous_doi_identifier" else str(exc)
+            payload = await self._get(
+                "semantic_scholar",
+                "paper/batch",
+                {"fields": "paperId,externalIds"},
+                body={"ids": [f"{kind}:{value}" for kind, value in keys]},
             )
-            return mapping.model_copy(update={"reason": reason})
-        mapping.doi = known.get("DOI")
-        mapping.reason = "missing_doi" if not mapping.doi else "semantic_scholar_work_not_found"
+        except ServiceError as exc:
+            # Throttling, outages and access errors apply equally to individual
+            # lookups; retrying them one by one would only add requests. Only a
+            # rejected batch request (4xx other than auth/throttling) falls back.
+            if exc.code != "semantic_scholar_error":
+                raise
+            logger.info("semantic_scholar_batch_fallback reason=%s", exc.code)
+            return {}
+        if (
+            not isinstance(payload, list)
+            or len(payload) != len(keys)
+            or any(item is not None and not isinstance(item, dict) for item in payload)
+        ):
+            logger.warning(
+                "semantic_scholar_batch_fallback reason=invalid_shape observed=%s",
+                type(payload).__name__,
+            )
+            return {}
+        return dict(zip(keys, payload, strict=True))
+
+    async def _resolve_paper(self, work_id: str, prefetched: dict | None = None) -> PaperMapping:
+        identity = await self._identity(work_id)
+        if isinstance(identity, PaperMapping):
+            return identity
+        mapping, known, aliases = identity
         for kind, value in known.items():
-            paper, _ = await self._semantic_papers.get(
-                (kind, value),
-                lambda: self._get(
+            if prefetched and (kind, value) in prefetched:
+                load = partial(_resolved, prefetched[(kind, value)])
+            else:
+                load = partial(
+                    self._get,
                     "semantic_scholar",
                     f"paper/{kind}:{quote(value, safe='')}",
                     {"fields": "paperId,externalIds"},
-                ),
+                )
+            paper, _ = await self._semantic_papers.get(
+                (kind, value),
+                load,
                 lifetime=lambda paper: (
                     300
                     if paper is None
@@ -557,6 +617,40 @@ class CitationContextService:
                 self._doi_aliases.popitem(last=False)
             return mapping
         return mapping
+
+    async def _load_identity(self, work_id: str):
+        mapping = PaperMapping(openalex_id=work_id)
+        work = await self._get(
+            "openalex", f"works/{work_id}", {"select": "id,doi,ids,title,locations"}
+        )
+        if work is None:
+            return mapping.model_copy(update={"reason": "openalex_work_not_found"})
+        try:
+            if not isinstance(work.get("id"), str):
+                raise TypeError("Missing OpenAlex work identity")
+            if normalize_work_id(work["id"]) != work_id:
+                return mapping.model_copy(update={"reason": "openalex_id_mismatch"})
+            ids = work.get("ids") or {}
+            if not isinstance(ids, dict):
+                raise TypeError("Invalid OpenAlex identifiers")
+        except (KeyError, TypeError):
+            raise _invalid_response(
+                "openalex", "mapping", "invalid_work_identity", "id/ids"
+            ) from None
+        except ValueError:
+            return mapping.model_copy(update={"reason": "invalid_openalex_identifier"})
+        if isinstance(work.get("title"), str):
+            mapping.title = work["title"]
+        try:
+            known, aliases = work_identifiers(work)
+        except ValueError as exc:
+            reason = (
+                "ambiguous_openalex_doi" if str(exc) == "ambiguous_doi_identifier" else str(exc)
+            )
+            return mapping.model_copy(update={"reason": reason})
+        mapping.doi = known.get("DOI")
+        mapping.reason = "missing_doi" if not mapping.doi else "semantic_scholar_work_not_found"
+        return mapping, known, aliases
 
     @timed("semantic_references")
     async def _reference_page(self, paper_id: str, offset: int) -> tuple[ReferencePage, bool]:
@@ -689,8 +783,11 @@ class CitationContextService:
         return page, reused
 
     async def _retrieve_live(self, pair: CitationPair) -> CitationContexts:
-        citing = await self._map_paper(pair.citing_paper_id)
-        cited = await self._map_paper(pair.cited_paper_id)
+        # Both OpenAlex identities concurrently, then one paced Semantic Scholar
+        # batch for all their identifiers instead of one request per identifier.
+        prefetched = await self._prefetch_semantic([pair.citing_paper_id, pair.cited_paper_id])
+        citing = await self._map_paper(pair.citing_paper_id, prefetched)
+        cited = await self._map_paper(pair.cited_paper_id, prefetched)
         result = CitationContexts(
             **pair.model_dump(),
             status="unresolved_identifiers",
