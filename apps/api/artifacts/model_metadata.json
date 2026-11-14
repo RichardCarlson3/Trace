@@ -1,0 +1,473 @@
+{
+  "model_version": "scicite-tfidf-logreg-v1",
+  "created_at": "2026-11-14T06:28:21.247480+00:00",
+  "model_type": "sklearn Pipeline: TfidfVectorizer -> LogisticRegression",
+  "dependencies": {
+    "python": "3.12.16",
+    "scikit-learn": "1.9.1",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "joblib": "1.6.0",
+    "datasets": "4.8.5",
+    "pandas": "3.1.1",
+    "matplotlib": "3.11.2"
+  },
+  "dataset": {
+    "dataset_id": "allenai/scicite",
+    "reference_revision": "4c40e64d8eebd9c0a8f27bb630cfbaeffc01c941",
+    "archive_url": "https://s3-us-west-2.amazonaws.com/ai2-s2-research/scicite/scicite.tar.gz",
+    "expected_archive_sha256": "711ece2c4e61d116c8ae5bb07e9fbb2ee9ff7bba004b4cab7fbd0ac3af499193",
+    "file_sha256": {
+      "train": "79e2bf9f40116201730b08cc2158959eac4e7f6f652b63cb053799c06b743048",
+      "validation": "0da66e583273fe6de50fd91ab586bb7118e77044be2824e4b89472a24858bbef",
+      "test": "e35f6f92ed45f75d7c75e56bb0d5aec3bb8134363c384894916f5c9770fa53a6"
+    },
+    "fingerprint": "8bd927e28147618c40d316362791815dc7a6f406c9f533370670dae5f9ab8840",
+    "label_mapping": {
+      "0": "method",
+      "1": "background",
+      "2": "result"
+    },
+    "features": {
+      "string": {
+        "dtype": "string",
+        "_type": "Value"
+      },
+      "label": {
+        "names": [
+          "method",
+          "background",
+          "result"
+        ],
+        "_type": "ClassLabel"
+      },
+      "unique_id": {
+        "dtype": "string",
+        "_type": "Value"
+      },
+      "citingPaperId": {
+        "dtype": "string",
+        "_type": "Value"
+      },
+      "citedPaperId": {
+        "dtype": "string",
+        "_type": "Value"
+      }
+    },
+    "official_splits": {
+      "train": {
+        "raw_rows": 8243,
+        "raw_schema": {
+          "source": [
+            "float",
+            "str"
+          ],
+          "citeEnd": [
+            "float",
+            "int"
+          ],
+          "sectionName": [
+            "float",
+            "str"
+          ],
+          "citeStart": [
+            "float",
+            "int"
+          ],
+          "string": [
+            "str"
+          ],
+          "label": [
+            "str"
+          ],
+          "label_confidence": [
+            "float"
+          ],
+          "citingPaperId": [
+            "str"
+          ],
+          "citedPaperId": [
+            "str"
+          ],
+          "isKeyCitation": [
+            "bool"
+          ],
+          "id": [
+            "str"
+          ],
+          "unique_id": [
+            "str"
+          ],
+          "excerpt_index": [
+            "int"
+          ],
+          "label2": [
+            "str"
+          ],
+          "label2_confidence": [
+            "float"
+          ]
+        },
+        "duplicate_ids_removed": 49,
+        "rows": 8194,
+        "class_counts": {
+          "method": 2266,
+          "background": 4840,
+          "result": 1088
+        },
+        "missing_contexts": 0,
+        "empty_contexts": 0,
+        "characters": {
+          "min": 76,
+          "max": 3327,
+          "mean": 220.37625091530387,
+          "median": 202.0
+        },
+        "words": {
+          "min": 7,
+          "max": 505,
+          "mean": 33.937881376617035,
+          "median": 31.0
+        }
+      },
+      "validation": {
+        "raw_rows": 916,
+        "raw_schema": {
+          "source": [
+            "float",
+            "str"
+          ],
+          "citeEnd": [
+            "float",
+            "int"
+          ],
+          "sectionName": [
+            "str"
+          ],
+          "citeStart": [
+            "float",
+            "int"
+          ],
+          "string": [
+            "str"
+          ],
+          "label": [
+            "str"
+          ],
+          "label2": [
+            "str"
+          ],
+          "citingPaperId": [
+            "str"
+          ],
+          "citedPaperId": [
+            "str"
+          ],
+          "isKeyCitation": [
+            "bool"
+          ],
+          "id": [
+            "str"
+          ],
+          "unique_id": [
+            "str"
+          ],
+          "excerpt_index": [
+            "int"
+          ],
+          "label_confidence": [
+            "float"
+          ],
+          "label2_confidence": [
+            "float"
+          ]
+        },
+        "duplicate_ids_removed": 0,
+        "rows": 916,
+        "class_counts": {
+          "method": 255,
+          "background": 538,
+          "result": 123
+        },
+        "missing_contexts": 0,
+        "empty_contexts": 0,
+        "characters": {
+          "min": 76,
+          "max": 1640,
+          "mean": 221.52183406113537,
+          "median": 208.0
+        },
+        "words": {
+          "min": 10,
+          "max": 219,
+          "mean": 34.14301310043668,
+          "median": 32.0
+        }
+      },
+      "test": {
+        "raw_rows": 1861,
+        "raw_schema": {
+          "source": [
+            "float",
+            "str"
+          ],
+          "citeEnd": [
+            "float",
+            "int"
+          ],
+          "sectionName": [
+            "float",
+            "str"
+          ],
+          "citeStart": [
+            "float",
+            "int"
+          ],
+          "string": [
+            "str"
+          ],
+          "label": [
+            "str"
+          ],
+          "citingPaperId": [
+            "str"
+          ],
+          "citedPaperId": [
+            "str"
+          ],
+          "isKeyCitation": [
+            "bool"
+          ],
+          "id": [
+            "str"
+          ],
+          "unique_id": [
+            "str"
+          ],
+          "excerpt_index": [
+            "int"
+          ],
+          "label2": [
+            "str"
+          ],
+          "label_confidence": [
+            "float"
+          ]
+        },
+        "duplicate_ids_removed": 2,
+        "rows": 1859,
+        "class_counts": {
+          "method": 604,
+          "background": 996,
+          "result": 259
+        },
+        "missing_contexts": 0,
+        "empty_contexts": 0,
+        "characters": {
+          "min": 79,
+          "max": 1209,
+          "mean": 221.90586336740182,
+          "median": 203
+        },
+        "words": {
+          "min": 12,
+          "max": 187,
+          "mean": 34.053254437869825,
+          "median": 31
+        }
+      }
+    },
+    "overlap_audit": {
+      "policy": "Preserve test; exclude held-out unique_ids and whitespace/case-normalized contexts from earlier splits",
+      "excluded_rows": {
+        "test": 0,
+        "validation": 0,
+        "train": 22
+      },
+      "original_overlap": {
+        "train/validation": {
+          "shared_unique_ids": 6,
+          "shared_contexts": 14
+        },
+        "train/test": {
+          "shared_unique_ids": 3,
+          "shared_contexts": 0
+        },
+        "validation/test": {
+          "shared_unique_ids": 0,
+          "shared_contexts": 0
+        }
+      },
+      "effective_overlap": {
+        "train/validation": {
+          "shared_unique_ids": 0,
+          "shared_contexts": 0
+        },
+        "train/test": {
+          "shared_unique_ids": 0,
+          "shared_contexts": 0
+        },
+        "validation/test": {
+          "shared_unique_ids": 0,
+          "shared_contexts": 0
+        }
+      }
+    },
+    "effective_splits": {
+      "test": {
+        "rows": 1859,
+        "class_counts": {
+          "method": 604,
+          "background": 996,
+          "result": 259
+        },
+        "missing_contexts": 0,
+        "empty_contexts": 0,
+        "characters": {
+          "min": 79,
+          "max": 1209,
+          "mean": 221.90586336740182,
+          "median": 203
+        },
+        "words": {
+          "min": 12,
+          "max": 187,
+          "mean": 34.053254437869825,
+          "median": 31
+        }
+      },
+      "validation": {
+        "rows": 916,
+        "class_counts": {
+          "method": 255,
+          "background": 538,
+          "result": 123
+        },
+        "missing_contexts": 0,
+        "empty_contexts": 0,
+        "characters": {
+          "min": 76,
+          "max": 1640,
+          "mean": 221.52183406113537,
+          "median": 208.0
+        },
+        "words": {
+          "min": 10,
+          "max": 219,
+          "mean": 34.14301310043668,
+          "median": 32.0
+        }
+      },
+      "train": {
+        "rows": 8172,
+        "class_counts": {
+          "method": 2257,
+          "background": 4832,
+          "result": 1083
+        },
+        "missing_contexts": 0,
+        "empty_contexts": 0,
+        "characters": {
+          "min": 76,
+          "max": 3327,
+          "mean": 220.2558737151248,
+          "median": 202.0
+        },
+        "words": {
+          "min": 7,
+          "max": 505,
+          "mean": 33.91886930983847,
+          "median": 31.0
+        }
+      }
+    }
+  },
+  "training": {
+    "selection_metric": "validation macro_f1; ties retain the first candidate",
+    "candidates": [
+      {
+        "C": 1.0,
+        "accuracy": 0.8329694323144105,
+        "macro_f1": 0.8003254912799659
+      },
+      {
+        "C": 4.0,
+        "accuracy": 0.834061135371179,
+        "macro_f1": 0.8100385901669753
+      }
+    ],
+    "selected_C": 4.0,
+    "seed": 42,
+    "training_rows": 8172,
+    "validation_rows": 916,
+    "majority_label": "background",
+    "validation_metrics": {
+      "accuracy": 0.834061135371179,
+      "macro_f1": 0.8100385901669753,
+      "per_class": {
+        "method": {
+          "precision": 0.8333333333333334,
+          "recall": 0.7058823529411765,
+          "f1-score": 0.7643312101910829,
+          "support": 255.0
+        },
+        "background": {
+          "precision": 0.82996632996633,
+          "recall": 0.9163568773234201,
+          "f1-score": 0.8710247349823321,
+          "support": 538.0
+        },
+        "result": {
+          "precision": 0.8584905660377359,
+          "recall": 0.7398373983739838,
+          "f1-score": 0.7947598253275109,
+          "support": 123.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          180,
+          71,
+          4
+        ],
+        [
+          34,
+          493,
+          11
+        ],
+        [
+          2,
+          30,
+          91
+        ]
+      ],
+      "label_order": [
+        "method",
+        "background",
+        "result"
+      ],
+      "majority_baseline": {
+        "class": "background",
+        "accuracy": 0.5873362445414847,
+        "macro_f1": 0.24667583677212288
+      }
+    },
+    "vectorizer": {
+      "ngram_range": [
+        1,
+        2
+      ],
+      "min_df": 2,
+      "max_features": 50000,
+      "lowercase": true
+    },
+    "classifier": {
+      "C": 4.0,
+      "max_iter": 1000,
+      "solver": "lbfgs",
+      "class_weight": null
+    },
+    "fitted_vocabulary_size": 47192
+  },
+  "artifact_sha256": "cb798df60c932deeeff4c15f8760c2de9fc27be07e6be95c6f3e403f02893d96"
+}
