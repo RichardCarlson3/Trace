@@ -1,7 +1,7 @@
 # ResearchGraph
 ResearchGraph is a full-stack web app for exploring academic papers through interactive citation graphs. It uses OpenAlex for paper discovery and a SciCite-trained model to classify available citation passages as Background, Method, or Result.
 
-The development foundation provides live paper search, selection into a React Flow canvas, paper details from search metadata, and a FastAPI connection indicator. Graph expansion and persistent saves have HTTP 501 contracts. Classification returns HTTP 503 until a trained artifact is installed.
+The development foundation provides live paper search, selection into a React Flow canvas, paper details from search metadata, and a FastAPI connection indicator. The API also supports paper-detail lookup, outgoing references, incoming citations, and bounded graph expansion through `/api/v1/papers/{id}/neighbors`; the frontend does not yet call these endpoints. Persistent saves retain HTTP 501 contracts. Classification requires a compatible trusted trained artifact pair; see the ML instructions.
 
 ## Stack and prerequisites
 
@@ -86,6 +86,7 @@ This creates the graph snapshot table. Persistence endpoints require a future ow
 - [Development guide](docs/DEVELOPMENT.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [API contract](docs/API_CONTRACT.md)
+- [Citation API frontend handoff](docs/CITATION_API_HANDOFF.md)
 - [Architecture decisions](docs/DECISIONS.md)
 - [Ownership and contribution workflow](CONTRIBUTING.md)
 

@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "concurrently -k -n web,api \"npm run dev:web\" \"npm run dev:api\"",
     "dev:web": "npm run dev --workspace apps/web",
-    "dev:api": "uv run --project apps/api python -m app.dev",
+    "dev:api": "cd apps/api && uv run python -m app.dev",
     "build": "npm run build --workspace apps/web",
     "lint": "npm run lint:web && npm run lint:api",
     "lint:web": "npm run lint --workspace apps/web",
@@ -20,9 +20,12 @@
     "typecheck": "npm run typecheck --workspace apps/web",
     "test": "npm run test:web && npm run test:api",
     "test:web": "npm run test --workspace apps/web",
-    "test:api": "uv run --project apps/api pytest apps/api/tests"
+    "test:api": "cd apps/api && uv run python -m pytest tests"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"
+  },
+  "dependencies": {
+    "motion": "^14.14.0"
   }
 }

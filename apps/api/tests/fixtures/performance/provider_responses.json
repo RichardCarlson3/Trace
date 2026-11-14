@@ -1,0 +1,42 @@
+{
+  "fixture_kind": "synthetic_offline_benchmark_metadata_not_research_records",
+  "query": "synthetic offline benchmark",
+  "seed_id": "W1",
+  "reference_id": "W2",
+  "citing_id": "W3",
+  "works": {
+    "W1": {
+      "id": "https://openalex.org/W1",
+      "display_name": "Synthetic benchmark seed (not a research paper)",
+      "publication_year": 2024,
+      "doi": null,
+      "authorships": [],
+      "abstract_inverted_index": null,
+      "cited_by_count": 1,
+      "primary_location": null,
+      "referenced_works": ["https://openalex.org/W2"]
+    },
+    "W2": {
+      "id": "https://openalex.org/W2",
+      "display_name": "Synthetic benchmark reference (not a research paper)",
+      "publication_year": 2023,
+      "doi": null,
+      "authorships": [],
+      "abstract_inverted_index": null,
+      "cited_by_count": 1,
+      "primary_location": null,
+      "referenced_works": []
+    },
+    "W3": {
+      "id": "https://openalex.org/W3",
+      "display_name": "Synthetic benchmark citing node (not a research paper)",
+      "publication_year": 2025,
+      "doi": null,
+      "authorships": [],
+      "abstract_inverted_index": null,
+      "cited_by_count": 0,
+      "primary_location": null,
+      "referenced_works": ["https://openalex.org/W1"]
+    }
+  }
+}

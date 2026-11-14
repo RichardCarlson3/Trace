@@ -9,9 +9,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException
 
-from app.api.v1 import classify, graphs, health, papers
+from app.api.v1 import citation_contexts, classify, graphs, health, papers
 from app.core.config import Settings, get_settings
 from app.core.errors import ServiceError
+from app.services.citation_contexts import CitationContextService
 from app.services.inference import InferenceService
 
 logger = logging.getLogger(__name__)
@@ -24,6 +25,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def lifespan(application: FastAPI):
         async with httpx.AsyncClient() as client:
             application.state.http = client
+            application.state.citation_contexts = CitationContextService(client, settings)
             yield
 
     application = FastAPI(title="ResearchGraph API", version="0.1.0", lifespan=lifespan)
@@ -77,7 +79,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             },
         )
 
-    for router in (health.router, papers.router, classify.router, graphs.router):
+    for router in (
+        health.router,
+        papers.router,
+        classify.router,
+        graphs.router,
+        citation_contexts.router,
+    ):
         application.include_router(router, prefix="/api/v1")
     return application
 

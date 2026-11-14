@@ -1,5 +1,5 @@
-import { ResearchWorkspace } from "@/components/layout/research-workspace";
+import { TraceExperience } from "@/components/story/trace-experience";
 
 export default function Home() {
-  return <ResearchWorkspace />;
+  return <TraceExperience />;
 }
