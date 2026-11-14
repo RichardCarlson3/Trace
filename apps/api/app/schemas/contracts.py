@@ -1,5 +1,6 @@
 import re
 from typing import Literal
+from urllib.parse import quote, unquote, urlsplit
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -7,10 +8,46 @@ Intent = Literal["background", "method", "result"]
 
 
 def normalize_work_id(value: str) -> str:
-    work_id = value.removeprefix("https://openalex.org/").removeprefix("http://openalex.org/")
-    if not re.fullmatch(r"W\d+", work_id):
+    match = (
+        re.fullmatch(r"(?:https?://openalex\.org/)?w([0-9]+)", value.strip(), re.IGNORECASE)
+        if isinstance(value, str)
+        else None
+    )
+    if not match:
         raise ValueError("Expected an OpenAlex work ID such as W2741809807")
-    return work_id
+    return f"W{match[1]}"
+
+
+def normalize_doi(value: str | None) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise ValueError("Expected a DOI string or null")
+    doi = value.strip()
+    if not doi:
+        return None
+    if re.match(r"https?://", doi, re.IGNORECASE):
+        url = urlsplit(doi)
+        if url.netloc.lower() not in ("doi.org", "dx.doi.org") or url.query or url.fragment:
+            raise ValueError("Expected a DOI resolver URL without query or fragment")
+        doi = unquote(url.path.removeprefix("/"), errors="strict")
+    else:
+        doi = re.sub(r"^doi:\s*", "", doi, flags=re.IGNORECASE)
+    if not re.fullmatch(r"10\.[0-9]+(?:\.[0-9]+)*/\S+", doi) or any(
+        ord(char) < 32 or ord(char) == 127 for char in doi
+    ):
+        raise ValueError("Expected a DOI such as 10.1000/example")
+    # DOI comparisons use ASCII case folding; preserve non-ASCII identifier characters.
+    doi = doi.translate(str.maketrans("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"))
+    return "https://doi.org/" + quote(doi, safe="/:;()+,=._-~!$&'@")
+
+
+def normalize_optional_text(value: str | None) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise ValueError("Expected a string or null")
+    return value.strip() or None
 
 
 class Contract(BaseModel):
@@ -28,11 +65,17 @@ class Paper(Contract):
     landing_page_url: str | None = None
 
     _normalize_id = field_validator("id")(normalize_work_id)
+    _normalize_doi = field_validator("doi", mode="before")(normalize_doi)
+    _normalize_landing_page = field_validator("landing_page_url", mode="before")(
+        normalize_optional_text
+    )
 
 
 class PaperDetails(Paper):
     publication_venue: str | None = None
     reference_count: int | None = Field(default=None, ge=0)
+
+    _normalize_venue = field_validator("publication_venue", mode="before")(normalize_optional_text)
 
 
 class Citation(Contract):
@@ -70,6 +113,10 @@ class Graph(Contract):
             raise ValueError("Graph paper IDs must be unique")
         if any(edge.source not in ids or edge.target not in ids for edge in self.citations):
             raise ValueError("Citation endpoints must reference graph papers")
+        if len({(edge.source, edge.target) for edge in self.citations}) != len(self.citations):
+            raise ValueError("Graph directed citation pairs must be unique")
+        if len({edge.id for edge in self.citations}) != len(self.citations):
+            raise ValueError("Graph citation IDs must be unique")
         return self
 
 
@@ -79,15 +126,35 @@ class RelationshipResponse(Graph):
 
     _normalize_seed = field_validator("seed_paper_id")(normalize_work_id)
 
+    @model_validator(mode="after")
+    def validate_seed(self):
+        if self.seed_paper_id not in {paper.id for paper in self.papers}:
+            raise ValueError("Relationship responses must include the seed paper")
+        if any(self.seed_paper_id not in (edge.source, edge.target) for edge in self.citations):
+            raise ValueError("Every relationship must include the seed paper")
+        return self
+
 
 class ReferenceResponse(RelationshipResponse):
     next_offset: int | None = Field(default=None, ge=0)
     unresolved_reference_ids: list[str] = Field(default_factory=list)
 
+    @model_validator(mode="after")
+    def validate_direction(self):
+        if any(edge.source != self.seed_paper_id for edge in self.citations):
+            raise ValueError("Reference edges must run from the seed to the cited paper")
+        return self
+
 
 class IncomingCitationResponse(RelationshipResponse):
     next_cursor: str | None = None
     skipped_record_count: int = Field(default=0, ge=0)
+
+    @model_validator(mode="after")
+    def validate_direction(self):
+        if any(edge.target != self.seed_paper_id for edge in self.citations):
+            raise ValueError("Incoming edges must run from the citing paper to the seed")
+        return self
 
 
 class NeighborResponse(RelationshipResponse):

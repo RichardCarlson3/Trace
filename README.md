@@ -86,6 +86,7 @@ This creates the graph snapshot table. Persistence endpoints require a future ow
 - [Development guide](docs/DEVELOPMENT.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [API contract](docs/API_CONTRACT.md)
+- [Citation API frontend handoff](docs/CITATION_API_HANDOFF.md)
 - [Architecture decisions](docs/DECISIONS.md)
 - [Ownership and contribution workflow](CONTRIBUTING.md)
 

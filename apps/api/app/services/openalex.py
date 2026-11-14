@@ -45,21 +45,36 @@ def retry_after_seconds(value: str | None) -> float | None:
 def normalize_paper(work: dict) -> Paper:
     inverted = work.get("abstract_inverted_index")
     abstract = None
-    if inverted:
-        tokens = sorted(
-            (position, word) for word, positions in inverted.items() for position in positions
-        )
-        abstract = " ".join(word for _, word in tokens)
+    if inverted is not None:
+        if not isinstance(inverted, dict):
+            raise ValueError("Expected an inverted abstract index")
+        words = {}
+        for word, positions in inverted.items():
+            if not isinstance(word, str) or not word or not isinstance(positions, list):
+                raise ValueError("Invalid abstract token")
+            for position in positions:
+                if type(position) is not int or position < 0 or position in words:
+                    raise ValueError("Invalid or duplicate abstract position")
+                words[position] = word
+        if sorted(words) != list(range(len(words))):
+            raise ValueError("Incomplete abstract positions")
+        abstract = " ".join(words[index] for index in range(len(words))) if words else None
     location = work.get("primary_location") or {}
+    title = work.get("display_name")
+    if title is None or (isinstance(title, str) and not title.strip()):
+        title = work.get("title")
+    if isinstance(title, str):
+        title = title.strip()
     return Paper(
         id=work["id"],
         doi=work.get("doi"),
-        title=work.get("display_name") or work.get("title") or "Untitled work",
+        title=title or "Untitled work",
         year=work.get("publication_year"),
         authors=[
-            entry["author"]["display_name"]
+            entry["author"]["display_name"].strip()
             for entry in work.get("authorships") or []
             if (entry.get("author") or {}).get("display_name")
+            and entry["author"]["display_name"].strip()
         ],
         abstract=abstract,
         cited_by_count=work.get("cited_by_count") or 0,
@@ -350,6 +365,12 @@ class OpenAlexService:
                     continue
                 raise ServiceError(
                     502, "openalex_unavailable", "OpenAlex could not be reached"
+                ) from None
+            except httpx.DecodingError:
+                raise self._invalid_response() from None
+            except (httpx.RequestError, httpx.InvalidURL):
+                raise ServiceError(
+                    502, "openalex_error", "OpenAlex request could not be completed"
                 ) from None
             if response.status_code == 429 or response.status_code >= 500:
                 delay = max(

@@ -14,7 +14,7 @@ from app.services.neighbor_cursor import Direction
 from app.services.openalex import OpenAlexService
 
 router = APIRouter(prefix="/papers", tags=["papers"])
-WorkID = Annotated[str, Path(pattern=r"^W\d+$")]
+WorkID = Annotated[str, Path(pattern=r"^W[0-9]+$")]
 
 
 @router.get("/search", response_model=SearchResponse)

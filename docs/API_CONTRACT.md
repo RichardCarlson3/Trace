@@ -17,7 +17,7 @@ Base URL `http://localhost:8000/api/v1`. JSON fields use snake_case. Runtime Ope
 | GET | `/graphs` | 501, intended saved-graph summaries |
 | GET | `/graphs/{id}` | 501, intended saved snapshot, UUID path parameter |
 
-Paper path IDs use normalized `W` plus digits. Input schemas also normalize full `https://openalex.org/W...` IDs. Search requires a nonblank query of at most 300 characters, page at least 1, per_page between 1 and 25, and `page * per_page <= 10000`. Search matches title/keyword/DOI text through the provider's search parameter.
+Paper path IDs use uppercase `W` plus ASCII digits (`^W[0-9]+$`). Provider IDs and input schemas normalize bare/full OpenAlex IDs case-insensitively, trim surrounding whitespace, and emit uppercase `W` plus ASCII digits. This does not relax the path format. Search requires a nonblank query of at most 300 characters, page at least 1, per_page between 1 and 25, and `page * per_page <= 10000`. Search matches title/keyword/DOI text through the provider's search parameter.
 
 ## Health
 
@@ -30,7 +30,7 @@ Paper path IDs use normalized `W` plus digits. Input schemas also normalize full
 | Paper field | Type |
 | --- | --- |
 | `id` | Normalized OpenAlex work ID string |
-| `doi` | string or null, provider DOI URL |
+| `doi` | string or null, normalized `https://doi.org/` URL with ASCII case folding |
 | `title` | string |
 | `year` | integer or null |
 | `authors` | array of display-name strings |
@@ -326,6 +326,50 @@ basic-search guard without a large download, request
 Provider references: [paging limits](https://help.openalex.org/api/paging/),
 [bulk-ID retrieval](https://help.openalex.org/api/get-single-entities/), and
 [rate-limit guidance](https://help.openalex.org/api/errors/).
+
+## API reliability policy (Task 6)
+
+All paper retrieval uses the same Paper normalization. Bare DOIs, `doi:`-prefixed values,
+and HTTP/HTTPS `doi.org` or `dx.doi.org` resolver URLs normalize to `https://doi.org/` links.
+ASCII letters in the DOI are lowercased; non-ASCII identifier characters are preserved.
+URL-encoded suffixes are decoded and safely re-encoded, so reserved identifier punctuation
+is not mistaken for a query or fragment. Null/blank DOIs remain null. Resolver URLs with
+unencoded query/fragment components or invalid DOI syntax are rejected rather than guessed.
+Normalization checks syntax, not whether a DOI has been registered. No DOI is generated
+from a title or other metadata. See [Crossref display guidance](https://www.crossref.org/display-guidelines/).
+
+Title and author whitespace is trimmed. A blank display name falls back to the provider's
+title; if both are missing/blank, the existing explicit label `Untitled work` is used. Blank
+author names are omitted. Blank venue and landing-page strings become null. Existing missing
+year/abstract/DOI/reference-count nulls and missing citation-count default zero are preserved.
+Abstracts are reconstructed only from valid provider positions: nonnegative integer positions,
+unique across words and contiguous from zero. Empty/missing indexes yield null. Invalid indexes
+are treated as malformed metadata rather than repaired with invented text. A malformed seed or
+detail record returns 502 `openalex_invalid_response`; malformed neighbor records are omitted
+using the documented partial-response reporting.
+
+Graph validation now enforces unique paper IDs, unique directed paper pairs, unique citation
+IDs, and existing endpoints. Reciprocal edges remain distinct. Relationship responses must
+include their seed, and every edge must touch that seed. References additionally require
+`source == seed_paper_id`; incoming citations require `target == seed_paper_id`. Services
+deduplicate before building these validated responses. Multiple context-specific edges for
+the same directed pair would require a future contract change; this API returns one per pair.
+
+HTTP decoding failures return 502 `openalex_invalid_response`; other non-transport request
+errors return 502 `openalex_error` without retrying. Transport failures keep the bounded retry
+policy from Task 5. Unexpected programming/runtime failures remain generic 500 `internal_error`
+responses with diagnostics confined to backend logs, and do not stop the application. Error
+responses do not reflect provider response bodies or raw exception strings.
+
+OpenAlex credentials are sent only as backend `Authorization: Bearer ...` headers, never query
+parameters or response fields. The frontend reads only its public API base URL. Local backend
+and frontend environment files stay Git-ignored. Tests use synthetic credentials and confirm
+header-only use across search, details, references, incoming citations, and neighbors. Retrieval
+continues to work with no database and no model artifact; expansion never calls inference.
+
+Tests in `test_api_reliability.py` cover normalization, duplicate/seed/direction constraints,
+missing metadata, abstract positions, request errors, key isolation, and health after failures.
+For frontend integration and the final backend handoff, see [Citation API handoff](CITATION_API_HANDOFF.md).
 
 ## Citation and graph
 
