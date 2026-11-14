@@ -11,7 +11,7 @@ Base URL `http://localhost:8000/api/v1`. JSON fields use snake_case. Runtime Ope
 | GET | `/papers/{id}` | Real OpenAlex lookup, PaperDetails response |
 | GET | `/papers/{id}/references?limit=10&offset=0` | Bounded outgoing references, ReferenceResponse |
 | GET | `/papers/{id}/citations?limit=10&cursor=*` | Paginated incoming citations, IncomingCitationResponse |
-| GET | `/papers/{id}/neighbors` | 501, intended Graph response |
+| GET | `/papers/{id}/neighbors?direction=both&limit=10&cursor=*` | Bounded graph expansion, NeighborResponse |
 | POST | `/classify` | 503 without artifact, Classification response when installed |
 | POST | `/graphs` | 501, validates intended save request |
 | GET | `/graphs` | 501, intended saved-graph summaries |
@@ -203,6 +203,75 @@ curl --fail-with-body --get \
 Provider references: [cited-by filter recipe](https://help.openalex.org/how-to/api-recipes/)
 and [cursor paging and API-key requirements](https://help.openalex.org/api/paging/).
 
+## Graph neighbors (Task 4)
+
+`GET /papers/{id}/neighbors` combines the reference and incoming-citation services into one
+bounded graph response. It uses the existing `papers` and `citations` names (not `nodes` and
+`edges`). The frontend can merge papers by `id` and edges by directed relationship `id`.
+
+| Query parameter | Default | Accepted values |
+| --- | --- | --- |
+| `direction` | `both` | `incoming`, `outgoing`, `both` |
+| `limit` | 10 | integer 1–50, across both directions combined |
+| `cursor` | `*` | `*` for a new traversal, otherwise the returned neighbors token (up to 8192 URL-safe characters) |
+
+`NeighborResponse` extends `RelationshipResponse` and always contains:
+
+| Field | Meaning |
+| --- | --- |
+| `seed_paper_id` | Canonical normalized seed ID |
+| `papers` | Seed first, then unique neighbor Paper records |
+| `citations` | Unique directed Citation records with both endpoints in `papers` |
+| `next_cursor` | Opaque combined continuation token, or null when finished |
+| `has_more` | Whether either selected direction has continuation state |
+| `unresolved_reference_ids` | Outgoing IDs consumed on this page whose metadata could not be resolved |
+| `skipped_record_count` | Invalid incoming records and seed self-links omitted on this page |
+
+The seed does not count toward `limit`: at most `limit + 1` papers and `limit` edges are
+returned. Incoming edges run `citing -> seed`; outgoing edges run `seed -> referenced`.
+A neighbor appearing on both sides is one paper with two distinct opposite-direction edges.
+Intent, confidence, context text, and context source URL remain null. No classifier runs.
+
+Single-direction queries spend the entire budget on that direction. While both directions
+have work, `both` assigns `ceil(limit / 2)` outgoing slots and `floor(limit / 2)` incoming
+slots. With `limit=1`, pages alternate outgoing and incoming, starting outgoing. Once one
+direction is exhausted, the other gets the entire budget on subsequent pages. A page may be
+smaller than its budget (or empty except for the seed) due to exhaustion or unavailable
+metadata; the service does not make refill requests. Follow `has_more`/`next_cursor`, not the
+number of returned neighbors, to determine whether to continue.
+
+The neighbors token tracks an outgoing offset, an incoming OpenAlex cursor, and the
+one-slot turn. It is specific to this endpoint: keep the same requested ID, direction, and
+limit when following it. Tokens from `/citations` cannot be used directly here. Invalid,
+unsupported-version, exhausted, or query-mismatched tokens return 422 `invalid_cursor` before
+any provider request. Invalid direction/limit/query syntax returns 422 `validation_error`.
+Tokens contain pagination state only, with no credentials. They are stateless encodings, not
+authentication or authorization. Do not edit them. Start again with `*` to change the query.
+
+Each call fetches the seed exactly once, followed by at most one outgoing metadata batch and
+one incoming page, excluding retries. There is no recursive expansion, per-reference fetch,
+database access, or persistent graph mutation. Existing provider timeout/retry, partial-record,
+missing-seed, and API-key rules still apply. If either requested direction fails, the entire
+request returns a structured error; callers can safely retry the same token. OpenAlex updates
+may affect the ordering between requests. Clients should deduplicate by stable IDs across
+pages and previously expanded seeds.
+
+Manual checks with the API running:
+
+```bash
+curl --fail-with-body 'http://localhost:8000/api/v1/papers/W2741809807/neighbors?direction=outgoing&limit=6'
+curl --fail-with-body 'http://localhost:8000/api/v1/papers/W2741809807/neighbors?direction=incoming&limit=6'
+curl --fail-with-body 'http://localhost:8000/api/v1/papers/W2741809807/neighbors?direction=both&limit=6'
+```
+
+In Swagger, copy `next_cursor` without quotes into the same endpoint's cursor input and
+execute again with the same ID, direction, and limit. Incoming continuation requires the
+backend OpenAlex key. With `both&limit=6`, expect up to three outgoing and three incoming
+edges while both sides remain active, with at most seven unique papers. Check that every
+edge includes the seed, uses citing-to-cited direction, and has null classification fields.
+Invalid `direction=sideways` and `limit=51` should return 422. This adds backend expansion;
+the frontend canvas does not yet call it.
+
 ## Citation and graph
 
 | Citation field | Type and meaning |
@@ -217,7 +286,7 @@ and [cursor paging and API-key requirements](https://help.openalex.org/api/pagin
 
 If Paper B cites Paper A, the edge is `B -> A`. Never reverse source and target. Unclassified edges have null intent and confidence. A classified edge requires nonblank context text and confidence. Context-source provenance should be retained when supplied. Metadata titles alone cannot establish citation intent.
 
-Graph returns `{papers: Paper[], citations: Citation[]}`. All citation endpoints must appear in papers, and paper IDs must be unique. Neighbor traversal direction/year query parameters will be agreed when expansion is implemented.
+Graph returns `{papers: Paper[], citations: Citation[]}`. All citation endpoints must appear in papers, and paper IDs must be unique. Neighbors adds the pagination metadata documented above; year filtering is not implemented.
 
 ## Classification
 

@@ -24,7 +24,7 @@ def test_route_registration(client):
     assert expected <= paths.keys()
 
 
-@pytest.mark.parametrize("path", ["/papers/W123/neighbors", "/graphs"])
+@pytest.mark.parametrize("path", ["/graphs"])
 def test_planned_routes_are_explicit(client, path):
     response = client.get(f"/api/v1{path}")
     assert response.status_code == 501

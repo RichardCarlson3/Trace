@@ -7,12 +7,14 @@ from app.core.errors import ServiceError
 from app.schemas.contracts import (
     Citation,
     IncomingCitationResponse,
+    NeighborResponse,
     Paper,
     PaperDetails,
     ReferenceResponse,
     SearchResponse,
     normalize_work_id,
 )
+from app.services.neighbor_cursor import Direction, NeighborCursor
 
 
 def normalize_paper(work: dict) -> Paper:
@@ -85,6 +87,11 @@ class OpenAlexService:
             raise ServiceError(422, "validation_error", "Expected limit 1–50 and offset >= 0")
         work_id = normalize_work_id(work_id)
         work = await self._get_json(f"/works/{work_id}", missing_paper=True)
+        return await self._references_for_seed(work, limit=limit, offset=offset)
+
+    async def _references_for_seed(
+        self, work: dict, *, limit: int, offset: int
+    ) -> ReferenceResponse:
         try:
             seed = normalize_paper(work)
             references = work.get("referenced_works")
@@ -149,6 +156,11 @@ class OpenAlexService:
             seed = normalize_paper(work)
         except (ValueError, KeyError, TypeError, AttributeError):
             raise self._invalid_response() from None
+        return await self._citations_for_seed(seed, limit=limit, cursor=cursor)
+
+    async def _citations_for_seed(
+        self, seed: Paper, *, limit: int, cursor: str
+    ) -> IncomingCitationResponse:
         payload = await self._get_json(
             "/works",
             params={"filter": f"cites:{seed.id}", "per_page": limit, "cursor": cursor},
@@ -191,6 +203,68 @@ class OpenAlexService:
             ],
             next_cursor=next_cursor,
             has_more=next_cursor is not None,
+            skipped_record_count=skipped,
+        )
+
+    async def neighbors(
+        self, work_id: str, *, direction: Direction = "both", limit: int = 10, cursor: str = "*"
+    ) -> NeighborResponse:
+        if direction not in ("incoming", "outgoing", "both") or not 1 <= limit <= 50:
+            raise ServiceError(422, "validation_error", "Expected a valid direction and limit 1–50")
+        work_id = normalize_work_id(work_id)
+        state = NeighborCursor.start_or_decode(
+            cursor, work_id=work_id, direction=direction, limit=limit
+        )
+        work = await self._get_json(f"/works/{work_id}", missing_paper=True)
+        try:
+            seed = normalize_paper(work)
+        except (ValueError, KeyError, TypeError, AttributeError):
+            raise self._invalid_response() from None
+
+        outgoing_limit = limit if state.outgoing_offset is not None else 0
+        incoming_limit = limit if state.incoming_cursor is not None else 0
+        if outgoing_limit and incoming_limit:
+            if limit == 1:
+                outgoing_limit = int(state.turn == "outgoing")
+                incoming_limit = 1 - outgoing_limit
+                state.turn = "incoming" if outgoing_limit else "outgoing"
+            else:
+                outgoing_limit = (limit + 1) // 2
+                incoming_limit = limit // 2
+
+        pages = []
+        unresolved = []
+        skipped = 0
+        if outgoing_limit:
+            outgoing = await self._references_for_seed(
+                work, limit=outgoing_limit, offset=state.outgoing_offset
+            )
+            state.outgoing_offset = outgoing.next_offset
+            unresolved = outgoing.unresolved_reference_ids
+            pages.append(outgoing)
+        if incoming_limit:
+            incoming = await self._citations_for_seed(
+                seed, limit=incoming_limit, cursor=state.incoming_cursor
+            )
+            state.incoming_cursor = incoming.next_cursor
+            skipped = incoming.skipped_record_count
+            pages.append(incoming)
+
+        papers = {seed.id: seed}
+        citations = {}
+        for page in pages:
+            for paper in page.papers:
+                papers.setdefault(paper.id, paper)
+            for edge in page.citations:
+                citations.setdefault((edge.source, edge.target), edge)
+        has_more = state.outgoing_offset is not None or state.incoming_cursor is not None
+        return NeighborResponse(
+            seed_paper_id=seed.id,
+            papers=list(papers.values()),
+            citations=list(citations.values()),
+            next_cursor=state.encode() if has_more else None,
+            has_more=has_more,
+            unresolved_reference_ids=unresolved,
             skipped_record_count=skipped,
         )
 

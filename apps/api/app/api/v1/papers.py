@@ -4,12 +4,13 @@ from fastapi import APIRouter, Path, Query, Request
 
 from app.core.errors import ServiceError
 from app.schemas.contracts import (
-    Graph,
     IncomingCitationResponse,
+    NeighborResponse,
     PaperDetails,
     ReferenceResponse,
     SearchResponse,
 )
+from app.services.neighbor_cursor import Direction
 from app.services.openalex import OpenAlexService
 
 router = APIRouter(prefix="/papers", tags=["papers"])
@@ -51,9 +52,18 @@ async def citations(
     return await service.citations(id, limit=limit, cursor=cursor)
 
 
-@router.get("/{id}/neighbors", response_model=Graph)
-def neighbors(id: WorkID):
-    raise ServiceError(501, "not_implemented", "Citation expansion is planned")
+@router.get("/{id}/neighbors", response_model=NeighborResponse)
+async def neighbors(
+    id: WorkID,
+    request: Request,
+    direction: Direction = "both",
+    limit: Annotated[int, Query(ge=1, le=50)] = 10,
+    cursor: Annotated[
+        str, Query(min_length=1, max_length=8192, pattern=r"^(\*|[A-Za-z0-9_-]+)$")
+    ] = "*",
+):
+    service = OpenAlexService(request.app.state.http, request.app.state.settings)
+    return await service.neighbors(id, direction=direction, limit=limit, cursor=cursor)
 
 
 @router.get("/{id}", response_model=PaperDetails)

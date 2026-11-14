@@ -90,6 +90,12 @@ class IncomingCitationResponse(RelationshipResponse):
     skipped_record_count: int = Field(default=0, ge=0)
 
 
+class NeighborResponse(RelationshipResponse):
+    next_cursor: str | None = None
+    unresolved_reference_ids: list[str] = Field(default_factory=list)
+    skipped_record_count: int = Field(default=0, ge=0)
+
+
 class SearchResponse(Contract):
     papers: list[Paper]
     total: int = Field(ge=0)
