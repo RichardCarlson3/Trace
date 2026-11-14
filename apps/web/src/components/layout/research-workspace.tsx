@@ -8,7 +8,6 @@ import { PaperDetails } from "@/components/papers/paper-details";
 import { useCitationGraph } from "@/hooks/use-citation-graph";
 import { useResearch } from "@/hooks/use-research";
 import { filteredGraph, type DirectionFilter } from "@/lib/graph";
-import { previewFullGraph, previewInitialGraph } from "@/lib/preview-graph";
 import { isPaperLink, resolvePaper } from "@/lib/resolve-paper";
 import type { Paper } from "@/lib/types";
 
@@ -248,30 +247,9 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
       </header>
       {!hasGraph ? (
         <section className="hero" aria-label="Start exploring">
-          <p className="eyebrow">
-            Tracing relationships across citation evidence
-          </p>
           <h1>Follow the connections.</h1>
-          <p className="hero-copy">
-            Start with a paper. Explore the research that shaped it and the work
-            it inspired.
-          </p>
           {searchForm}
           {searchFeedback}
-          <p className="hero-hint">
-            Search by title, paste a DOI or article link, or connect the dots
-            around you.
-          </p>
-          {process.env.NODE_ENV === "development" && (
-            <button
-              className="preview-link"
-              onClick={() =>
-                citationGraph.openPreview(previewInitialGraph, previewFullGraph)
-              }
-            >
-              Preview interactions with sample data
-            </button>
-          )}
         </section>
       ) : (
         <>
@@ -362,17 +340,6 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
               />
             </div>
           )}
-          <footer className="graph-footer">
-            {visibleGraph.papers.length} papers ·{" "}
-            {visibleGraph.citations.length} relationships
-            {visibleGraph.papers.length < citationGraph.graph.papers.length &&
-              ` · ${citationGraph.graph.papers.length - visibleGraph.papers.length} hidden or filtered`}
-            <span>
-              {citationGraph.isPreview
-                ? "Sample data"
-                : "Metadata from OpenAlex"}
-            </span>
-          </footer>
         </>
       )}
     </main>
