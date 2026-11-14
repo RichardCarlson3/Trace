@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   BaseEdge,
   Background,
@@ -17,7 +17,12 @@ import {
   type ReactFlowInstance,
 } from "@xyflow/react";
 import { AmbientLinks } from "./ambient-links";
-import { graphDistances, paperSize } from "@/lib/graph-focus";
+import {
+  graphDistances,
+  gravityLayout,
+  paperSize,
+  spaceCircles,
+} from "@/lib/graph-focus";
 import type { Graph, Paper } from "@/lib/types";
 
 type PaperNodeData = { paper: Paper };
@@ -139,6 +144,12 @@ export function CitationCanvas({
     null,
   );
   const fitted = useRef(false);
+  const animation = useRef<number | null>(null);
+  const nodesRef = useRef(nodes);
+
+  useEffect(() => {
+    nodesRef.current = nodes;
+  }, [nodes]);
 
   useEffect(() => {
     setNodes((current) => {
@@ -206,18 +217,77 @@ export function CitationCanvas({
     () => graphDistances(visibleGraph, focusId),
     [visibleGraph, focusId],
   );
+  const animateLayout = useCallback(
+    (source: PaperNode[], pinnedId: string | null = focusId) => {
+      if (animation.current !== null) cancelAnimationFrame(animation.current);
+      const circles = source
+        .filter((node) => visibleIds.has(node.id))
+        .map((node) => ({
+          id: node.id,
+          x: node.position.x,
+          y: node.position.y,
+          size: paperSize(distances.get(node.id)),
+        }));
+      if (circles.length < 2) return;
+      const targets = gravityLayout(circles, focusId, distances, pinnedId);
+      const start = new Map(source.map((node) => [node.id, node.position]));
+      const reducedMotion = window.matchMedia?.(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      const duration = reducedMotion ? 0 : 620;
+      let startedAt: number | null = null;
+      const frame = (time: number) => {
+        startedAt ??= time;
+        const progress =
+          duration === 0 ? 1 : Math.min(1, (time - startedAt) / duration);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const moving = circles.map((circle) => {
+          const from = start.get(circle.id) ?? { x: circle.x, y: circle.y };
+          const to = targets.get(circle.id) ?? from;
+          return {
+            ...circle,
+            x: from.x + (to.x - from.x) * eased,
+            y: from.y + (to.y - from.y) * eased,
+          };
+        });
+        const spaced = spaceCircles(moving, pinnedId);
+        setNodes((current) =>
+          current.map((node) => {
+            const position = spaced.get(node.id);
+            return position ? { ...node, position } : node;
+          }),
+        );
+        animation.current = progress < 1 ? requestAnimationFrame(frame) : null;
+      };
+      animation.current = requestAnimationFrame(frame);
+    },
+    [distances, focusId, setNodes, visibleIds],
+  );
+
+  useEffect(() => {
+    if (nodes.length > 1) animateLayout(nodesRef.current);
+  }, [animateLayout, nodes.length]);
+
+  useEffect(
+    () => () => {
+      if (animation.current !== null) cancelAnimationFrame(animation.current);
+    },
+    [],
+  );
   const shownNodes = useMemo(
     () =>
       nodes.map((node) => {
         const size = paperSize(distances.get(node.id));
+        const depth = distances.get(node.id) ?? 5;
+        const faded = selectedPaperId && node.id !== selectedPaperId;
         return {
           ...node,
           hidden: !visibleIds.has(node.id),
           style: { ...node.style, width: size, height: size },
-          className: `paper-node${node.id === focusId ? " is-selected" : ""}${highlightedIds.has(node.id) ? " is-highlighted" : ""}`,
+          className: `paper-node${node.id === focusId ? " is-selected" : ""}${faded ? ` focus-distance-${Math.min(depth, 4)}` : ""}${highlightedIds.has(node.id) ? " is-highlighted" : ""}`,
         };
       }),
-    [nodes, visibleIds, focusId, highlightedIds, distances],
+    [nodes, visibleIds, focusId, selectedPaperId, highlightedIds, distances],
   );
   const positions = useMemo(
     () => new Map(nodes.map((node) => [node.id, node.position])),
@@ -253,7 +323,7 @@ export function CitationCanvas({
           sourceHandle: `source-${sourceSide}`,
           targetHandle: `target-${targetSide}`,
           type: "citation",
-          className: `citation-edge${citation.id === selectedCitationId ? " is-selected" : ""}${citation.id === hoveredCitationId ? " is-highlighted" : ""}`,
+          className: `citation-edge${selectedPaperId ? (citation.source === selectedPaperId || citation.target === selectedPaperId ? " is-focus-near" : " is-focus-far") : ""}${citation.id === selectedCitationId ? " is-selected" : ""}${citation.id === hoveredCitationId ? " is-highlighted" : ""}`,
           style: { stroke: color, strokeWidth: 2.2 },
           markerEnd: {
             type: MarkerType.ArrowClosed,
@@ -264,7 +334,13 @@ export function CitationCanvas({
           interactionWidth: 28,
         };
       }),
-    [visibleGraph.citations, positions, selectedCitationId, hoveredCitationId],
+    [
+      visibleGraph.citations,
+      positions,
+      selectedPaperId,
+      selectedCitationId,
+      hoveredCitationId,
+    ],
   );
 
   function showHover(paper: Paper | undefined, event: React.MouseEvent) {
@@ -281,6 +357,17 @@ export function CitationCanvas({
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
+        onNodeDragStart={() => {
+          if (animation.current !== null)
+            cancelAnimationFrame(animation.current);
+          animation.current = null;
+        }}
+        onNodeDragStop={(_, node) => {
+          const settled = nodesRef.current.map((item) =>
+            item.id === node.id ? { ...item, position: node.position } : item,
+          );
+          animateLayout(settled, node.id);
+        }}
         onInit={setInstance}
         onNodeClick={(_, node) => onSelectPaper(node.id)}
         onEdgeClick={(event, edge) => {

@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   graphDistances,
+  gravityLayout,
   paperSize,
+  spaceCircles,
   visibleExpansionGraph,
 } from "@/lib/graph-focus";
 import type { Graph, Paper } from "@/lib/types";
@@ -55,10 +57,46 @@ describe("graph focus and branch visibility", () => {
     const next = graphDistances(graph, "W3");
     expect(
       ["W1", "W2", "W3", "W4"].map((id) => paperSize(first.get(id))),
-    ).toEqual([204, 154, 126, 108]);
+    ).toEqual([208, 164, 146, 128]);
     expect(
       ["W1", "W2", "W3", "W4"].map((id) => paperSize(next.get(id))),
-    ).toEqual([126, 154, 204, 154]);
+    ).toEqual([146, 164, 208, 164]);
+  });
+
+  it("pulls related papers inward while keeping the focused paper fixed", () => {
+    const circles = [
+      { id: "W1", x: 0, y: 0, size: 208 },
+      { id: "W2", x: 460, y: 0, size: 164 },
+      { id: "W3", x: 900, y: 0, size: 146 },
+    ];
+    const positions = gravityLayout(circles, "W1", graphDistances(graph, "W1"));
+    expect(positions.get("W1")).toEqual({ x: 0, y: 0 });
+    expect(positions.get("W2")!.x).toBeLessThan(460);
+    expect(positions.get("W3")!.x).toBeLessThan(900);
+  });
+
+  it("separates colliding circles and preserves the dragged node", () => {
+    const circles = [
+      { id: "W1", x: 0, y: 0, size: 208 },
+      { id: "W2", x: 0, y: 0, size: 164 },
+      { id: "W3", x: 0, y: 0, size: 146 },
+      { id: "W4", x: 0, y: 0, size: 128 },
+    ];
+    const positions = spaceCircles(circles, "W1");
+    expect(positions.get("W1")).toEqual({ x: 0, y: 0 });
+    for (let i = 0; i < circles.length; i += 1) {
+      for (let j = i + 1; j < circles.length; j += 1) {
+        const a = circles[i];
+        const b = circles[j];
+        const ap = positions.get(a.id)!;
+        const bp = positions.get(b.id)!;
+        const separation = Math.hypot(
+          ap.x + a.size / 2 - bp.x - b.size / 2,
+          ap.y + a.size / 2 - bp.y - b.size / 2,
+        );
+        expect(separation).toBeGreaterThanOrEqual((a.size + b.size) / 2 + 25.8);
+      }
+    }
   });
 
   it("hides orphaned descendants but preserves papers connected by another active branch", () => {
