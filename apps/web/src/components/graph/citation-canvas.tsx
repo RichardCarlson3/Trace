@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useId,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -19,13 +20,21 @@ import {
   ReactFlow,
   getBezierPath,
   useNodesState,
+  useInternalNode,
   type EdgeProps,
   type Node,
   type NodeProps,
   type ReactFlowInstance,
 } from "@xyflow/react";
 import { AmbientLinks } from "./ambient-links";
-import { graphDistances, paperSize, spaceCircles } from "@/lib/graph-focus";
+import { graphDistances, paperSize } from "@/lib/graph-focus";
+import {
+  citationGeometry,
+  circle,
+  createPhysics,
+  placeNear,
+  uniqueCitations,
+} from "@/lib/graph-physics";
 import type { Graph, Paper } from "@/lib/types";
 import type { GraphLayout } from "@/lib/browser-library";
 
@@ -56,17 +65,39 @@ function PaperBubble({ data }: NodeProps<PaperNode>) {
 
 const nodeTypes = { paperBubble: PaperBubble };
 function CitationEdge(props: EdgeProps) {
-  const [path] = getBezierPath({
-    sourceX: props.sourceX,
-    sourceY: props.sourceY,
-    sourcePosition: props.sourcePosition,
-    targetX: props.targetX,
-    targetY: props.targetY,
-    targetPosition: props.targetPosition,
+  const source = useInternalNode<PaperNode>(props.source);
+  const target = useInternalNode<PaperNode>(props.target);
+  if (!source || !target) return null;
+  const bounds = (node: typeof source) => ({
+    id: node.id,
+    ...node.internals.positionAbsolute,
+    width: node.measured.width ?? 154,
+    height: node.measured.height ?? 154,
   });
+  const geometry = citationGeometry(
+    bounds(source),
+    bounds(target),
+    props.data?.reciprocal === true,
+  );
+  const sides = {
+    left: Position.Left,
+    right: Position.Right,
+    top: Position.Top,
+    bottom: Position.Bottom,
+  };
+  const [path] = getBezierPath({
+    ...geometry,
+    sourcePosition: sides[geometry.sourceSide],
+    targetPosition: sides[geometry.targetSide],
+  });
+  const a = circle(bounds(source));
+  const loop =
+    source.id === target.id
+      ? `M ${a.x + a.radius + 12},${a.y} C ${a.x + a.radius + 110},${a.y - a.radius - 110} ${a.x},${a.y - a.radius - 110} ${a.x},${a.y - a.radius - 12}`
+      : path;
   return (
     <BaseEdge
-      path={path}
+      path={loop}
       pathLength={1}
       markerEnd={props.markerEnd}
       style={props.style}
@@ -88,37 +119,38 @@ function positionNewNode(
   graph: Graph,
   placed: PaperNode[],
 ) {
-  const anchor = placed.find((node) => node.id === originId)?.position ?? {
-    x: 0,
-    y: 0,
-  };
-  const relation = graph.citations.find(
-    (item) =>
-      (item.source === originId && item.target === id) ||
-      (item.target === originId && item.source === id),
+  return placeNear(
+    { id, x: 0, y: 0, width: 164, height: 164 },
+    originId,
+    placed.map((node) => ({
+      id: node.id,
+      ...node.position,
+      width: node.measured?.width ?? 208,
+      height: node.measured?.height ?? 208,
+    })),
+    graph.citations,
   );
-  const side = relation?.source === originId ? -1 : 1;
-  let x = anchor.x + side * 330;
-  let y = anchor.y + (((placed.length - 1) % 5) - 2) * 170;
-  for (let attempt = 0; attempt < 40; attempt += 1) {
-    if (
-      !placed.some(
-        (node) =>
-          Math.abs(node.position.x - x) < 185 &&
-          Math.abs(node.position.y - y) < 155,
-      )
-    )
-      break;
-    y += 170;
-    if (attempt === 19) {
-      x += side * 300;
-      y = anchor.y - 340;
-    }
-  }
-  return { x, y };
 }
 
 type Hover = { paper: Paper; x: number; y: number };
+
+function physicsPositions(
+  nodes: PaperNode[],
+  simulation: ReturnType<typeof createPhysics>,
+) {
+  let moved = false;
+  const next = nodes.map((node) => {
+    const point = simulation.positions.get(node.id);
+    if (
+      !point ||
+      Math.hypot(point.x - node.position.x, point.y - node.position.y) < 0.001
+    )
+      return node;
+    moved = true;
+    return { ...node, position: { ...point } };
+  });
+  return moved ? next : nodes;
+}
 
 export function CitationCanvas({
   ref,
@@ -156,8 +188,15 @@ export function CitationCanvas({
     null,
   );
   const fitted = useRef(false);
+  const flowId = useId();
   const animation = useRef<number | null>(null);
   const nodesRef = useRef(nodes);
+  const physics = useRef<ReturnType<typeof createPhysics> | null>(null);
+  // The node under the pointer, plus any other selected nodes React Flow
+  // drags with it. The simulation holds all of them at their dragged positions.
+  const draggingId = useRef<string | null>(null);
+  const draggingIds = useRef<string[]>([]);
+  const previousVisible = useRef(new Set<string>());
 
   useEffect(() => {
     nodesRef.current = nodes;
@@ -204,6 +243,7 @@ export function CitationCanvas({
   }, [graph, seedId, expansionOrigin, setNodes, initialLayout]);
 
   useEffect(() => {
+    // A restored saved viewport is kept as-is; only new graphs are fitted.
     if (
       !instance ||
       fitted.current ||
@@ -211,11 +251,12 @@ export function CitationCanvas({
       initialLayout?.viewport
     )
       return;
-    fitted.current = true;
-    const frame = requestAnimationFrame(
-      () =>
-        void instance.fitView({ padding: 0.25, duration: 850, maxZoom: 1.2 }),
-    );
+    // Mark as fitted inside the frame: if Strict Mode's cleanup cancels this
+    // frame, the re-run effect must still be allowed to fit.
+    const frame = requestAnimationFrame(() => {
+      fitted.current = true;
+      void instance.fitView({ padding: 0.25, duration: 850, maxZoom: 1.2 });
+    });
     return () => cancelAnimationFrame(frame);
   }, [instance, graph.papers.length, initialLayout]);
 
@@ -249,84 +290,128 @@ export function CitationCanvas({
     () => graphDistances(visibleGraph, focusId),
     [visibleGraph, focusId],
   );
+  // Identifies what is on screen by content, not object identity: a re-created
+  // but identical visible graph must not count as a change to a restored layout.
+  const visibleKey = useMemo(
+    () => [...visibleIds].sort().join("|"),
+    [visibleIds],
+  );
+  // A reopened saved graph keeps its stored positions: the simulation stays idle
+  // until the visible papers or the focus actually change.
   const restoredView = useRef(
     initialLayout && Object.keys(initialLayout.positions).length > 0
-      ? { graph: visibleGraph, focusId }
+      ? { visibleKey, focusId }
       : null,
   );
-  const settleOverlaps = useCallback(
-    (source: PaperNode[], pinnedId: string | null = focusId) => {
+  const layoutDimensions = nodes
+    .filter((node) => visibleIds.has(node.id))
+    .map((node) => {
+      const size = paperSize(distances.get(node.id));
+      return `${node.id}:${Math.max(node.measured?.width ?? 0, size)}:${Math.max(node.measured?.height ?? 0, size)}`;
+    })
+    .join("|");
+  const publish = useCallback(() => {
+    const simulation = physics.current;
+    if (simulation)
+      setNodes((current) => physicsPositions(current, simulation));
+  }, [setNodes]);
+  // Drives the current simulation with fixed 16 ms steps. The loop stops by
+  // itself once the network is at rest; dragging keeps it awake.
+  const run = useCallback(() => {
+    const simulation = physics.current;
+    if (!simulation) return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      // No settling animation: resolve the layout in one bounded batch
+      // (or a few steps per pointer event while a drag is in progress).
+      if (simulation.dragging) for (let i = 0; i < 6; i += 1) simulation.step();
+      else while (simulation.step()) {}
+      publish();
+      return;
+    }
+    if (animation.current !== null) return;
+    let lastTime: number | null = null;
+    let elapsed = 0;
+    const frame: FrameRequestCallback = (time) => {
+      animation.current = null;
+      if (physics.current !== simulation) return;
+      elapsed += lastTime === null ? 16 : Math.min(48, time - lastTime);
+      lastTime = time;
+      let running = true;
+      while (elapsed >= 16 && running) {
+        running = simulation.step();
+        elapsed -= 16;
+      }
+      publish();
+      if (running) animation.current = requestAnimationFrame(frame);
+    };
+    animation.current = requestAnimationFrame(frame);
+  }, [publish]);
+  // Starts a new settling episode from the current React Flow positions,
+  // carrying over velocities and any drag in progress so restarts are seamless.
+  const settle = useCallback(
+    (source: PaperNode[], active: Set<string>) => {
       if (animation.current !== null) cancelAnimationFrame(animation.current);
-      const circles = source
-        .filter((node) => visibleIds.has(node.id))
-        .map((node) => ({
-          id: node.id,
-          x: node.position.x,
-          y: node.position.y,
-          size: paperSize(distances.get(node.id)),
-        }));
-      if (circles.length < 2) return;
-      const targets = spaceCircles(circles, pinnedId);
-      const start = new Map(source.map((node) => [node.id, node.position]));
-      if (
-        circles.every((circle) => {
-          const target = targets.get(circle.id);
-          return (
-            target &&
-            Math.abs(target.x - circle.x) < 0.1 &&
-            Math.abs(target.y - circle.y) < 0.1
-          );
-        })
-      )
-        return;
-      const reducedMotion = window.matchMedia?.(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
-      const duration = reducedMotion ? 0 : 620;
-      let startedAt: number | null = null;
-      const frame = (time: number) => {
-        startedAt ??= time;
-        const progress =
-          duration === 0 ? 1 : Math.min(1, (time - startedAt) / duration);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        const moving = circles.map((circle) => {
-          const from = start.get(circle.id) ?? { x: circle.x, y: circle.y };
-          const to = targets.get(circle.id) ?? from;
-          return {
-            ...circle,
-            x: from.x + (to.x - from.x) * eased,
-            y: from.y + (to.y - from.y) * eased,
-          };
-        });
-        const spaced = spaceCircles(moving, pinnedId);
-        setNodes((current) =>
-          current.map((node) => {
-            const position = spaced.get(node.id);
-            return position ? { ...node, position } : node;
-          }),
-        );
-        animation.current = progress < 1 ? requestAnimationFrame(frame) : null;
-      };
-      animation.current = requestAnimationFrame(frame);
+      animation.current = null;
+      const previous = physics.current;
+      const simulation = createPhysics(
+        source
+          .filter((node) => visibleIds.has(node.id))
+          .map((node) => ({
+            id: node.id,
+            ...node.position,
+            width: Math.max(
+              node.measured?.width ?? 0,
+              paperSize(distances.get(node.id)),
+            ),
+            height: Math.max(
+              node.measured?.height ?? 0,
+              paperSize(distances.get(node.id)),
+            ),
+          })),
+        visibleGraph.citations,
+        focusId,
+        { active, velocities: previous?.velocities() },
+      );
+      physics.current = simulation;
+      for (const id of draggingIds.current) {
+        const node = source.find((item) => item.id === id);
+        if (node) simulation.drag(id, node.position, id === draggingId.current);
+      }
+      run();
     },
-    [distances, focusId, setNodes, visibleIds],
+    [distances, focusId, run, visibleIds, visibleGraph.citations],
   );
-
   useEffect(() => {
+    const placedIds = new Set(
+      nodesRef.current
+        .filter((node) => visibleIds.has(node.id))
+        .map((node) => node.id),
+    );
+    const added = new Set(
+      [...placedIds].filter((id) => !previousVisible.current.has(id)),
+    );
+    // Restored papers count as already placed, so a later expansion activates
+    // only the newly added papers in the simulation.
+    previousVisible.current = placedIds;
     if (restoredView.current) {
       if (
-        restoredView.current.graph === visibleGraph &&
+        restoredView.current.visibleKey === visibleKey &&
         restoredView.current.focusId === focusId
       )
         return;
       restoredView.current = null;
     }
-    if (nodes.length > 1) settleOverlaps(nodesRef.current);
-  }, [settleOverlaps, nodes.length, visibleGraph, focusId]);
+    if (nodes.length > 1)
+      settle(
+        nodesRef.current,
+        added.size ? added : new Set(focusId ? [focusId] : []),
+      );
+  }, [settle, nodes.length, visibleIds, visibleKey, focusId, layoutDimensions]);
 
   useEffect(
     () => () => {
       if (animation.current !== null) cancelAnimationFrame(animation.current);
+      animation.current = null;
     },
     [],
   );
@@ -345,62 +430,58 @@ export function CitationCanvas({
       }),
     [nodes, visibleIds, focusId, selectedPaperId, highlightedIds, distances],
   );
-  const positions = useMemo(
-    () => new Map(nodes.map((node) => [node.id, node.position])),
-    [nodes],
+  const directedPairs = useMemo(
+    () =>
+      new Set(
+        visibleGraph.citations.map((edge) => `${edge.source}:${edge.target}`),
+      ),
+    [visibleGraph.citations],
   );
   const edges = useMemo(
     () =>
-      visibleGraph.citations.map((citation) => {
-        const source = positions.get(citation.source) ?? { x: 0, y: 0 };
-        const target = positions.get(citation.target) ?? { x: 0, y: 0 };
-        const dx = target.x - source.x;
-        const dy = target.y - source.y;
-        const horizontal = Math.abs(dx) >= Math.abs(dy);
-        const sourceSide = horizontal
-          ? dx >= 0
-            ? "right"
-            : "left"
-          : dy >= 0
-            ? "bottom"
-            : "top";
-        const targetSide = horizontal
-          ? dx >= 0
-            ? "left"
-            : "right"
-          : dy >= 0
-            ? "top"
-            : "bottom";
-        const color = intentColors[citation.intent ?? "unknown"];
-        return {
-          id: citation.id,
-          source: citation.source,
-          target: citation.target,
-          sourceHandle: `source-${sourceSide}`,
-          targetHandle: `target-${targetSide}`,
-          type: "citation",
-          className: `citation-edge${selectedPaperId ? (citation.source === selectedPaperId || citation.target === selectedPaperId ? " is-focus-near" : " is-focus-far") : ""}${citation.id === selectedCitationId ? " is-selected" : ""}${citation.id === hoveredCitationId ? " is-highlighted" : ""}`,
-          style: { stroke: color, strokeWidth: 2.2 },
-          markerEnd: {
-            type: MarkerType.ArrowClosed,
-            color,
-            width: 18,
-            height: 18,
-          },
-          interactionWidth: 28,
-        };
-      }),
+      uniqueCitations(visibleGraph.citations)
+        .filter(
+          (edge) => visibleIds.has(edge.source) && visibleIds.has(edge.target),
+        )
+        .map((citation) => {
+          const color = intentColors[citation.intent ?? "unknown"];
+          return {
+            id: citation.id,
+            source: citation.source,
+            target: citation.target,
+            sourceHandle: "source-left",
+            targetHandle: "target-left",
+            type: "citation",
+            data: {
+              reciprocal: directedPairs.has(
+                `${citation.target}:${citation.source}`,
+              ),
+            },
+            className: `citation-edge${selectedPaperId ? (citation.source === selectedPaperId || citation.target === selectedPaperId ? " is-focus-near" : " is-focus-far") : ""}${citation.id === selectedCitationId ? " is-selected" : ""}${citation.id === hoveredCitationId ? " is-highlighted" : ""}`,
+            style: { stroke: color, strokeWidth: 2.2 },
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+              color,
+              width: 20,
+              height: 20,
+              markerUnits: "userSpaceOnUse",
+            },
+            interactionWidth: 28,
+          };
+        }),
     [
       visibleGraph.citations,
-      positions,
+      visibleIds,
       selectedPaperId,
       selectedCitationId,
       hoveredCitationId,
+      directedPairs,
     ],
   );
 
   function showHover(paper: Paper | undefined, event: React.MouseEvent) {
-    if (!paper) return;
+    if (!paper || draggingId.current) return;
+    setHoveredCitationId(null);
     setHover({ paper, x: event.clientX, y: event.clientY });
   }
 
@@ -408,25 +489,72 @@ export function CitationCanvas({
     <div className="graph-container" role="region" aria-label="Citation graph">
       <AmbientLinks canDraw={!selectedPaperId && !selectedCitationId} />
       <ReactFlow
+        id={`citations-${flowId.replace(/[^a-zA-Z0-9_-]/g, "")}`}
         nodes={shownNodes}
         edges={edges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
-        onNodesChange={onNodesChange}
-        onNodeDragStart={() => {
-          if (animation.current !== null)
-            cancelAnimationFrame(animation.current);
-          animation.current = null;
+        onNodesChange={(changes) => {
+          const simulation = physics.current;
+          let dragged = false;
+          // React Flow reports the pointer-driven position; the simulation
+          // adopts it verbatim, so physics never fights the pointer.
+          for (const change of changes)
+            if (
+              change.type === "position" &&
+              change.position &&
+              simulation &&
+              draggingIds.current.includes(change.id)
+            ) {
+              simulation.drag(
+                change.id,
+                change.position,
+                change.id === draggingId.current,
+              );
+              dragged = true;
+            }
+          onNodesChange(changes);
+          if (dragged) {
+            publish();
+            run();
+          }
         }}
-        onNodeDragStop={(_, node) => {
-          const settled = nodesRef.current.map((item) =>
-            item.id === node.id ? { ...item, position: node.position } : item,
+        onNodeDragStart={(_, node, dragged) => {
+          draggingId.current = node.id;
+          draggingIds.current = dragged.map((item) => item.id);
+          if (!draggingIds.current.includes(node.id))
+            draggingIds.current.push(node.id);
+          setHover(null);
+          setHoveredCitationId(null);
+          const start = new Map(
+            dragged.map((item) => [item.id, item.position]),
           );
-          settleOverlaps(settled, node.id);
+          start.set(node.id, node.position);
+          settle(
+            nodesRef.current.map((item) =>
+              start.has(item.id)
+                ? { ...item, position: start.get(item.id)! }
+                : item,
+            ),
+            new Set(draggingIds.current),
+          );
+        }}
+        onNodeDragStop={(_, node, dragged) => {
+          const simulation = physics.current;
+          for (const item of dragged.length ? dragged : [node])
+            simulation?.drag(item.id, item.position, false);
+          draggingId.current = null;
+          draggingIds.current = [];
+          // Released papers stay where they were dropped; the rest of the
+          // network keeps settling around them.
+          simulation?.release();
+          publish();
+          run();
         }}
         onInit={setInstance}
         onNodeClick={(_, node) => onSelectPaper(node.id)}
         onEdgeClick={(event, edge) => {
+          event.stopPropagation();
           setHover(null);
           onSelectCitation(edge.id, event.clientX, event.clientY);
         }}
@@ -449,21 +577,12 @@ export function CitationCanvas({
           )
         }
         onNodeMouseLeave={() => setHover(null)}
-        onEdgeMouseEnter={(event, edge) => {
-          setHoveredCitationId(edge.id);
-          showHover(
-            graph.papers.find((paper) => paper.id === edge.target),
-            event,
-          );
-        }}
-        onEdgeMouseMove={(event, edge) =>
-          showHover(
-            graph.papers.find((paper) => paper.id === edge.target),
-            event,
-          )
-        }
-        onEdgeMouseLeave={() => {
+        onEdgeMouseEnter={(_, edge) => {
           setHover(null);
+          setHoveredCitationId(edge.id);
+        }}
+        onEdgeMouseMove={() => setHover(null)}
+        onEdgeMouseLeave={() => {
           setHoveredCitationId(null);
         }}
         nodesConnectable={false}
