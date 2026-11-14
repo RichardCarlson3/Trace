@@ -36,6 +36,7 @@ export interface SearchResponse {
 export interface Classification {
   intent: CitationIntent;
   confidence: number;
+  model_version: string;
 }
 
 export interface SaveGraphRequest {

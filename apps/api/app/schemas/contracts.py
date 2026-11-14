@@ -76,7 +76,7 @@ class SearchResponse(Contract):
 
 
 class ClassifyRequest(Contract):
-    context_text: str = Field(min_length=1, max_length=20000)
+    context_text: str = Field(strict=True, min_length=1, max_length=20000)
     context_source_url: str | None = None
 
     @field_validator("context_text")
@@ -89,7 +89,15 @@ class ClassifyRequest(Contract):
 
 class Classification(Contract):
     intent: Intent
-    confidence: float = Field(ge=0, le=1)
+    confidence: float = Field(
+        ge=0,
+        le=1,
+        allow_inf_nan=False,
+        description="Uncalibrated predict_proba score for the selected intent",
+    )
+    model_version: str = Field(
+        min_length=1, description="Version recorded in the loaded model metadata"
+    )
 
 
 class SaveGraphRequest(Contract):

@@ -108,7 +108,53 @@ print(model.predict_proba(contexts))
 '@ | uv run --project apps/api --group training python -
 ```
 
-The saved Pipeline exposes `predict`, `predict_proba` and string `classes_`. It matches the existing artifact filename convention. Production FastAPI integration belongs to Milestone 2. Citation passages must remain linked to their actual source when integrated with graph edges. SciCite's source identifiers require mapping to OpenAlex IDs for that integration.
+The saved Pipeline exposes `predict`, `predict_proba` and string `classes_`. FastAPI uses the same artifact loader through its cached inference service. Citation passages must remain linked to their actual source when integrated with graph edges. SciCite's source identifiers require mapping to OpenAlex IDs for that integration.
+
+## FastAPI inference
+
+Install the existing runtime/development dependencies and start the backend from the root.
+
+```powershell
+uv sync --project apps/api --locked --group dev
+npm run dev:api
+```
+
+The API requires both `citation_pipeline.joblib` and `model_metadata.json` from the same trusted training run. Their default directory is `apps/api/artifacts`. Set backend `MODEL_ARTIFACT_DIR` in `apps/api/.env` to select another directory. Relative paths resolve from `apps/api`. Restore the matching files from a trusted team artifact copy or explicitly run the Milestone 1 training command above when generating a new model.
+
+The application creates an inference service during app initialization. The first valid classification request loads through `ml.artifacts.load_model`, which checks the exact sklearn version and artifact SHA-256 before deserialization. The metadata must also contain a nonblank model version. A lock ensures concurrent first requests share one successful load. Later requests reuse that Pipeline and version for the lifetime of the process. Restart the API after replacing a loaded artifact pair. Failed loads are retried on a later request, allowing restored artifacts to become available.
+
+In another PowerShell terminal, submit a passage using the established `context_text` field. This example uses the illustrative passage provided for Milestone 2.
+
+```powershell
+$body = @{
+  context_text = "We adopt the architecture introduced by Vaswani et al. for our experiments."
+} | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri "http://localhost:8000/api/v1/classify" -ContentType "application/json" -Body $body
+```
+
+The trained artifact returned this response during verification.
+
+```json
+{
+  "intent": "method",
+  "confidence": 0.9047205612733114,
+  "model_version": "scicite-tfidf-logreg-v1"
+}
+```
+
+`intent` comes from the fitted class ordering, `confidence` is its `predict_proba` score, and `model_version` comes from metadata. Scores are uncalibrated and do not establish the probability that a prediction is correct. Callers must supply actual citation-context text for research use. Optional `context_source_url` remains accepted for provenance. It is not fetched by the service.
+
+The request accepts 1–20,000 characters, including non-whitespace text. Invalid or missing passages return HTTP 422. Missing/incompatible artifacts return HTTP 503 with `model_unavailable`, while health and paper search remain operational. Unexpected prediction failures return HTTP 500 with `inference_error`. API errors contain generic messages, and ordinary Python logs retain diagnostic exceptions.
+
+The interactive schema is available at `http://localhost:8000/docs`. The request schema exposes no model-file selection. Artifact configuration is controlled by the backend operator. Backend startup and classification are independent of TigerData, and model training is invoked separately.
+
+Run the deterministic inference tests without the training dependency group.
+
+```powershell
+uv run --project apps/api pytest apps/api/tests/test_inference.py
+```
+
+They use isolated model doubles and temporary invalid-artifact fixtures without fitting models or downloading SciCite. Separate verification with the real saved Pipeline checked three existing SciCite passages and the illustrative passage above, repeated HTTP requests, metadata version and scores against direct sklearn predictions. One successful model load served all eight application requests.
 
 ## Tests and formatting
 
@@ -121,4 +167,4 @@ uv run --project apps/api --group training ruff format --check apps/api
 
 Tests use synthetic fixtures and local temporary files. They cover label mapping, duplicate handling, context preservation, split overlap, vocabulary isolation, validation selection, metric calculation, version compatibility, checksum integrity, independent reload and PNG rendering. Without the optional training group, dataset/plot integration tests skip while runtime-only tests continue to run.
 
-Datasets, caches, model binaries, metadata and generated evaluation outputs are ignored by Git. Source changes are prepared on `dev` for review. Training remains an explicit developer operation.
+Dataset caches and generated evaluation outputs are covered by Git ignore rules. The current checkout includes the model and metadata pair for API inference. Training remains an explicit developer operation.
