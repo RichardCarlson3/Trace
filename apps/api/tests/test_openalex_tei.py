@@ -447,3 +447,208 @@ def test_selected_passage_count_is_bounded(upstream):
             assert reason is None and len(result.contexts) == module.MAX_PASSAGES
 
     asyncio.run(run())
+
+
+# Reference-list alignment. Documents and target metadata are recorded OpenAlex data
+# (bart.xml, biobert.xml, works.json, alignment_metadata.json). Tests that alter them
+# say so; synthetic XML is labelled as synthetic.
+ALIGNMENT = json.loads((FIXTURES / "alignment_metadata.json").read_text(encoding="utf-8"))
+TEACHING = CitationPair(citing_paper_id=BART, cited_paper_id="W1544827683")
+MRPC = CitationPair(citing_paper_id=BART, cited_paper_id="W131533222")
+
+
+@pytest.fixture
+def aligned(upstream):
+    works, calls, base = upstream
+    for wid, extra in ALIGNMENT["works"].items():
+        works[wid].update(extra)
+
+    def handler(request):
+        if request.url.host == "api.openalex.org" and request.url.path == "/works":
+            calls.append(request)
+            assert request.headers["Authorization"] == "Bearer synthetic-oa"
+            ids = request.url.params["filter"].removeprefix("ids.openalex:").split("|")
+            results = [
+                {"id": works[i]["id"], "title": works[i]["title"]} for i in ids if i in works
+            ]
+            return httpx.Response(200, json={"results": results})
+        return base(request)
+
+    return works, calls, handler
+
+
+def run_pairs(handler, pairs):
+    async def run():
+        async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+            service = OpenAlexTEIService(client, config())
+            return [await service.retrieve(pair) for pair in pairs]
+
+    return asyncio.run(run())
+
+
+def with_document(aligned, data):
+    def handler(request):
+        if request.url.host == "content.openalex.org":
+            return httpx.Response(200, content=data)
+        return aligned[2](request)
+
+    return handler
+
+
+def test_alignment_recovers_teaching_machines_from_unidentified_b10(aligned):
+    [(result, reason)] = run_pairs(aligned[2], [TEACHING])
+    assert reason is None and result.relationship_found and result.cited_mapping.verified
+    [passage] = result.contexts
+    assert passage.bibliography_id == "b10"
+    assert passage.context_text == "CNN/DM (Hermann et al., 2015), a news summarization dataset."
+    assert passage.identity_evidence == [
+        "openalex_referenced_work:W1544827683",
+        "exact_title",
+        "first_author:hermann",
+        "year:2015",
+    ]
+    classified = classify_contexts(result, InferenceService(config().model_artifact_dir))
+    assert classified.contexts[0].classification is not None
+
+
+def test_author_segment_fallback_covers_grobid_name_splitting(aligned):
+    document = parse_document((FIXTURES / "bart.xml").read_bytes(), aligned[0][BART])
+    b4 = next(b for b in document.bibliography if b.id == "b4")
+    # GROBID parsed "William B Dolan" with surname "William"; the printed text is intact.
+    assert b4.first_surname != "dolan" and "dolan" in b4.author_segment.split()
+    [(result, reason)] = run_pairs(aligned[2], [MRPC])
+    assert reason is None and result.contexts[0].bibliography_id == "b4"
+    assert "first_author:dolan" in result.contexts[0].identity_evidence
+
+
+def test_all_eleven_recorded_pairs_with_alignment_metadata(aligned):
+    pairs = [
+        CitationPair(citing_paper_id=wid, cited_paper_id=ref.split("/")[-1])
+        for wid in [BART, "W2911489562"]
+        for ref in aligned[0][wid]["referenced_works"]
+    ]
+    results = dict(zip([p.cited_paper_id for p in pairs], run_pairs(aligned[2], pairs)))
+    recovered = {k: r.contexts[0].bibliography_id for k, (r, _) in results.items() if r}
+    assert recovered == {
+        "W131533222": "b4",
+        "W1544827683": "b10",
+        "W1599016936": "b14",
+        "W1614298861": "b17",
+        "W2130158090": "b1",
+        "W2251939518": "b28",
+        "W2418388682": "b27",
+    }
+    # An exact identifier still takes precedence over alignment.
+    assert results["W1614298861"][0].contexts[0].identity_evidence == ["ARXIV:1301.3781"]
+    # BioBERT cites these four only in tables: identity alone never yields a passage.
+    for wid in ["W2047782770", "W2052217781", "W2071879021", "W2136437513"]:
+        assert results[wid] == (None, "tei_no_safe_body_sentence")
+    # One closed-set title lookup per citing document, reused across its edges.
+    assert sum(c.url.path == "/works" for c in aligned[1]) == 2
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        # Each alters recorded metadata to model a failure observed in the M8 cohort.
+        lambda w: w.update(authorships=[{"author": {"display_name": "Petra Perner"}}]),
+        lambda w: w.update(publication_year=2017),
+        lambda w: w.update(title="Teaching Machines to Read"),
+        lambda w: w.update(authorships=[]),
+        lambda w: w.update(publication_year=None),
+    ],
+)
+def test_alignment_requires_title_author_and_year(aligned, change):
+    change(aligned[0]["W1544827683"])
+    assert run_pairs(aligned[2], [TEACHING]) == [(None, "tei_bibliography_not_verified")]
+
+
+def test_one_year_publication_gap_is_tolerated(aligned):
+    aligned[0]["W1544827683"]["publication_year"] = 2016
+    [(result, _)] = run_pairs(aligned[2], [TEACHING])
+    assert result.contexts[0].identity_evidence[-1] == "year:2015"
+
+
+def test_family_name_first_display_names():
+    assert module.surname_key("Liu, Yinhan") == "liu"
+    assert module.surname_key("Karl Moritz Hermann") == "hermann"
+    assert module.surname_key("Martin Luther King Jr.") == "king"
+    assert module.surname_key(None) is None
+
+
+def test_duplicate_title_in_reference_list_fails_closed(aligned):
+    # Altered: OpenAlex listing two records with one title (observed for BERT and GLUE).
+    duplicate = "https://openalex.org/W9000000001"
+    aligned[0]["W9000000001"] = {
+        "id": duplicate,
+        "title": "Teaching machines to read and comprehend.",
+    }
+    aligned[0][BART]["referenced_works"].append(duplicate)
+    assert run_pairs(aligned[2], [TEACHING]) == [(None, "tei_ambiguous_reference_list")]
+
+
+def test_duplicate_bibliography_entries_fail_closed(aligned):
+    data = (FIXTURES / "bart.xml").read_bytes()
+    start = data.index(b'<biblStruct status="extracted" xml:id="b10">')
+    entry = data[start : data.index(b"</biblStruct>", start) + len(b"</biblStruct>")]
+    data = data.replace(entry, entry + entry.replace(b'xml:id="b10"', b'xml:id="b99"'))
+    assert run_pairs(with_document(aligned, data), [TEACHING]) == [
+        (None, "tei_ambiguous_bibliography")
+    ]
+
+
+def test_aligned_entry_with_contradictory_identifier_is_rejected(aligned):
+    # Synthetic document: title, author and year agree but the entry prints another DOI.
+    aligned[0][TARGET].update(
+        doi="10.1000/target",
+        ids={},
+        locations=[],
+        title="A documented technique for experiments",
+        publication_year=2020,
+        authorships=[{"author": {"display_name": "Ada Example"}}],
+    )
+    data = synthetic_xml(
+        '<analytic><title level="a">A documented technique for experiments</title>'
+        "<author><persName><surname>Example</surname></persName></author></analytic>"
+        '<monogr><imprint><date when="2020"/></imprint></monogr>'
+        '<idno type="DOI">10.1000/other</idno>'
+    )
+    assert run_pairs(with_document(aligned, data), [PAIR]) == [
+        (None, "tei_conflicting_bibliography_identifier")
+    ]
+
+
+@pytest.mark.parametrize("status", [404, 500])
+def test_reference_title_lookup_failure_fails_closed(aligned, status):
+    def handler(request):
+        if request.url.path == "/works":
+            return httpx.Response(status)
+        return aligned[2](request)
+
+    assert run_pairs(handler, [TEACHING]) == [(None, f"openalex_tei_http_{status}")]
+
+
+def test_oversized_reference_list_fails_closed_without_request(aligned, monkeypatch):
+    monkeypatch.setattr(module, "MAX_REFERENCE_LIST", 3)
+    assert run_pairs(aligned[2], [TEACHING]) == [(None, "tei_reference_list_too_large")]
+    assert not any(c.url.path == "/works" for c in aligned[1])
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        # Recorded BioBERT GROBID output: a Table 3 row and a table footnote.
+        "15 411 BC4CHEMD (Krallinger et al., 2015) Drug/Chem.",
+        "Note: The number of annotations from Habibi et al. (2017) and Zhu et al. (2018) "
+        "is provided.",
+    ],
+)
+def test_table_rows_and_table_notes_are_not_passages(text):
+    assert not safe_sentence(text)
+
+
+def test_ordinary_sentences_starting_with_note_are_kept():
+    assert safe_sentence(
+        "Note that while previous works often used word embeddings (Habibi et al., 2017), "
+        "BioBERT learns WordPiece embeddings."
+    )

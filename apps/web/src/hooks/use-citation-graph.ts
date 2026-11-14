@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { mergeGraphs } from "@/lib/graph";
 import { directionKeys, visibleExpansionGraph } from "@/lib/graph-focus";
+import type { GraphSnapshot } from "@/lib/browser-library";
 import type { Citation, Graph, Paper } from "@/lib/types";
 
 export type ExpansionDirection = "references" | "citations";
@@ -230,6 +231,28 @@ export function useCitationGraph() {
     setExpansionError(null);
   }, []);
 
+  const restore = useCallback((saved: GraphSnapshot) => {
+    ++version.current;
+    seedRequest.current?.abort();
+    expansionRequest.current?.abort();
+    previewNeighbors.current = null;
+    setSeed(
+      saved.graph.papers.find((paper) => paper.id === saved.seed_paper_id) ??
+        null,
+    );
+    setIsPreview(false);
+    setGraph(saved.graph);
+    setSelectedPaperId(saved.selected_paper_id);
+    setSelectedCitationId(null);
+    setExpanded(new Set(saved.expanded_nodes));
+    setEdgeGroups(saved.edge_groups);
+    setExpansionOrigin(null);
+    setLoadingSeed(false);
+    setLoadError(null);
+    setExpanding(null);
+    setExpansionError(null);
+  }, []);
+
   const selectCitation = useCallback((id: string) => {
     setSelectedCitationId(id);
     setSelectedPaperId(null);
@@ -285,9 +308,11 @@ export function useCitationGraph() {
     expanding,
     expansionError,
     expanded,
+    edgeGroups,
     expansionOrigin,
     openPaper,
     openPreview,
+    restore,
     expand,
     selectPaper,
     selectCitation,

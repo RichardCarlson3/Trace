@@ -1,13 +1,19 @@
-"""Bounded, exact-identifier OpenAlex TEI fallback for selected citation edges."""
+"""Bounded, exact-identifier OpenAlex TEI fallback for selected citation edges.
+
+When no bibliography entry carries an exact identifier, a strict closed-set
+reference-list alignment may bind the OpenAlex-asserted cited work to one entry.
+"""
 
 import asyncio
 import hashlib
 import json
 import re
 import time
+import unicodedata
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from io import BytesIO
+from time import perf_counter
 from urllib.parse import urlsplit
 from xml.etree.ElementTree import ParseError
 
@@ -26,6 +32,7 @@ from app.schemas.citation_contexts import (
 )
 from app.schemas.contracts import normalize_work_id
 from app.services.citation_identifiers import normalize_identifier, work_identifiers
+from app.services.citation_timing import record_timing, timed, timing
 from app.services.openalex import retry_after_seconds
 from app.services.resource_cache import ResourceCache
 
@@ -37,6 +44,12 @@ FALLBACK_TIMEOUT = 30
 MAX_PASSAGES = 3
 MAX_PASSAGE_CHARS = 20_000
 XML_ID = "{http://www.w3.org/XML/1998/namespace}id"
+# Reference-list alignment bounds.
+MIN_ALIGNED_TITLE_CHARS = 12
+MAX_ALIGNED_YEAR_GAP = 1  # preprint versus published version
+MAX_REFERENCE_LIST = 500
+REFERENCE_BATCH = 100
+NAME_SUFFIXES = {"jr", "sr", "ii", "iii", "iv"}
 
 
 class TEIUnavailable(Exception):
@@ -53,6 +66,12 @@ class Bibliography:
     id: str
     identifiers: set[tuple[str, str]]
     text: str
+    # Alignment keys: normalized title, first structured surname, normalized author
+    # segment of the raw reference (text before the title) and printed years.
+    title_key: str = ""
+    first_surname: str | None = None
+    author_segment: str = ""
+    years: frozenset[int] = frozenset()
 
 
 @dataclass
@@ -109,9 +128,60 @@ def element_identifiers(element):
     return found
 
 
+def text_key(value):
+    """Case-, accent- and punctuation-insensitive exact comparison key."""
+    if not isinstance(value, str):
+        return ""
+    value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode().casefold()
+    return " ".join(re.findall(r"[a-z0-9]+", value))
+
+
+def surname_key(display_name):
+    """Family name from 'Given Family' or 'Family, Given' display names."""
+    if not isinstance(display_name, str):
+        return None
+    name = display_name.split(",", 1)[0] if "," in display_name else display_name
+    tokens = [t for t in text_key(name).split() if t not in NAME_SUFFIXES]
+    return tokens[-1] if tokens else None
+
+
+def bibliography_keys(node, reference_text):
+    part = next((n for n in node if local(n) == "analytic"), None)
+    if part is None:
+        part = next((n for n in node if local(n) == "monogr"), None)
+    if part is None:
+        return "", None, "", frozenset()
+    title = next(("".join(n.itertext()) for n in part.iter() if local(n) == "title"), "")
+    surnames = [
+        "".join(s.itertext())
+        for author in part.iter()
+        if local(author) == "author"
+        for s in author.iter()
+        if local(s) == "surname"
+    ][:1]
+    years = frozenset(
+        int(d.get("when")[:4])
+        for d in node.iter()
+        if local(d) == "date" and re.match(r"\d{4}", d.get("when", ""))
+    )
+    title_key = text_key(title)
+    raw = text_key(re.sub(r"(\w)- (\w)", r"\1\2", reference_text))  # join line-wrap breaks
+    position = raw.find(title_key) if title_key else -1
+    return (
+        title_key,
+        surname_key(surnames[0]) if surnames else None,
+        raw[:position] if position > 0 else "",
+        years,
+    )
+
+
 def safe_sentence(text):
     # Narrow complete-sentence policy. Reject flattened numeric tables even with punctuation.
     if not 30 <= len(text) <= MAX_PASSAGE_CHARS or not re.search(r"[.!?][\"')]*$", text):
+        return False
+    # Table rows flattened into body text start with a count ("15 411 BC4CHEMD (...)");
+    # table/figure footnotes start with "Note:".
+    if re.match(r"\d", text) or re.match(r"notes?:", text, re.I):
         return False
     if re.search(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", text) or "\ufffd" in text:
         return False
@@ -182,7 +252,10 @@ def parse_document(data: bytes, work: dict) -> Document:
             reference_text = "".join(raw.itertext()).strip()
             if len(reference_text) > 4000:
                 ids, reference_text = set(), ""
-            bibliography.append(Bibliography(bid, ids, reference_text))
+                keys = ("", None, "", frozenset())  # Oversized entries never align.
+            else:
+                keys = bibliography_keys(node, " ".join(reference_text.split()))
+            bibliography.append(Bibliography(bid, ids, reference_text, *keys))
         if len(bibliography) > 2000:
             raise TEIUnavailable("tei_structure_limit")
         sentences = []
@@ -259,14 +332,39 @@ def parse_document(data: bytes, work: dict) -> Document:
         raise TEIUnavailable("tei_invalid_xml_or_identifiers") from None
 
 
+def target_keys(target):
+    authorships = target.get("authorships") or []
+    first = authorships[0] if authorships and isinstance(authorships[0], dict) else {}
+    year = target.get("publication_year")
+    return (
+        text_key(target.get("title")),
+        surname_key((first.get("author") or {}).get("display_name")),
+        year if type(year) is int else None,
+    )
+
+
+def bibliography_agrees(bib, title, surname, year):
+    """Exact title, first-author family name and year (within one) must all agree."""
+    if len(title) < MIN_ALIGNED_TITLE_CHARS or bib.title_key != title or not surname:
+        return False
+    # GROBID can mis-split names; the printed author segment is an exact-token fallback.
+    if bib.first_surname != surname and surname not in bib.author_segment.split():
+        return False
+    return bool(
+        year and bib.years and min(abs(y - year) for y in bib.years) <= MAX_ALIGNED_YEAR_GAP
+    )
+
+
 class OpenAlexTEIService:
     def __init__(self, client: httpx.AsyncClient, settings: Settings):
         self.client, self.settings = client, settings
         self._metadata = ResourceCache[dict | Missing](64, 86400, max_pending=16)
         self._documents = ResourceCache[Document | Missing](16, 86400, max_pending=2)
+        self._reference_titles = ResourceCache[dict | Missing](64, 86400, max_pending=4)
         self._gate = asyncio.Semaphore(2)
         self._blocked_until = 0.0
 
+    @timed("tei_http")
     async def _read(self, url, limit):
         if self._blocked_until > time.monotonic():
             raise TEIUnavailable("openalex_tei_cooldown")
@@ -289,6 +387,7 @@ class OpenAlexTEIService:
                     raise TEIUnavailable("tei_document_too_large")
             return bytes(data)
 
+    @timed("tei_metadata")
     async def _work(self, wid):
         async def load():
             try:
@@ -296,7 +395,8 @@ class OpenAlexTEIService:
                     f"{self.settings.openalex_base_url.rstrip('/')}/works/{wid}",
                     params={
                         "select": (
-                            "id,doi,ids,title,locations,referenced_works,content_urls,has_content"
+                            "id,doi,ids,title,locations,referenced_works,content_urls,"
+                            "has_content,publication_year,authorships"
                         )
                     },
                 )
@@ -312,12 +412,77 @@ class OpenAlexTEIService:
             except (ValueError, KeyError, TypeError, AttributeError):
                 return Missing("openalex_tei_invalid_metadata")
 
-        value, _ = await self._metadata.get(
+        started = perf_counter()
+        value, reused = await self._metadata.get(
+            wid, load, lifetime=lambda v: 300 if isinstance(v, Missing) else 86400
+        )
+        record_timing("tei_metadata_cache", started, reused=reused)
+        if isinstance(value, Missing):
+            raise TEIUnavailable(value.reason)
+        return value
+
+    @timed("tei_reference_titles")
+    async def _titles(self, wid, references):
+        """Titles of every OpenAlex referenced work of the citing paper (closed set)."""
+
+        async def load():
+            if len(references) > MAX_REFERENCE_LIST:
+                return Missing("tei_reference_list_too_large")
+            titles = {}
+            try:
+                for start in range(0, len(references), REFERENCE_BATCH):
+                    chunk = references[start : start + REFERENCE_BATCH]
+                    url = httpx.URL(
+                        f"{self.settings.openalex_base_url.rstrip('/')}/works",
+                        params={
+                            "filter": "ids.openalex:" + "|".join(chunk),
+                            "select": "id,title",
+                            "per_page": len(chunk),
+                        },
+                    )
+                    for record in json.loads(await self._read(url, MAX_METADATA_BYTES))["results"]:
+                        titles[normalize_work_id(record["id"])] = text_key(record.get("title"))
+                # Merged or withdrawn IDs may be absent; they cannot be compared.
+                return titles
+            except TEIUnavailable as exc:
+                return Missing(str(exc))
+            except httpx.HTTPError:
+                return Missing("openalex_tei_transport_error")
+            except (ValueError, KeyError, TypeError, AttributeError):
+                return Missing("openalex_tei_invalid_metadata")
+
+        value, _ = await self._reference_titles.get(
             wid, load, lifetime=lambda v: 300 if isinstance(v, Missing) else 86400
         )
         if isinstance(value, Missing):
             raise TEIUnavailable(value.reason)
         return value
+
+    async def _align(self, pair, target, document, references):
+        """Bind the OpenAlex-asserted cited work to exactly one bibliography entry.
+
+        Fails closed unless one entry agrees on exact title, first author and year,
+        and no other referenced work of the citing paper shares that exact title.
+        """
+        title, surname, year = target_keys(target)
+        candidates = [
+            b for b in document.bibliography if bibliography_agrees(b, title, surname, year)
+        ]
+        if len(candidates) != 1:
+            return None, (
+                "tei_ambiguous_bibliography" if candidates else "tei_bibliography_not_verified"
+            )
+        titles = await self._titles(pair.citing_paper_id, sorted(references))
+        if any(w != pair.cited_paper_id and t == title for w, t in titles.items()):
+            return None, "tei_ambiguous_reference_list"
+        bib = candidates[0]
+        year_match = min(bib.years, key=lambda y: abs(y - year))
+        return bib, [
+            f"openalex_referenced_work:{pair.cited_paper_id}",
+            "exact_title",
+            f"first_author:{surname}",
+            f"year:{year_match}",
+        ]
 
     async def _document(self, wid, work):
         async def load():
@@ -328,17 +493,23 @@ class OpenAlexTEIService:
                     or (work.get("content_urls") or {}).get("grobid_xml") != url
                 ):
                     return Missing("openalex_tei_content_unavailable")
-                data = await self._read(url, MAX_XML_BYTES)
-                return await run_in_threadpool(parse_document, data, work)
+                with timing("tei_xml_retrieval"):
+                    data = await self._read(url, MAX_XML_BYTES)
+                with timing("tei_parse"):
+                    return await run_in_threadpool(parse_document, data, work)
             except TEIUnavailable as exc:
                 return Missing(str(exc))
             except httpx.HTTPError:
                 return Missing("openalex_tei_transport_error")
 
-        return await self._documents.get(
+        started = perf_counter()
+        value, reused = await self._documents.get(
             wid, load, lifetime=lambda v: 300 if isinstance(v, Missing) else 86400
         )
+        record_timing("tei_document_cache", started, reused=reused)
+        return value, reused
 
+    @timed("openalex_fallback")
     async def retrieve(self, pair: CitationPair):
         if not self.settings.openalex_tei_enabled:
             return None, "openalex_tei_disabled"
@@ -346,7 +517,9 @@ class OpenAlexTEIService:
             return None, "openalex_key_missing"
         try:
             async with asyncio.timeout(FALLBACK_TIMEOUT):
+                queued_at = perf_counter()
                 async with self._gate:
+                    record_timing("tei_queue", queued_at)
                     work = await self._work(pair.citing_paper_id)
                     references = {normalize_work_id(r) for r in work.get("referenced_works", [])}
                     if pair.cited_paper_id not in references:
@@ -357,14 +530,17 @@ class OpenAlexTEIService:
                         return None, document.reason
                     known = metadata_identifiers(target)
                     matches = [b for b in document.bibliography if b.identifiers & known]
-                    if len(matches) != 1:
-                        return (
-                            None,
-                            "tei_bibliography_not_verified"
-                            if not matches
-                            else "tei_ambiguous_bibliography",
-                        )
-                    bib = matches[0]
+                    if len(matches) > 1:
+                        return None, "tei_ambiguous_bibliography"
+                    if matches:
+                        bib = matches[0]
+                        evidence = sorted(f"{k}:{v}" for k, v in bib.identifiers & known)
+                    else:
+                        # Exact identifiers are absent from most bibliographies; fall
+                        # back to strict closed-set alignment with the OpenAlex edge.
+                        bib, evidence = await self._align(pair, target, document, references)
+                        if bib is None:
+                            return None, evidence
                     # A matching identifier cannot override another contradictory known namespace.
                     for kind, value in bib.identifiers:
                         values = {v for k, v in known if k == kind}
@@ -398,9 +574,7 @@ class OpenAlexTEIService:
                                 document_sha256=document.sha256,
                                 retrieved_at=document.captured_at,
                                 document_identity_method=document.identity_method,
-                                identity_evidence=sorted(
-                                    f"{k}:{v}" for k, v in bib.identifiers & known
-                                ),
+                                identity_evidence=evidence,
                             )
                         )
                         if len(contexts) >= MAX_PASSAGES:

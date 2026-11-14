@@ -1,0 +1,170 @@
+{
+ "_provenance": "Recorded OpenAlex /works responses (2026-11-14), trimmed to the alignment fields publication_year and the first two authorships. Not synthetic.",
+ "works": {
+  "W131533222": {
+   "publication_year": 2005,
+   "authorships": [
+    {
+     "author": {
+      "display_name": "William B. Dolan"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Chris Brockett"
+     }
+    }
+   ]
+  },
+  "W1544827683": {
+   "publication_year": 2015,
+   "authorships": [
+    {
+     "author": {
+      "display_name": "Karl Moritz Hermann"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Tomáš Kočiský"
+     }
+    }
+   ]
+  },
+  "W1599016936": {
+   "publication_year": 2011,
+   "authorships": [
+    {
+     "author": {
+      "display_name": "Hector J. Levesque"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Ernest Davis"
+     }
+    }
+   ]
+  },
+  "W1614298861": {
+   "publication_year": 2013,
+   "authorships": [
+    {
+     "author": {
+      "display_name": "Tomáš Mikolov"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Kai Chen"
+     }
+    }
+   ]
+  },
+  "W2047782770": {
+   "publication_year": 2004,
+   "authorships": [
+    {
+     "author": {
+      "display_name": "Jin-Dong Kim"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Tomoko Ohta"
+     }
+    }
+   ]
+  },
+  "W2052217781": {
+   "publication_year": 2012,
+   "authorships": [
+    {
+     "author": {
+      "display_name": "Erik M. van Mulligen"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Annie Fourrier‐Réglat"
+     }
+    }
+   ]
+  },
+  "W2071879021": {
+   "publication_year": 2013,
+   "authorships": [
+    {
+     "author": {
+      "display_name": "Evangelos Pafilis"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Sune Pletscher-Frankild"
+     }
+    }
+   ]
+  },
+  "W2130158090": {
+   "publication_year": 2006,
+   "authorships": [
+    {
+     "author": {
+      "display_name": "Ido Dagan"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Oren Glickman"
+     }
+    }
+   ]
+  },
+  "W2136437513": {
+   "publication_year": 2015,
+   "authorships": [
+    {
+     "author": {
+      "display_name": "Álex Bravo"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Janet Piñero"
+     }
+    }
+   ]
+  },
+  "W2251939518": {
+   "publication_year": 2013,
+   "authorships": [
+    {
+     "author": {
+      "display_name": "Richard Socher"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Alex Perelygin"
+     }
+    }
+   ]
+  },
+  "W2418388682": {
+   "publication_year": 2016,
+   "authorships": [
+    {
+     "author": {
+      "display_name": "Rico Sennrich"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Barry Haddow"
+     }
+    }
+   ]
+  }
+ }
+}

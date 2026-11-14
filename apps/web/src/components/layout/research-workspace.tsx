@@ -2,11 +2,16 @@
 
 import { useMemo, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { CitationCanvas } from "@/components/graph/citation-canvas";
+import { SavedResearchControls } from "@/components/layout/saved-research-controls";
+import {
+  CitationCanvas,
+  type CitationCanvasHandle,
+} from "@/components/graph/citation-canvas";
 import { CitationDetails } from "@/components/papers/citation-details";
 import { PaperDetails } from "@/components/papers/paper-details";
 import { useCitationGraph } from "@/hooks/use-citation-graph";
 import { useResearch } from "@/hooks/use-research";
+import { useSavedResearch } from "@/hooks/use-saved-research";
 import { filteredGraph, type DirectionFilter } from "@/lib/graph";
 import { isPaperLink, resolvePaper } from "@/lib/resolve-paper";
 import type { Paper } from "@/lib/types";
@@ -29,6 +34,34 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
   const { connection, result, loading, error, search, clearSearch } =
     useResearch();
   const citationGraph = useCitationGraph();
+  const canvasRef = useRef<CitationCanvasHandle>(null);
+  const savedResearch = useSavedResearch({
+    citationGraph,
+    canvasRef,
+    filters: { direction, year_from: yearFrom, year_to: yearTo },
+    onOpen: () => {
+      setFiltersOpen(false);
+      setCitationPopup(null);
+    },
+    onSearch: (value) => {
+      setQuery(value);
+      void runSearch(value);
+    },
+    onRestore: (saved) => {
+      ++linkVersion.current;
+      clearSearch();
+      setResolving(false);
+      setLinkError(null);
+      setResultsOpen(false);
+      setQuery("");
+      setDirection(saved.filters.direction);
+      setYearFrom(saved.filters.year_from);
+      setYearTo(saved.filters.year_to);
+      setDetailsOpen(true);
+      setCitationPopup(null);
+      setFiltersOpen(false);
+    },
+  });
   const hasGraph = Boolean(citationGraph.seed);
   const visibleGraph = useMemo(
     () =>
@@ -49,6 +82,7 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
   );
 
   function choose(paper: Paper) {
+    savedResearch.startGraph(paper.title);
     setResultsOpen(false);
     setLinkError(null);
     setDetailsOpen(true);
@@ -60,6 +94,7 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
   }
 
   function goHome() {
+    savedResearch.startGraph();
     ++linkVersion.current;
     clearSearch();
     citationGraph.reset();
@@ -78,8 +113,12 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const value = query.trim();
+    await runSearch(query.trim());
+  }
+
+  async function runSearch(value: string) {
     if (!value) return;
+    savedResearch.recordSearch(value);
     const requestVersion = ++linkVersion.current;
     setLinkError(null);
     if (isPaperLink(value)) {
@@ -175,7 +214,9 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
       id="workspace"
     >
       <CitationCanvas
-        key={citationGraph.seed?.id ?? "empty"}
+        key={`${citationGraph.seed?.id ?? "empty"}:${savedResearch.session.version}`}
+        ref={canvasRef}
+        initialLayout={savedResearch.session.initialLayout}
         seedId={citationGraph.seed?.id ?? null}
         graph={citationGraph.graph}
         visibleGraph={visibleGraph}
@@ -245,6 +286,7 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
           </div>
         )}
       </header>
+      <SavedResearchControls research={savedResearch} />
       {!hasGraph ? (
         <section className="hero" aria-label="Start exploring">
           <h1>Follow the connections.</h1>
@@ -321,6 +363,7 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
               <CitationDetails
                 citation={citationGraph.selectedCitation}
                 papers={citationGraph.graph.papers}
+                isPreview={citationGraph.isPreview}
                 onClose={() => {
                   setCitationPopup(null);
                   citationGraph.clearSelection();

@@ -29,6 +29,11 @@ class ResourceCache[T]:
         self.misses = 0
         self.coalesced = 0
 
+    def contains(self, key: Hashable) -> bool:
+        """Whether an unexpired value is stored; never loads or changes recency."""
+        cached = self._values.get(key)
+        return cached is not None and cached[0] > time.monotonic()
+
     async def get(
         self,
         key: Hashable,

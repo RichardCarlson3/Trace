@@ -1,0 +1,330 @@
+{
+  "method": "Offline virtual-clock comparison, original coordinator source versus working tree. Same harness, exact real BART TEI fixture, synthetic Semantic Scholar responses. No live provider calls.",
+  "baseline_commit": "628f6c78115555d480c742f734bc0b3e8dcc17b8",
+  "baseline_source_sha256": "78d6d7fa28325ae76d9f69b4c222057951571da2d05b473040f2f94848f26c54",
+  "default_delays_seconds": {
+    "metadata_http": 0.2,
+    "semantic_http": 0.1,
+    "xml_http": 0.4,
+    "parse_wait": 0.05,
+    "modeled_inference_wait": 0.02,
+    "retry_after": 4
+  },
+  "slow_throttled_delays_seconds": {
+    "metadata_http": 2,
+    "semantic_http": 9,
+    "xml_http": 8,
+    "parse_wait": 0.05,
+    "modeled_inference_wait": 0.02,
+    "retry_after": 4
+  },
+  "notes": [
+    "Reported virtual times exclude real CPU cost; the unchanged real classifier is still executed.",
+    "Request counts include HTTP attempts canceled after dispatch.",
+    "Shared case classifies 20 requests across two targets of the same citing paper.",
+    "Resumed case uses Retry-After 1s and XML delay 4s to ensure an eligible, recovering primary is retained.",
+    "Cold/warm CPU profile uses mocked instant HTTP and actual parsing/model work; nested stages overlap and must not be summed."
+  ],
+  "before": [
+    {
+      "scenario": "success",
+      "seconds": 3.32,
+      "source": "semantic_scholar",
+      "available": true,
+      "requests": 5
+    },
+    {
+      "scenario": "throttled",
+      "seconds": 9.37,
+      "source": "openalex_tei",
+      "available": true,
+      "requests": 7
+    },
+    {
+      "scenario": "slow_throttled",
+      "seconds": 87.07,
+      "source": "openalex_tei",
+      "available": true,
+      "requests": 11
+    },
+    {
+      "scenario": "resumed",
+      "seconds": 7.17,
+      "source": "semantic_scholar",
+      "available": true,
+      "requests": 6
+    },
+    {
+      "scenario": "cooldown",
+      "seconds": 7.12,
+      "source": "semantic_scholar",
+      "available": true,
+      "requests": 5
+    },
+    {
+      "scenario": "expired_cooldown",
+      "seconds": 3.32,
+      "source": "semantic_scholar",
+      "available": true,
+      "requests": 5
+    },
+    {
+      "scenario": "normal_pacing",
+      "seconds": 4.62,
+      "source": "semantic_scholar",
+      "available": true,
+      "requests": 5
+    },
+    {
+      "scenario": "tei_only",
+      "seconds": 0.87,
+      "source": "openalex_tei",
+      "available": true,
+      "requests": 3
+    },
+    {
+      "scenario": "both_unavailable",
+      "seconds": 8.92,
+      "source": "semantic_scholar",
+      "available": false,
+      "requests": 6
+    },
+    {
+      "scenario": "cached",
+      "seconds": 0.02,
+      "source": "semantic_scholar",
+      "available": true,
+      "requests": 0
+    },
+    {
+      "scenario": "recovers",
+      "seconds": 8.92,
+      "source": "semantic_scholar",
+      "available": true,
+      "requests": 6
+    },
+    {
+      "scenario": "fallback_miss",
+      "seconds": 8.92,
+      "source": "semantic_scholar",
+      "available": true,
+      "requests": 6
+    },
+    {
+      "scenario": "shared",
+      "seconds": 4.82,
+      "source": "semantic_scholar",
+      "available": true,
+      "requests": 7
+    }
+  ],
+  "after": [
+    {
+      "scenario": "success",
+      "seconds": 3.32,
+      "source": "semantic_scholar",
+      "available": true,
+      "requests": 5
+    },
+    {
+      "scenario": "throttled",
+      "seconds": 1.17,
+      "source": "openalex_tei",
+      "available": true,
+      "requests": 5
+    },
+    {
+      "scenario": "slow_throttled",
+      "seconds": 24.02,
+      "source": "openalex_tei",
+      "available": true,
+      "requests": 6
+    },
+    {
+      "scenario": "resumed",
+      "seconds": 7.17,
+      "source": "semantic_scholar",
+      "available": true,
+      "requests": 9
+    },
+    {
+      "scenario": "cooldown",
+      "seconds": 0.87,
+      "source": "openalex_tei",
+      "available": true,
+      "requests": 4
+    },
+    {
+      "scenario": "expired_cooldown",
+      "seconds": 3.32,
+      "source": "semantic_scholar",
+      "available": true,
+      "requests": 5
+    },
+    {
+      "scenario": "normal_pacing",
+      "seconds": 4.62,
+      "source": "semantic_scholar",
+      "available": true,
+      "requests": 5
+    },
+    {
+      "scenario": "tei_only",
+      "seconds": 0.87,
+      "source": "openalex_tei",
+      "available": true,
+      "requests": 3
+    },
+    {
+      "scenario": "both_unavailable",
+      "seconds": 8.52,
+      "source": "semantic_scholar",
+      "available": false,
+      "requests": 6
+    },
+    {
+      "scenario": "cached",
+      "seconds": 0.02,
+      "source": "semantic_scholar",
+      "available": true,
+      "requests": 0
+    },
+    {
+      "scenario": "recovers",
+      "seconds": 8.92,
+      "source": "semantic_scholar",
+      "available": true,
+      "requests": 9
+    },
+    {
+      "scenario": "fallback_miss",
+      "seconds": 8.92,
+      "source": "semantic_scholar",
+      "available": true,
+      "requests": 8
+    },
+    {
+      "scenario": "shared",
+      "seconds": 4.82,
+      "source": "semantic_scholar",
+      "available": true,
+      "requests": 7
+    }
+  ],
+  "offline_cpu_profile": [
+    {
+      "phase": "cold",
+      "stages": [
+        {
+          "stage": "pair_cache",
+          "elapsed_ms": 0.008,
+          "reused": false
+        },
+        {
+          "stage": "tei_queue",
+          "elapsed_ms": 0.01
+        },
+        {
+          "stage": "tei_http",
+          "elapsed_ms": 0.891,
+          "outcome": "success"
+        },
+        {
+          "stage": "tei_metadata_cache",
+          "elapsed_ms": 2.339,
+          "reused": false
+        },
+        {
+          "stage": "tei_metadata",
+          "elapsed_ms": 2.411,
+          "outcome": "success"
+        },
+        {
+          "stage": "tei_http",
+          "elapsed_ms": 0.303,
+          "outcome": "success"
+        },
+        {
+          "stage": "tei_metadata_cache",
+          "elapsed_ms": 0.941,
+          "reused": false
+        },
+        {
+          "stage": "tei_metadata",
+          "elapsed_ms": 0.985,
+          "outcome": "success"
+        },
+        {
+          "stage": "tei_http",
+          "elapsed_ms": 0.682,
+          "outcome": "success"
+        },
+        {
+          "stage": "tei_xml_retrieval",
+          "elapsed_ms": 0.734,
+          "outcome": "success"
+        },
+        {
+          "stage": "tei_parse",
+          "elapsed_ms": 68.347,
+          "outcome": "success"
+        },
+        {
+          "stage": "tei_document_cache",
+          "elapsed_ms": 72.468,
+          "reused": false
+        },
+        {
+          "stage": "openalex_fallback",
+          "elapsed_ms": 76.622,
+          "outcome": "success"
+        },
+        {
+          "stage": "fallback_cache",
+          "elapsed_ms": 76.957,
+          "reused": false
+        },
+        {
+          "stage": "classification_retrieval",
+          "elapsed_ms": 78.491,
+          "outcome": "success"
+        },
+        {
+          "stage": "model_inference",
+          "elapsed_ms": 632.36,
+          "outcome": "success"
+        },
+        {
+          "stage": "classification_total",
+          "elapsed_ms": 711.558,
+          "outcome": "success"
+        }
+      ]
+    },
+    {
+      "phase": "warm",
+      "stages": [
+        {
+          "stage": "pair_cache",
+          "elapsed_ms": 0.007,
+          "reused": true
+        },
+        {
+          "stage": "classification_retrieval",
+          "elapsed_ms": 0.292,
+          "outcome": "success"
+        },
+        {
+          "stage": "model_inference",
+          "elapsed_ms": 2.432,
+          "outcome": "success"
+        },
+        {
+          "stage": "classification_total",
+          "elapsed_ms": 3.328,
+          "outcome": "success"
+        }
+      ]
+    }
+  ]
+}
