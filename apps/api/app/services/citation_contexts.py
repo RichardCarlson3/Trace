@@ -11,6 +11,7 @@ from collections import OrderedDict
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
+from functools import partial
 from pathlib import Path
 from time import perf_counter
 from typing import Literal
@@ -50,8 +51,45 @@ EXAMPLES_PATH = Path(__file__).resolve().parents[1] / "examples" / "citation_con
 logger = logging.getLogger(__name__)
 
 
-def _invalid_response(provider: str) -> ServiceError:
+def _shape(container: dict, key: str) -> str:
+    """Describe a provider field by JSON type only, never by value."""
+    return type(container[key]).__name__ if key in container else "absent"
+
+
+def _invalid_response(
+    provider: str,
+    stage: str = "response",
+    category: str = "invalid_payload",
+    field: str = "body",
+    *,
+    observed: str | None = None,
+    row: int | None = None,
+    keys: object = None,
+) -> ServiceError:
+    # Sanitized diagnostics: fixed labels, JSON type names, row index and schema key
+    # names only. No bodies, passages, identifiers or credentials are logged.
+    key_names = (
+        sorted(k for k in keys if isinstance(k, str) and re.fullmatch(r"[A-Za-z_]{1,32}", k))[:12]
+        if isinstance(keys, dict)
+        else None
+    )
+    logger.warning(
+        "citation_provider_invalid_response provider=%s stage=%s category=%s field=%s "
+        "observed=%s row=%s top_level_keys=%s recoverable=false",
+        provider,
+        stage,
+        category,
+        field,
+        observed,
+        row,
+        key_names,
+    )
     return ServiceError(502, f"{provider}_invalid_response", f"{provider} returned invalid data")
+
+
+async def _resolved(value):
+    """Loader for a value already obtained by a batch request."""
+    return value
 
 
 def _retry_delay(response: httpx.Response, attempt: int) -> float:
@@ -97,6 +135,7 @@ class CitationContextService:
         self._doi_aliases: OrderedDict[str, set[str]] = OrderedDict()
         self._examples: dict[tuple[str, str], CitationContexts] | None = None
         self._mappings = ResourceCache[PaperMapping](MAPPING_CACHE_ENTRIES, MAPPING_CACHE_SECONDS)
+        self._identities = ResourceCache(MAPPING_CACHE_ENTRIES, 300)
         self._semantic_papers = ResourceCache[dict | None](
             MAPPING_CACHE_ENTRIES, MAPPING_CACHE_SECONDS
         )
@@ -304,7 +343,9 @@ class CitationContextService:
         self._remember(key, result)
         return result
 
-    async def _send(self, provider: str, url: str, params: dict, headers: dict) -> httpx.Response:
+    async def _send(
+        self, provider: str, url: str, params: dict, headers: dict, body: dict | None = None
+    ) -> httpx.Response:
         if provider != "semantic_scholar":
             with timing("mapping_metadata_http"):
                 return await self.client.get(url, params=params, headers=headers, timeout=10.0)
@@ -323,8 +364,14 @@ class CitationContextService:
                             await asyncio.sleep(delay)
                     self._next_semantic_request = time.monotonic() + self._semantic_interval
                     with timing("semantic_http"):
-                        response = await self.client.get(
-                            url, params=params, headers=headers, timeout=10.0
+                        # A batch lookup is one POST through the same paced scheduler.
+                        response = await self.client.request(
+                            "POST" if body is not None else "GET",
+                            url,
+                            params=params,
+                            headers=headers,
+                            json=body,
+                            timeout=10.0,
                         )
                     # Publish cooldown before releasing the shared scheduler lock.
                     if response.status_code == 429:
@@ -353,7 +400,9 @@ class CitationContextService:
                 503, "semantic_scholar_busy", "Semantic Scholar request queue is busy"
             ) from None
 
-    async def _get(self, provider: str, path: str, params: dict) -> dict | None:
+    async def _get(
+        self, provider: str, path: str, params: dict, body: dict | None = None
+    ) -> dict | list | None:
         headers = {}
         if provider == "semantic_scholar":
             base_url = self.settings.semantic_scholar_base_url
@@ -367,7 +416,7 @@ class CitationContextService:
             started = perf_counter()
             try:
                 response = await self._send(
-                    provider, f"{base_url.rstrip('/')}/{path}", params, headers
+                    provider, f"{base_url.rstrip('/')}/{path}", params, headers, body
                 )
             except httpx.TransportError:
                 if attempt < 2:
@@ -403,64 +452,112 @@ class CitationContextService:
                 )
             if response.is_error:
                 raise ServiceError(502, f"{provider}_error", f"{provider} rejected the request")
+            stage = "references" if path.endswith("/references") else "mapping"
             try:
                 payload = response.json()
             except ValueError:
-                raise _invalid_response(provider) from None
+                raise _invalid_response(provider, stage, "undecodable_json") from None
+            if body is not None and isinstance(payload, list):
+                return payload  # Batch responses are arrays; callers validate each item.
             if not isinstance(payload, dict):
-                raise _invalid_response(provider)
+                raise _invalid_response(
+                    provider, stage, "non_object_body", observed=type(payload).__name__
+                )
             return payload
         raise AssertionError("Retry loop exhausted unexpectedly")
 
     @timed("identifier_resolution")
-    async def _map_paper(self, work_id: str) -> PaperMapping:
+    async def _map_paper(self, work_id: str, prefetched: dict | None = None) -> PaperMapping:
         started = perf_counter()
         mapping, reused = await self._mappings.get(
             work_id,
-            lambda: self._resolve_paper(work_id),
+            lambda: self._resolve_paper(work_id, prefetched),
             lifetime=lambda mapping: MAPPING_CACHE_SECONDS if mapping.verified else 300,
         )
         record_timing("mapping_cache", started, reused=reused)
         return mapping
 
-    async def _resolve_paper(self, work_id: str) -> PaperMapping:
-        mapping = PaperMapping(openalex_id=work_id)
-        work = await self._get(
-            "openalex", f"works/{work_id}", {"select": "id,doi,ids,title,locations"}
+    async def _identity(self, work_id: str):
+        """OpenAlex identity and explicit identifiers for one work (no Semantic Scholar I/O).
+
+        Returns a terminal PaperMapping when the work cannot be resolved, otherwise
+        ``(mapping, known, aliases)``. Briefly cached so batching and verification
+        share one OpenAlex request.
+        """
+        value, _ = await self._identities.get(
+            work_id, lambda: self._load_identity(work_id), lifetime=lambda _: 300
         )
-        if work is None:
-            return mapping.model_copy(update={"reason": "openalex_work_not_found"})
+        return value
+
+    @timed("semantic_batch_lookup")
+    async def _prefetch_semantic(self, work_ids: list[str]) -> dict:
+        """Look up every uncached identifier of these works in one paced request.
+
+        Results only replace the individual GET lookups; the per-identifier
+        verification in ``_resolve_paper`` is unchanged. Any batch problem other
+        than throttling falls back to those individual lookups.
+        """
+        pending = [w for w in dict.fromkeys(work_ids) if not self._mappings.contains(w)]
+        if not pending:
+            return {}
+        identities = await asyncio.gather(
+            *(self._identity(w) for w in pending), return_exceptions=True
+        )
+        keys = []
+        for identity in identities:
+            # Errors and unresolved works resurface unchanged in _map_paper.
+            if isinstance(identity, tuple):
+                keys.extend(
+                    key for key in identity[1].items() if not self._semantic_papers.contains(key)
+                )
+        keys = list(dict.fromkeys(keys))
+        if len(keys) < 2:
+            return {}  # One lookup gains nothing from batching.
         try:
-            if not isinstance(work.get("id"), str):
-                raise TypeError("Missing OpenAlex work identity")
-            if normalize_work_id(work["id"]) != work_id:
-                return mapping.model_copy(update={"reason": "openalex_id_mismatch"})
-            ids = work.get("ids") or {}
-            if not isinstance(ids, dict):
-                raise TypeError("Invalid OpenAlex identifiers")
-        except (KeyError, TypeError):
-            raise _invalid_response("openalex") from None
-        except ValueError:
-            return mapping.model_copy(update={"reason": "invalid_openalex_identifier"})
-        if isinstance(work.get("title"), str):
-            mapping.title = work["title"]
-        try:
-            known, aliases = work_identifiers(work)
-        except ValueError as exc:
-            reason = (
-                "ambiguous_openalex_doi" if str(exc) == "ambiguous_doi_identifier" else str(exc)
+            payload = await self._get(
+                "semantic_scholar",
+                "paper/batch",
+                {"fields": "paperId,externalIds"},
+                body={"ids": [f"{kind}:{value}" for kind, value in keys]},
             )
-            return mapping.model_copy(update={"reason": reason})
-        mapping.doi = known.get("DOI")
-        mapping.reason = "missing_doi" if not mapping.doi else "semantic_scholar_work_not_found"
+        except ServiceError as exc:
+            # Throttling, outages and access errors apply equally to individual
+            # lookups; retrying them one by one would only add requests. Only a
+            # rejected batch request (4xx other than auth/throttling) falls back.
+            if exc.code != "semantic_scholar_error":
+                raise
+            logger.info("semantic_scholar_batch_fallback reason=%s", exc.code)
+            return {}
+        if (
+            not isinstance(payload, list)
+            or len(payload) != len(keys)
+            or any(item is not None and not isinstance(item, dict) for item in payload)
+        ):
+            logger.warning(
+                "semantic_scholar_batch_fallback reason=invalid_shape observed=%s",
+                type(payload).__name__,
+            )
+            return {}
+        return dict(zip(keys, payload, strict=True))
+
+    async def _resolve_paper(self, work_id: str, prefetched: dict | None = None) -> PaperMapping:
+        identity = await self._identity(work_id)
+        if isinstance(identity, PaperMapping):
+            return identity
+        mapping, known, aliases = identity
         for kind, value in known.items():
-            paper, _ = await self._semantic_papers.get(
-                (kind, value),
-                lambda: self._get(
+            if prefetched and (kind, value) in prefetched:
+                load = partial(_resolved, prefetched[(kind, value)])
+            else:
+                load = partial(
+                    self._get,
                     "semantic_scholar",
                     f"paper/{kind}:{quote(value, safe='')}",
                     {"fields": "paperId,externalIds"},
-                ),
+                )
+            paper, _ = await self._semantic_papers.get(
+                (kind, value),
+                load,
                 lifetime=lambda paper: (
                     300
                     if paper is None
@@ -476,7 +573,13 @@ class CitationContextService:
                 continue
             external_ids = paper.get("externalIds") or {}
             if not isinstance(external_ids, dict):
-                raise _invalid_response("semantic_scholar")
+                raise _invalid_response(
+                    "semantic_scholar",
+                    "mapping",
+                    "wrong_type",
+                    "externalIds",
+                    observed=_shape(paper, "externalIds"),
+                )
             if not identity_matches(paper, kind, value, known, aliases):
                 mapping.reason = "unverified_alternative_identifier"
                 if kind == "DOI":
@@ -488,19 +591,66 @@ class CitationContextService:
                 continue
             paper_id = paper.get("paperId")
             if not isinstance(paper_id, str) or not re.fullmatch(r"[a-fA-F0-9]{40}", paper_id):
-                raise _invalid_response("semantic_scholar")
+                raise _invalid_response(
+                    "semantic_scholar",
+                    "mapping",
+                    "invalid_paper_id",
+                    "paperId",
+                    observed=_shape(paper, "paperId"),
+                )
+            accepted_dois = set(aliases)
+            if external_ids.get("DOI"):
+                # identity_matches only compares namespaces OpenAlex knows. A record
+                # matched by another identifier can still carry a malformed DOI; it
+                # cannot be checked against contradictions, so fail closed.
+                try:
+                    accepted_dois.add(normalize_doi(external_ids["DOI"]))
+                except ValueError:
+                    mapping.reason = "unverified_semantic_scholar_doi"
+                    continue
             mapping.semantic_scholar_paper_id = paper_id.lower()
             mapping.verified = True
             mapping.reason = None
-            accepted_dois = set(aliases)
-            if external_ids.get("DOI"):
-                accepted_dois.add(normalize_doi(external_ids["DOI"]))
             self._doi_aliases[paper_id.lower()] = accepted_dois
             self._doi_aliases.move_to_end(paper_id.lower())
             if len(self._doi_aliases) > MAPPING_CACHE_ENTRIES:
                 self._doi_aliases.popitem(last=False)
             return mapping
         return mapping
+
+    async def _load_identity(self, work_id: str):
+        mapping = PaperMapping(openalex_id=work_id)
+        work = await self._get(
+            "openalex", f"works/{work_id}", {"select": "id,doi,ids,title,locations"}
+        )
+        if work is None:
+            return mapping.model_copy(update={"reason": "openalex_work_not_found"})
+        try:
+            if not isinstance(work.get("id"), str):
+                raise TypeError("Missing OpenAlex work identity")
+            if normalize_work_id(work["id"]) != work_id:
+                return mapping.model_copy(update={"reason": "openalex_id_mismatch"})
+            ids = work.get("ids") or {}
+            if not isinstance(ids, dict):
+                raise TypeError("Invalid OpenAlex identifiers")
+        except (KeyError, TypeError):
+            raise _invalid_response(
+                "openalex", "mapping", "invalid_work_identity", "id/ids"
+            ) from None
+        except ValueError:
+            return mapping.model_copy(update={"reason": "invalid_openalex_identifier"})
+        if isinstance(work.get("title"), str):
+            mapping.title = work["title"]
+        try:
+            known, aliases = work_identifiers(work)
+        except ValueError as exc:
+            reason = (
+                "ambiguous_openalex_doi" if str(exc) == "ambiguous_doi_identifier" else str(exc)
+            )
+            return mapping.model_copy(update={"reason": reason})
+        mapping.doi = known.get("DOI")
+        mapping.reason = "missing_doi" if not mapping.doi else "semantic_scholar_work_not_found"
+        return mapping, known, aliases
 
     @timed("semantic_references")
     async def _reference_page(self, paper_id: str, offset: int) -> tuple[ReferencePage, bool]:
@@ -518,34 +668,107 @@ class CitationContextService:
                 raise ServiceError(
                     503, "semantic_scholar_unavailable", "Verified reference data is unavailable"
                 )
-            if not isinstance(payload.get("data"), list) or payload.get("offset", offset) != offset:
-                raise _invalid_response("semantic_scholar")
+            stage = "reference_page"
+            if offset == 0 and "data" in payload and payload["data"] is None:
+                # Observed live: HTTP 200 with data=null for a resolved paper whose
+                # reference list Semantic Scholar does not expose. This is missing
+                # provider coverage, not malformed data, and proves nothing about
+                # the relationship. Raised before storing, so it is never cached.
+                logger.info(
+                    "citation_provider_references_unavailable provider=semantic_scholar "
+                    "stage=%s top_level_keys=%s",
+                    stage,
+                    sorted(k for k in payload if isinstance(k, str) and k.isidentifier())[:12],
+                )
+                raise ServiceError(
+                    503,
+                    "semantic_scholar_references_unavailable",
+                    "Semantic Scholar does not expose this paper's reference list",
+                )
+            if not isinstance(payload.get("data"), list):
+                raise _invalid_response(
+                    "semantic_scholar",
+                    stage,
+                    "missing_or_wrong_type",
+                    "data",
+                    observed=_shape(payload, "data"),
+                    keys=payload,
+                )
+            if payload.get("offset", offset) != offset:
+                raise _invalid_response(
+                    "semantic_scholar",
+                    stage,
+                    "offset_mismatch",
+                    "offset",
+                    observed=_shape(payload, "offset"),
+                )
             next_offset = payload.get("next")
             if next_offset is not None and (type(next_offset) is not int or next_offset <= offset):
-                raise _invalid_response("semantic_scholar")
+                raise _invalid_response(
+                    "semantic_scholar",
+                    stage,
+                    "non_advancing_or_wrong_type",
+                    "next",
+                    observed=_shape(payload, "next"),
+                )
             # Validate before storing so a malformed response cannot poison the page cache.
-            for reference in payload["data"]:
+            for row, reference in enumerate(payload["data"]):
                 if not isinstance(reference, dict):
-                    raise _invalid_response("semantic_scholar")
+                    raise _invalid_response(
+                        "semantic_scholar",
+                        stage,
+                        "wrong_type",
+                        "data[]",
+                        observed=type(reference).__name__,
+                        row=row,
+                    )
                 paper = reference.get("citedPaper")
                 if paper is None:
                     continue
                 if not isinstance(paper, dict):
-                    raise _invalid_response("semantic_scholar")
+                    raise _invalid_response(
+                        "semantic_scholar",
+                        stage,
+                        "wrong_type",
+                        "citedPaper",
+                        observed=type(paper).__name__,
+                        row=row,
+                    )
                 identifiers = paper.get("externalIds") or {}
                 if not isinstance(identifiers, dict):
-                    raise _invalid_response("semantic_scholar")
+                    raise _invalid_response(
+                        "semantic_scholar",
+                        stage,
+                        "wrong_type",
+                        "citedPaper.externalIds",
+                        observed=type(identifiers).__name__,
+                        row=row,
+                    )
                 if identifiers.get("DOI"):
                     try:
                         normalize_doi(identifiers["DOI"])
                     except ValueError:
-                        raise _invalid_response("semantic_scholar") from None
+                        raise _invalid_response(
+                            "semantic_scholar",
+                            stage,
+                            "unnormalizable_doi",
+                            "citedPaper.externalIds.DOI",
+                            observed=type(identifiers["DOI"]).__name__,
+                            row=row,
+                        ) from None
                 passages = reference.get("contexts")
                 if passages is not None and (
                     not isinstance(passages, list)
                     or any(not isinstance(text, str) for text in passages)
                 ):
-                    raise _invalid_response("semantic_scholar")
+                    raise _invalid_response(
+                        "semantic_scholar",
+                        stage,
+                        "wrong_type",
+                        "contexts",
+                        observed=type(passages).__name__,
+                        row=row,
+                    )
             url = str(
                 httpx.URL(
                     f"{self.settings.semantic_scholar_base_url.rstrip('/')}/{path}",
@@ -560,8 +783,11 @@ class CitationContextService:
         return page, reused
 
     async def _retrieve_live(self, pair: CitationPair) -> CitationContexts:
-        citing = await self._map_paper(pair.citing_paper_id)
-        cited = await self._map_paper(pair.cited_paper_id)
+        # Both OpenAlex identities concurrently, then one paced Semantic Scholar
+        # batch for all their identifiers instead of one request per identifier.
+        prefetched = await self._prefetch_semantic([pair.citing_paper_id, pair.cited_paper_id])
+        citing = await self._map_paper(pair.citing_paper_id, prefetched)
+        cited = await self._map_paper(pair.cited_paper_id, prefetched)
         result = CitationContexts(
             **pair.model_dump(),
             status="unresolved_identifiers",
@@ -586,25 +812,35 @@ class CitationContextService:
             payload = page.payload
             result.evidence_urls.append(page.evidence_url)
             result.retrieved_at = min(result.retrieved_at or page.retrieved_at, page.retrieved_at)
+            # Pages are validated in _reference_page before caching; these checks are
+            # defensive and labelled separately so a mismatch is attributable.
+            stage = "reference_match"
             references = payload.get("data")
             if not isinstance(references, list) or payload.get("offset", offset) != offset:
-                raise _invalid_response("semantic_scholar")
+                raise _invalid_response("semantic_scholar", stage, "page_shape", "data")
             for reference in references:
                 if not isinstance(reference, dict):
-                    raise _invalid_response("semantic_scholar")
+                    raise _invalid_response("semantic_scholar", stage, "wrong_type", "data[]")
                 paper = reference.get("citedPaper")
                 if paper is None:
                     continue
                 if not isinstance(paper, dict):
-                    raise _invalid_response("semantic_scholar")
+                    raise _invalid_response("semantic_scholar", stage, "wrong_type", "citedPaper")
                 external_ids = paper.get("externalIds") or {}
                 if not isinstance(external_ids, dict):
-                    raise _invalid_response("semantic_scholar")
+                    raise _invalid_response(
+                        "semantic_scholar", stage, "wrong_type", "citedPaper.externalIds"
+                    )
                 reference_doi = external_ids.get("DOI")
                 try:
                     reference_doi = normalize_doi(reference_doi) if reference_doi else None
                 except ValueError:
-                    raise _invalid_response("semantic_scholar") from None
+                    raise _invalid_response(
+                        "semantic_scholar",
+                        stage,
+                        "unnormalizable_doi",
+                        "citedPaper.externalIds.DOI",
+                    ) from None
                 reference_id = paper.get("paperId")
                 matches_id = reference_id == cited.semantic_scholar_paper_id
                 matches_doi = bool(cited.doi and reference_doi == cited.doi)
@@ -628,14 +864,16 @@ class CitationContextService:
                 if not isinstance(passages, list) or any(
                     not isinstance(text, str) for text in passages
                 ):
-                    raise _invalid_response("semantic_scholar")
+                    raise _invalid_response("semantic_scholar", stage, "wrong_type", "contexts")
                 contexts.extend(text for text in passages if text.strip())
             next_offset = payload.get("next")
             if next_offset is None:
                 result.reference_scan_complete = True
                 break
             if type(next_offset) is not int or next_offset <= offset:
-                raise _invalid_response("semantic_scholar")
+                raise _invalid_response(
+                    "semantic_scholar", stage, "non_advancing_or_wrong_type", "next"
+                )
             offset = next_offset
         result.relationship_found = found if result.reference_scan_complete or found else None
         result.contexts = [

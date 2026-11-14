@@ -42,6 +42,18 @@ def test_ttl_eviction_and_failures_are_not_cached():
     asyncio.run(run())
 
 
+def test_contains_reports_only_fresh_values_without_loading():
+    async def run():
+        cache = ResourceCache(2, 60)
+        assert not cache.contains("a")
+        await cache.get("a", AsyncMock(return_value="value"))
+        assert cache.contains("a") and cache.hits == 0
+        cache._values["a"] = (0, "expired")
+        assert not cache.contains("a")
+
+    asyncio.run(run())
+
+
 def test_cancelling_one_waiter_preserves_the_other_request():
     async def run():
         cache = ResourceCache(2, 60)

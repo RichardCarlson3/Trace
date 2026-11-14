@@ -114,6 +114,14 @@ The provider also offers a cited paper's `/citations` endpoint with `citingPaper
 
 `available` is computed from the returned passages. `relationship_found` is true for an observed matching relationship and null when identity or an incomplete scan prevents a determination. A missing context or an unmatched Semantic Scholar record does not disprove an OpenAlex citation edge. `reason` and mapping-specific reasons explain unresolved or unavailable outcomes.
 
+### Invalid-response diagnostics
+
+The public reason `semantic_scholar_invalid_response` (or `openalex_invalid_response`) is unchanged, but each rejection also emits one internal `WARNING` log line, `citation_provider_invalid_response`, with fixed labels: `provider`, `stage` (`mapping`, `references`, `reference_page`, `reference_match`), `category` (for example `missing_or_wrong_type`, `unnormalizable_doi`, `offset_mismatch`), `field`, `observed` (JSON type name or `absent`), `row` index, sanitized top-level key names, and `recoverable=false`. Bodies, passages, identifier values and credentials are never logged. Search server logs for this line to attribute a live failure before changing any validation rule.
+
+A live diagnostic on 2026-11-14 (`W2140584250` → `W1534255704`) showed the previously unexplained `semantic_scholar_invalid_response` was a first references page returned as HTTP 200 with top-level keys `citingPaperInfo` and `data` and `data: null`: Semantic Scholar resolved and verified both papers but exposes no reference list for the citing paper. That state is now reported as `provider_unavailable` with reason `semantic_scholar_references_unavailable` (HTTP 503 in `live` mode), keeps `relationship_found` null, is never cached as a reference page, and still triggers the OpenAlex TEI fallback. It is a provider coverage gap, not evidence that the citation or its passage does not exist. A null or absent `data` anywhere else remains `semantic_scholar_invalid_response`.
+
+A Semantic Scholar record matched through a non-DOI identifier whose own DOI cannot be normalized now leaves the mapping unverified with `unverified_semantic_scholar_doi`, instead of raising an unhandled error.
+
 `contexts` contains the exact passage, source attribution, paper-level URL and nullable `classification`. The classification object uses the existing `intent`, `confidence` and `model_version` contract. Scores are uncalibrated. A passage exceeding the existing 20,000-character inference limit is preserved with `classification=null` and `classification_unavailable_reason="context_too_long"`. Empty or unresolved results make no inference calls. Missing model artifacts affect the explicit classification operation with HTTP 503 while retrieval remains usable.
 
 ## Verified examples
