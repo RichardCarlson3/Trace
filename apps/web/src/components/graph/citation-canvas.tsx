@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-  type Ref,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   BaseEdge,
   Background,
@@ -32,11 +24,6 @@ import {
   spaceCircles,
 } from "@/lib/graph-focus";
 import type { Graph, Paper } from "@/lib/types";
-import type { GraphLayout } from "@/lib/browser-library";
-
-export interface CitationCanvasHandle {
-  getLayout: () => GraphLayout;
-}
 
 type PaperNodeData = { paper: Paper };
 type PaperNode = Node<PaperNodeData, "paperBubble">;
@@ -126,8 +113,6 @@ function positionNewNode(
 type Hover = { paper: Paper; x: number; y: number };
 
 export function CitationCanvas({
-  ref,
-  initialLayout,
   seedId,
   graph,
   visibleGraph,
@@ -139,8 +124,6 @@ export function CitationCanvas({
   onSelectCitation,
   onClearSelection,
 }: {
-  ref?: Ref<CitationCanvasHandle>;
-  initialLayout?: GraphLayout;
   seedId: string | null;
   graph: Graph;
   visibleGraph: Graph;
@@ -168,19 +151,6 @@ export function CitationCanvas({
     nodesRef.current = nodes;
   }, [nodes]);
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      getLayout: () => ({
-        positions: Object.fromEntries(
-          nodes.map((node) => [node.id, node.position]),
-        ),
-        viewport: instance?.getViewport() ?? null,
-      }),
-    }),
-    [nodes, instance],
-  );
-
   useEffect(() => {
     setNodes((current) => {
       const placed = [...current];
@@ -191,38 +161,31 @@ export function CitationCanvas({
           id: paper.id,
           type: "paperBubble",
           position:
-            initialLayout?.positions[paper.id] ??
-            (paper.id === seedId
+            paper.id === seedId
               ? { x: 0, y: 0 }
               : positionNewNode(
                   paper.id,
                   expansionOrigin ?? seedId,
                   graph,
                   placed,
-                )),
+                ),
           data: { paper },
         });
         known.add(paper.id);
       }
       return placed;
     });
-  }, [graph, seedId, expansionOrigin, setNodes, initialLayout]);
+  }, [graph, seedId, expansionOrigin, setNodes]);
 
   useEffect(() => {
-    if (
-      !instance ||
-      fitted.current ||
-      graph.papers.length < 1 ||
-      initialLayout?.viewport
-    )
-      return;
+    if (!instance || fitted.current || graph.papers.length < 1) return;
     fitted.current = true;
     const frame = requestAnimationFrame(
       () =>
         void instance.fitView({ padding: 0.25, duration: 850, maxZoom: 1.2 }),
     );
     return () => cancelAnimationFrame(frame);
-  }, [instance, graph.papers.length, initialLayout]);
+  }, [instance, graph.papers.length]);
 
   const visibleIds = useMemo(
     () => new Set(visibleGraph.papers.map((paper) => paper.id)),
@@ -253,11 +216,6 @@ export function CitationCanvas({
   const distances = useMemo(
     () => graphDistances(visibleGraph, focusId),
     [visibleGraph, focusId],
-  );
-  const restoredView = useRef(
-    initialLayout && Object.keys(initialLayout.positions).length > 0
-      ? { graph: visibleGraph, focusId }
-      : null,
   );
   const animateLayout = useCallback(
     (source: PaperNode[], pinnedId: string | null = focusId) => {
@@ -307,16 +265,8 @@ export function CitationCanvas({
   );
 
   useEffect(() => {
-    if (restoredView.current) {
-      if (
-        restoredView.current.graph === visibleGraph &&
-        restoredView.current.focusId === focusId
-      )
-        return;
-      restoredView.current = null;
-    }
     if (nodes.length > 1) animateLayout(nodesRef.current);
-  }, [animateLayout, nodes.length, visibleGraph, focusId]);
+  }, [animateLayout, nodes.length]);
 
   useEffect(
     () => () => {
@@ -461,8 +411,7 @@ export function CitationCanvas({
           setHoveredCitationId(null);
         }}
         nodesConnectable={false}
-        fitView={!initialLayout?.viewport}
-        defaultViewport={initialLayout?.viewport ?? undefined}
+        fitView
         minZoom={0.15}
         maxZoom={2}
         colorMode="dark"

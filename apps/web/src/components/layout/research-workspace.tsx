@@ -2,16 +2,11 @@
 
 import { useMemo, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { SavedResearchControls } from "@/components/layout/saved-research-controls";
-import {
-  CitationCanvas,
-  type CitationCanvasHandle,
-} from "@/components/graph/citation-canvas";
+import { CitationCanvas } from "@/components/graph/citation-canvas";
 import { CitationDetails } from "@/components/papers/citation-details";
 import { PaperDetails } from "@/components/papers/paper-details";
 import { useCitationGraph } from "@/hooks/use-citation-graph";
 import { useResearch } from "@/hooks/use-research";
-import { useSavedResearch } from "@/hooks/use-saved-research";
 import { filteredGraph, type DirectionFilter } from "@/lib/graph";
 import { previewFullGraph, previewInitialGraph } from "@/lib/preview-graph";
 import { isPaperLink, resolvePaper } from "@/lib/resolve-paper";
@@ -35,34 +30,6 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
   const { connection, result, loading, error, search, clearSearch } =
     useResearch();
   const citationGraph = useCitationGraph();
-  const canvasRef = useRef<CitationCanvasHandle>(null);
-  const savedResearch = useSavedResearch({
-    citationGraph,
-    canvasRef,
-    filters: { direction, year_from: yearFrom, year_to: yearTo },
-    onOpen: () => {
-      setFiltersOpen(false);
-      setCitationPopup(null);
-    },
-    onSearch: (value) => {
-      setQuery(value);
-      void runSearch(value);
-    },
-    onRestore: (saved) => {
-      ++linkVersion.current;
-      clearSearch();
-      setResolving(false);
-      setLinkError(null);
-      setResultsOpen(false);
-      setQuery("");
-      setDirection(saved.filters.direction);
-      setYearFrom(saved.filters.year_from);
-      setYearTo(saved.filters.year_to);
-      setDetailsOpen(true);
-      setCitationPopup(null);
-      setFiltersOpen(false);
-    },
-  });
   const hasGraph = Boolean(citationGraph.seed);
   const visibleGraph = useMemo(
     () =>
@@ -83,7 +50,6 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
   );
 
   function choose(paper: Paper) {
-    savedResearch.startGraph(paper.title);
     setResultsOpen(false);
     setLinkError(null);
     setDetailsOpen(true);
@@ -95,7 +61,6 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
   }
 
   function goHome() {
-    savedResearch.startGraph();
     ++linkVersion.current;
     clearSearch();
     citationGraph.reset();
@@ -114,12 +79,8 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    await runSearch(query.trim());
-  }
-
-  async function runSearch(value: string) {
+    const value = query.trim();
     if (!value) return;
-    savedResearch.recordSearch(value);
     const requestVersion = ++linkVersion.current;
     setLinkError(null);
     if (isPaperLink(value)) {
@@ -215,9 +176,7 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
       id="workspace"
     >
       <CitationCanvas
-        key={`${citationGraph.seed?.id ?? "empty"}:${savedResearch.session.version}`}
-        ref={canvasRef}
-        initialLayout={savedResearch.session.initialLayout}
+        key={citationGraph.seed?.id ?? "empty"}
         seedId={citationGraph.seed?.id ?? null}
         graph={citationGraph.graph}
         visibleGraph={visibleGraph}
@@ -287,7 +246,6 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
           </div>
         )}
       </header>
-      <SavedResearchControls research={savedResearch} />
       {!hasGraph ? (
         <section className="hero" aria-label="Start exploring">
           <p className="eyebrow">
@@ -307,13 +265,9 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
           {process.env.NODE_ENV === "development" && (
             <button
               className="preview-link"
-              onClick={() => {
-                savedResearch.startGraph();
-                citationGraph.openPreview(
-                  previewInitialGraph,
-                  previewFullGraph,
-                );
-              }}
+              onClick={() =>
+                citationGraph.openPreview(previewInitialGraph, previewFullGraph)
+              }
             >
               Preview interactions with sample data
             </button>
