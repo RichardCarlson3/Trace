@@ -1,4 +1,4 @@
-import type { SearchResponse } from "./types";
+import type { Graph, Paper, SearchResponse } from "./types";
 
 const baseUrl = (
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000"
@@ -48,6 +48,20 @@ export const api = {
   search: (query: string, signal?: AbortSignal) =>
     apiRequest<SearchResponse>(
       `/papers/search?${new URLSearchParams({ q: query })}`,
+      signal,
+    ),
+  paper: (id: string, signal?: AbortSignal) =>
+    apiRequest<Paper>(`/papers/${encodeURIComponent(id)}`, signal),
+  neighbors: (id: string, signal?: AbortSignal) =>
+    apiRequest<Graph>(`/papers/${encodeURIComponent(id)}/neighbors`, signal),
+  references: (id: string, signal?: AbortSignal) =>
+    apiRequest<Graph>(
+      `/papers/${encodeURIComponent(id)}/references?limit=10&offset=0`,
+      signal,
+    ),
+  citations: (id: string, signal?: AbortSignal) =>
+    apiRequest<Graph>(
+      `/papers/${encodeURIComponent(id)}/citations?limit=10`,
       signal,
     ),
 };
