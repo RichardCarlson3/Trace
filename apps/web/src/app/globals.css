@@ -901,6 +901,9 @@ h3 {
   height: 154px;
   border: 0 !important;
   background: transparent !important;
+  transition:
+    width 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    height 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .paper-bubble {
   display: flex;
@@ -908,9 +911,9 @@ h3 {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  width: 154px;
-  height: 154px;
-  padding: 20px;
+  width: 100%;
+  height: 100%;
+  padding: clamp(12px, 12%, 25px);
   border: 2px solid #a994f3;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 25%, #493769, #241e3c 65%);
@@ -949,6 +952,12 @@ h3 {
   font-weight: 650;
   line-height: 1.32;
   color: #f3efff;
+}
+.paper-node.is-selected .paper-bubble-title {
+  font-size: 15px;
+}
+.paper-node:not(.is-selected) .paper-bubble-title {
+  font-size: clamp(10px, 0.8vw, 12px);
 }
 .paper-bubble .react-flow__handle {
   width: 5px;
@@ -1014,6 +1023,50 @@ h3 {
   color: #b9bfd2;
   font-size: 11px;
   line-height: 1.5;
+}
+.citation-popover-anchor {
+  position: fixed;
+  z-index: 30;
+}
+.citation-popover {
+  position: relative;
+  top: auto;
+  right: auto;
+  width: min(340px, calc(100vw - 24px));
+  max-height: min(390px, calc(100dvh - 24px));
+  padding: 18px;
+}
+.citation-popover-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.citation-popover-header button {
+  border: 0;
+  background: transparent;
+  color: #d9d4f3;
+  font-size: 24px;
+  cursor: pointer;
+}
+.citation-connection,
+.citation-excerpt {
+  font-size: 13px;
+  line-height: 1.5;
+}
+.citation-connection {
+  color: #f3efff;
+}
+.citation-excerpt {
+  color: #b9bfd2;
+}
+.citation-popover .intent-card {
+  margin: 14px 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .paper-node {
+    transition: none;
+  }
 }
 @media (max-width: 1000px) {
   .floating-search {

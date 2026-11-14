@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { mergeGraphs } from "@/lib/graph";
+import { directionKeys, visibleExpansionGraph } from "@/lib/graph-focus";
 import type { Citation, Graph, Paper } from "@/lib/types";
 
 export type ExpansionDirection = "references" | "citations";
@@ -68,6 +69,7 @@ export function useCitationGraph() {
   const [expanding, setExpanding] = useState<string | null>(null);
   const [expansionError, setExpansionError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
+  const [edgeGroups, setEdgeGroups] = useState<Record<string, string[]>>({});
   const [expansionOrigin, setExpansionOrigin] = useState<string | null>(null);
   const version = useRef(0);
   const seedRequest = useRef<AbortController | null>(null);
@@ -95,6 +97,7 @@ export function useCitationGraph() {
     setSelectedPaperId(paper.id);
     setSelectedCitationId(null);
     setExpanded(new Set());
+    setEdgeGroups({});
     setExpansionOrigin(null);
     setExpanding(null);
     setExpansionError(null);
@@ -105,6 +108,19 @@ export function useCitationGraph() {
       const neighbors = await fetchNeighbors(paper.id, controller.signal);
       if (version.current === requestVersion && !controller.signal.aborted) {
         setGraph((current) => mergeGraphs(current, neighbors));
+        const groups = Object.fromEntries(
+          (["references", "citations"] as const)
+            .map(
+              (direction) =>
+                [
+                  expansionKey(paper.id, direction),
+                  directionKeys(neighbors, paper.id, direction),
+                ] as const,
+            )
+            .filter(([, keys]) => keys.length > 0),
+        );
+        setEdgeGroups(groups);
+        setExpanded(new Set(Object.keys(groups)));
       }
     } catch (error) {
       if (version.current === requestVersion && !controller.signal.aborted) {
@@ -134,6 +150,19 @@ export function useCitationGraph() {
     setSelectedPaperId(initial.papers[0]?.id ?? null);
     setSelectedCitationId(null);
     setExpanded(new Set());
+    const groups = Object.fromEntries(
+      (["references", "citations"] as const)
+        .map(
+          (direction) =>
+            [
+              expansionKey(initial.papers[0]?.id ?? "", direction),
+              directionKeys(initial, initial.papers[0]?.id ?? "", direction),
+            ] as const,
+        )
+        .filter(([, keys]) => keys.length > 0),
+    );
+    setEdgeGroups(groups);
+    setExpanded(new Set(Object.keys(groups)));
     setExpansionOrigin(null);
     setExpanding(null);
     setExpansionError(null);
@@ -144,7 +173,21 @@ export function useCitationGraph() {
   const expand = useCallback(
     async (id: string, direction: ExpansionDirection) => {
       const key = expansionKey(id, direction);
-      if (!seed || expanding || expanded.has(key)) return;
+      if (!seed || expanding) return;
+      if (expanded.has(key)) {
+        setExpanded((current) => {
+          const next = new Set(current);
+          next.delete(key);
+          return next;
+        });
+        setExpansionError(null);
+        return;
+      }
+      if (Object.hasOwn(edgeGroups, key)) {
+        setExpanded((current) => new Set(current).add(key));
+        setExpansionError(null);
+        return;
+      }
       const requestVersion = version.current;
       const controller = new AbortController();
       expansionRequest.current = controller;
@@ -157,9 +200,12 @@ export function useCitationGraph() {
         if (version.current !== requestVersion || controller.signal.aborted)
           return;
         setExpansionOrigin(id);
-        setGraph((current) =>
-          mergeGraphs(current, matchingNeighbors(neighbors, id, direction)),
-        );
+        const matching = matchingNeighbors(neighbors, id, direction);
+        setGraph((current) => mergeGraphs(current, matching));
+        setEdgeGroups((current) => ({
+          ...current,
+          [key]: directionKeys(matching, id, direction),
+        }));
         setExpanded((current) => new Set(current).add(key));
       } catch (error) {
         if (version.current === requestVersion && !controller.signal.aborted) {
@@ -175,7 +221,7 @@ export function useCitationGraph() {
         }
       }
     },
-    [seed, expanding, expanded],
+    [seed, expanding, expanded, edgeGroups],
   );
 
   const selectPaper = useCallback((id: string) => {
@@ -210,19 +256,26 @@ export function useCitationGraph() {
     setExpanding(null);
     setExpansionError(null);
     setExpanded(new Set());
+    setEdgeGroups({});
     setExpansionOrigin(null);
   }, []);
 
+  const visibleGraph = useMemo(
+    () => visibleExpansionGraph(graph, seed?.id ?? null, edgeGroups, expanded),
+    [graph, seed?.id, edgeGroups, expanded],
+  );
   const selectedPaper =
-    graph.papers.find((paper) => paper.id === selectedPaperId) ?? null;
+    visibleGraph.papers.find((paper) => paper.id === selectedPaperId) ?? null;
   const selectedCitation: Citation | null =
-    graph.citations.find((citation) => citation.id === selectedCitationId) ??
-    null;
+    visibleGraph.citations.find(
+      (citation) => citation.id === selectedCitationId,
+    ) ?? null;
 
   return {
     seed,
     isPreview,
     graph,
+    visibleGraph,
     selectedPaper,
     selectedPaperId,
     selectedCitation,

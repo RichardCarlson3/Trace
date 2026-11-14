@@ -101,6 +101,30 @@ describe("citation graph workflow", () => {
     expect(result.current.expanded.has("W2:references")).toBe(true);
   });
 
+  it("hides and restores a loaded branch without fetching it again", async () => {
+    vi.mocked(api.neighbors)
+      .mockResolvedValueOnce(initial)
+      .mockResolvedValueOnce({
+        papers: [paper("W2"), paper("W3")],
+        citations: [citation("W2", "W3")],
+      });
+    const { result } = renderHook(() => useCitationGraph());
+    await act(async () => result.current.openPaper(seed));
+    await act(async () => result.current.expand("W2", "references"));
+    expect(result.current.visibleGraph.papers.map((entry) => entry.id)).toEqual(
+      ["W1", "W2", "W3"],
+    );
+    await act(async () => result.current.expand("W2", "references"));
+    expect(result.current.visibleGraph.papers.map((entry) => entry.id)).toEqual(
+      ["W1", "W2"],
+    );
+    await act(async () => result.current.expand("W2", "references"));
+    expect(result.current.visibleGraph.papers.map((entry) => entry.id)).toEqual(
+      ["W1", "W2", "W3"],
+    );
+    expect(api.neighbors).toHaveBeenCalledTimes(2);
+  });
+
   it("retains the graph after an expansion request fails", async () => {
     vi.mocked(api.neighbors)
       .mockResolvedValueOnce(initial)

@@ -9,9 +9,11 @@ const intentNames = {
 export function CitationDetails({
   citation,
   papers,
+  onClose,
 }: {
   citation: Citation;
   papers: Paper[];
+  onClose: () => void;
 }) {
   const citing = papers.find((paper) => paper.id === citation.source);
   const cited = papers.find((paper) => paper.id === citation.target);
@@ -22,13 +24,33 @@ export function CitationDetails({
   } catch {
     // Context provenance is optional; an invalid URL is not rendered as a link.
   }
+  const excerpt = citation.context_text
+    ?.trim()
+    .split(/(?<=[.!?])\s+/)
+    .slice(0, 2)
+    .join(" ");
   return (
-    <aside className="details citation-details" aria-label="Citation details">
-      <p className="eyebrow">Citation evidence</p>
-      <h2 className="paper-title">Why these papers connect</h2>
-      <p className="paper-meta">
+    <aside
+      className="citation-popover floating-panel"
+      aria-label="Citation details"
+    >
+      <div className="citation-popover-header">
+        <p className="eyebrow">Citation connection</p>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close citation popup"
+        >
+          ×
+        </button>
+      </div>
+      <p className="citation-connection">
         <strong>{citing?.title ?? citation.source}</strong> cites{" "}
-        <strong>{cited?.title ?? citation.target}</strong>
+        <strong>{cited?.title ?? citation.target}</strong>.
+      </p>
+      <p className="citation-excerpt">
+        {excerpt ||
+          "No verified passage is available, so the reason for this citation is unknown."}
       </p>
       <div className="intent-card">
         <span className={`intent-dot ${citation.intent ?? "unknown"}`} />
@@ -39,28 +61,15 @@ export function CitationDetails({
           </strong>
         </div>
       </div>
-      {citation.context_text ? (
-        <>
-          <h3>Passage from the citing paper</h3>
-          <blockquote className="context-quote">
-            {citation.context_text}
-          </blockquote>
-          {sourceUrl && (
-            <a href={sourceUrl} target="_blank" rel="noreferrer">
-              View passage source ↗
-            </a>
-          )}
-          {citation.confidence !== null && (
-            <p className="muted model-note">
-              Model score: {citation.confidence.toFixed(2)}. This score is not a
-              calibrated probability of correctness.
-            </p>
-          )}
-        </>
-      ) : (
-        <p className="muted evidence-empty">
-          No citation passage is available for this relationship. TRACE leaves
-          its purpose unclassified.
+      {sourceUrl && excerpt && (
+        <a href={sourceUrl} target="_blank" rel="noreferrer">
+          View passage source ↗
+        </a>
+      )}
+      {citation.confidence !== null && (
+        <p className="muted model-note">
+          Model score: {citation.confidence.toFixed(2)}; this is not a
+          calibrated probability.
         </p>
       )}
     </aside>
