@@ -10,43 +10,50 @@ import {
   useScroll,
   useSpring,
   useTransform,
+  type MotionValue,
 } from "motion/react";
 import { ResearchWorkspace } from "@/components/layout/research-workspace";
 
 const chapters = [
   {
     number: "01 / THE QUESTION",
-    title: "One question. Too many tabs.",
-    body: "It is late. The answer is somewhere in the literature, but every paper opens another trail.",
+    title: "Too many papers.",
+    body: "One late night. One question. Endless tabs.",
     refrain: "the bigger picture",
   },
   {
-    number: "02 / THE PAST",
-    title: "Every idea has roots.",
-    body: "Follow the references to see the work a paper builds upon. The arrows point from the citing paper to its sources.",
-    refrain: "what came before",
+    number: "02 / THE IDEA",
+    title: "A spark of an idea.",
+    body: "What if every citation became a visible path?",
+    refrain: "the connections",
   },
   {
-    number: "03 / THE CONNECTION",
-    title: "A link can tell a story.",
-    body: "Open a citation to inspect the relationship. When a genuine passage is available, TRACE can show its context and predicted intent.",
-    refrain: "why they connect",
+    number: "03 / THE MAP",
+    title: "Ideas connect.",
+    body: "See what came before and what comes next.",
+    refrain: "every direction",
   },
   {
-    number: "04 / THE FUTURE",
-    title: "Research keeps moving.",
-    body: "See the later papers that cite this one, then follow their paths to the next question.",
-    refrain: "what came next",
+    number: "04 / THE TOOL",
+    title: "Meet TRACE.",
+    body: "Turn a paper into a map.",
+    refrain: "a new way in",
   },
   {
     number: "05 / YOUR TURN",
     title: "Past. Present. Future. One map.",
-    body: "Start with a real paper and watch its research network grow around you.",
-    refrain: "the whole story",
+    body: "Start with a paper. Follow the ideas.",
+    refrain: "your own path",
   },
 ];
 
-function StudentScene({ reduced }: { reduced: boolean }) {
+function StudentScene({
+  reduced,
+  bulbGlow,
+}: {
+  reduced: boolean;
+  bulbGlow: MotionValue<number>;
+}) {
   return (
     <svg
       className="story-art"
@@ -55,6 +62,9 @@ function StudentScene({ reduced }: { reduced: boolean }) {
       aria-label="Illustration of a student researching at a computer late at night"
     >
       <defs>
+        <clipPath id="story-bulb-shape">
+          <path d="M594 38c-24 0-39 18-39 38 0 17 10 25 18 34 4 4 7 11 7 17h28c0-6 3-13 7-17 8-9 18-17 18-34 0-20-15-38-39-38z" />
+        </clipPath>
         <radialGradient id="screen-glow">
           <stop stopColor="#8274ee" stopOpacity=".56" />
           <stop offset="1" stopColor="#8274ee" stopOpacity="0" />
@@ -94,7 +104,7 @@ function StudentScene({ reduced }: { reduced: boolean }) {
         transition={{ duration: 3.4, repeat: Infinity }}
       />
       <path
-        d="M242 361h235l-19 65H260z"
+        d="M242 365h235l-19 64H260z"
         fill="#34334e"
         stroke="#77749c"
         strokeWidth="3"
@@ -123,18 +133,19 @@ function StudentScene({ reduced }: { reduced: boolean }) {
         width="112"
         height="9"
         rx="4.5"
-        fill="#aa9ef4"
-        opacity=".75"
+        fill="#3EE0D0"
+        opacity=".8"
       />
       <rect x="261" y="224" width="177" height="6" rx="3" fill="#747ea9" />
       <rect x="261" y="241" width="149" height="6" rx="3" fill="#747ea9" />
       <rect x="261" y="258" width="160" height="6" rx="3" fill="#747ea9" />
       <circle cx="287" cy="303" r="7" fill="#b3a3ff" />
-      <circle cx="355" cy="291" r="7" fill="#95a8f7" />
+      <circle cx="355" cy="291" r="7" fill="#3EE0D0" />
       <circle cx="422" cy="312" r="7" fill="#b3a3ff" />
-      <path d="M293 303l55-12m14 1 53 18" stroke="#9e99da" strokeWidth="3" />
+      <path d="M293 303l55-12" stroke="#3EE0D0" strokeWidth="3" opacity=".7" />
+      <path d="M362 292l53 18" stroke="#9e99da" strokeWidth="3" />
       <path
-        d="M347 365v23m-57 0h115"
+        d="M347 365v63m-54 0h111"
         stroke="#77749c"
         strokeWidth="6"
         strokeLinecap="round"
@@ -145,41 +156,87 @@ function StudentScene({ reduced }: { reduced: boolean }) {
         stroke="#8b76b5"
         strokeWidth="3"
       />
-      <circle cx="594" cy="215" r="43" fill="#c69c8d" />
-      <path
-        d="M554 211c-2-50 24-74 57-68 36 5 47 39 33 73-17-15-23-26-26-42-17 27-42 33-64 37z"
-        fill="#29243e"
-      />
-      <path
-        d="M548 329c-45 10-53 42-85 67l-29-7"
-        fill="none"
-        stroke="#c69c8d"
-        strokeWidth="19"
-        strokeLinecap="round"
-      />
-      <path d="M491 431c-12-25-17-50-15-72l82-39 83 22 16 89" fill="#342b50" />
-      <path d="M68 409h114l-9 20H76z" fill="#5f658c" />
-      <path d="M82 393h99l-5 16H76z" fill="#a185ae" />
       <motion.g
-        animate={reduced ? undefined : { y: [0, -7, 0], rotate: [0, 1, 0] }}
-        transition={{ duration: 4.5, repeat: Infinity }}
+        animate={reduced ? undefined : { rotate: [-2, 2, -2] }}
+        transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut" }}
+        style={{ transformOrigin: "594px 258px" }}
       >
-        <rect
-          x="86"
-          y="293"
-          width="94"
-          height="75"
-          rx="5"
-          transform="rotate(-10 86 293)"
-          fill="#e2d8d2"
-        />
+        <circle cx="594" cy="215" r="43" fill="#c69c8d" />
         <path
-          d="M101 310l53-9m-50 21 47-8m-44 20 55-9"
-          stroke="#898ba7"
-          strokeWidth="3"
+          d="M552 203c0-35 17-54 42-54 28 0 46 19 45 54-12-8-21-20-26-33-13 18-32 28-61 33z"
+          fill="#29243e"
         />
       </motion.g>
+      <path d="M491 431c-12-25-17-50-15-72l82-39 83 22 16 89" fill="#342b50" />
+      <path
+        d="M551 321c-22 4-36 22-49 50l27 16c15-21 30-35 47-42z"
+        fill="#342b50"
+        stroke="#8b76b5"
+        strokeWidth="3"
+      />
+      <motion.g
+        animate={reduced ? undefined : { rotate: [0, -1.5, 0] }}
+        transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
+        style={{ transformOrigin: "510px 377px" }}
+      >
+        <path
+          d="M516 379c-18 5-35 17-51 22l-33-10"
+          fill="none"
+          stroke="#c69c8d"
+          strokeWidth="18"
+          strokeLinecap="round"
+        />
+      </motion.g>
+      <path d="M67 395h118l-7 34H76z" fill="#a185ae" />
+      <path d="M80 381h100l-4 17H76z" fill="#5f658c" />
+      <rect
+        x="94"
+        y="347"
+        width="77"
+        height="73"
+        rx="3"
+        transform="rotate(-7 94 347)"
+        fill="#e2d8d2"
+      />
+      <path
+        d="M106 361l49-6m-46 18 44-6m-42 18 47-6"
+        stroke="#898ba7"
+        strokeWidth="3"
+      />
+      <path
+        d="M69 411h115l-10 20H78z"
+        fill="#5f658c"
+        stroke="#888bad"
+        strokeWidth="2"
+      />
       <path d="M85 458h104m-52-25v25" stroke="#756e98" strokeWidth="4" />
+      <motion.g
+        className="story-bulb"
+        animate={reduced ? undefined : { y: [0, -7, 0], rotate: [-3, 3, -3] }}
+        transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+        style={{ transformOrigin: "594px 80px" }}
+      >
+        <path
+          d="M594 38c-24 0-39 18-39 38 0 17 10 25 18 34 4 4 7 11 7 17h28c0-6 3-13 7-17 8-9 18-17 18-34 0-20-15-38-39-38z"
+          fill="#534657"
+          stroke="#f3ddb8"
+          strokeWidth="3"
+        />
+        <motion.circle
+          cx="594"
+          cy="79"
+          r="44"
+          fill="#fff0a5"
+          clipPath="url(#story-bulb-shape)"
+          style={{ opacity: bulbGlow }}
+        />
+        <path
+          d="M580 127h28m-25 9h22m-19 8h16"
+          stroke="#f3ddb8"
+          strokeWidth="5"
+          strokeLinecap="round"
+        />
+      </motion.g>
       <text x="84" y="488" fill="#aca9d1" fontSize="15" letterSpacing="3">
         1:47 AM
       </text>
@@ -193,12 +250,14 @@ function MapNode({
   title,
   small = false,
   active = true,
+  compactLabel = false,
 }: {
   x: number;
   y: number;
   title: string;
   small?: boolean;
   active?: boolean;
+  compactLabel?: boolean;
 }) {
   return (
     <motion.g
@@ -228,7 +287,7 @@ function MapNode({
         y={y + 5}
         textAnchor="middle"
         fill="#f6f2ff"
-        fontSize={small ? "14" : "16"}
+        fontSize={compactLabel ? "11" : small ? "14" : "16"}
         fontWeight="700"
       >
         {title}
@@ -240,7 +299,7 @@ function MapNode({
 function NetworkScene({ phase, reduced }: { phase: number; reduced: boolean }) {
   const showPast = phase >= 1;
   const showFuture = phase >= 3;
-  const duration = reduced ? 0 : 0.9;
+  const duration = reduced ? 0 : 1.25;
   return (
     <svg
       className="story-art"
@@ -285,7 +344,7 @@ function NetworkScene({ phase, reduced }: { phase: number; reduced: boolean }) {
       <motion.path
         d="M525 143 C470 147 442 183 410 221"
         fill="none"
-        stroke="#8ddbc9"
+        stroke="#3EE0D0"
         strokeWidth="3"
         markerEnd="url(#story-arrow)"
         initial={{ pathLength: 0, opacity: 0 }}
@@ -318,6 +377,7 @@ function NetworkScene({ phase, reduced }: { phase: number; reduced: boolean }) {
         title="New questions"
         small
         active={showFuture}
+        compactLabel
       />
       <motion.g
         animate={{ opacity: phase === 2 ? 1 : 0, y: phase === 2 ? 0 : 12 }}
@@ -369,106 +429,188 @@ function StoryIntro({ onExplore }: { onExplore: () => void }) {
     offset: ["start start", "end end"],
   });
   const progress = useSpring(scrollYProgress, {
-    stiffness: 110,
-    damping: 28,
+    stiffness: 90,
+    damping: 31,
     restDelta: 0.001,
   });
-  const visualScale = useTransform(progress, [0, 0.8, 1], [1, 1, 1.08]);
   useMotionValueEvent(scrollYProgress, "change", (value) => {
     const next =
-      value < 0.2
+      value < 0.17
         ? 0
-        : value < 0.42
+        : value < 0.35
           ? 1
-          : value < 0.64
+          : value < 0.57
             ? 2
-            : value < 0.84
+            : value < 0.79
               ? 3
               : 4;
     setScene((current) => (current === next ? current : next));
   });
   const active = reduced ? 4 : scene;
   const chapter = chapters[active];
+  const roomScale = useTransform(
+    progress,
+    [0, 0.17, 0.34, 0.54, 0.65, 0.79],
+    [1, 1.05, 1.16, 1.16, 1.2, 2.25],
+  );
+  const roomOpacity = useTransform(
+    progress,
+    [0, 0.26, 0.35, 0.48, 0.58, 0.67, 0.74],
+    [1, 1, 0, 0, 1, 1, 0],
+  );
+  const roomX = useTransform(progress, [0, 0.58, 0.79], [0, 0, "-30%"]);
+  const bulbGlow = useTransform(
+    progress,
+    [0, 0.12, 0.22, 0.31],
+    [0, 0.15, 1, 1],
+  );
+  const thoughtScale = useTransform(
+    progress,
+    [0, 0.16, 0.31, 0.48, 0.59],
+    [0.15, 0.4, 1.15, 1.42, 2.1],
+  );
+  const thoughtOpacity = useTransform(
+    progress,
+    [0, 0.16, 0.25, 0.49, 0.58],
+    [0, 0, 1, 1, 0],
+  );
+  const screenScale = useTransform(
+    progress,
+    [0, 0.57, 0.67, 0.79, 0.89],
+    [0.45, 0.45, 0.85, 1.65, 2.4],
+  );
+  const screenOpacity = useTransform(
+    progress,
+    [0, 0.59, 0.68, 0.78, 0.86],
+    [0, 0, 1, 1, 0],
+  );
+  const finaleOpacity = useTransform(progress, [0, 0.8, 0.9], [0, 0, 1]);
+  const finaleScale = useTransform(progress, [0, 0.8, 1], [0.86, 0.86, 1]);
+  const copyOpacity = useTransform(progress, [0, 0.58, 0.66], [1, 1, 0]);
 
   return (
     <motion.div
       ref={storyRef}
       className={`story-shell${reduced ? " is-reduced" : ""}`}
-      exit={{ opacity: 0, scale: 1.08 }}
-      transition={{ duration: reduced ? 0.15 : 0.75, ease: [0.22, 1, 0.36, 1] }}
+      exit={{ opacity: 0, scale: reduced ? 1 : 1.75 }}
+      transition={{ duration: reduced ? 0.12 : 0.75, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="story-sticky">
         <div className="story-sky" aria-hidden="true" />
+        <motion.div
+          className="story-room"
+          style={
+            reduced
+              ? { opacity: 0 }
+              : { scale: roomScale, opacity: roomOpacity, x: roomX }
+          }
+        >
+          <StudentScene reduced={reduced} bulbGlow={bulbGlow} />
+        </motion.div>
+        <motion.div
+          className="story-thought"
+          style={
+            reduced
+              ? { opacity: 0 }
+              : { scale: thoughtScale, opacity: thoughtOpacity }
+          }
+          aria-hidden="true"
+        >
+          <div className="story-thought-bubble">
+            <NetworkScene phase={active >= 2 ? 3 : 1} reduced={reduced} />
+          </div>
+        </motion.div>
+        <motion.div
+          className="story-computer"
+          style={
+            reduced
+              ? { opacity: 0 }
+              : { scale: screenScale, opacity: screenOpacity }
+          }
+          aria-hidden="true"
+        >
+          <div className="story-computer-chrome">
+            <span />
+            <span />
+            <span />
+          </div>
+          <div className="story-computer-screen">
+            <span className="story-terminal-label">RESEARCH CONNECTED</span>
+            <span className={`story-typed${active >= 3 ? " is-typing" : ""}`}>
+              TRACE<span className="story-caret">_</span>
+            </span>
+          </div>
+        </motion.div>
+        <motion.div
+          className={`story-finale${active === 4 ? " is-active" : ""}`}
+          aria-hidden={active !== 4}
+          style={
+            reduced
+              ? { opacity: 1, scale: 1 }
+              : { opacity: finaleOpacity, scale: finaleScale }
+          }
+        >
+          <svg
+            className="story-finale-orbit"
+            viewBox="0 0 100 100"
+            aria-hidden="true"
+          >
+            <circle className="story-orbit-track" cx="50" cy="50" r="48" />
+            <circle className="story-orbit-dot" cx="50" cy="2" r="1.1" />
+            <circle className="story-orbit-dot" cx="95.65" cy="35.17" r="1.1" />
+            <circle
+              className="story-orbit-dot story-orbit-dot-cyan"
+              cx="78.21"
+              cy="88.83"
+              r="1.1"
+            />
+            <circle className="story-orbit-dot" cx="21.79" cy="88.83" r="1.1" />
+            <circle className="story-orbit-dot" cx="4.35" cy="35.17" r="1.1" />
+          </svg>
+          <span className="story-finale-eyebrow">PAST · PRESENT · FUTURE</span>
+          <h1>Every idea has a path.</h1>
+          <p>
+            Start with a paper. Find the connections that move research forward.
+          </p>
+          <button
+            className="story-enter"
+            onClick={onExplore}
+            tabIndex={active === 4 ? 0 : -1}
+          >
+            Explore now <span aria-hidden="true">↗</span>
+          </button>
+        </motion.div>
         <header className="story-nav">
           <span className="story-brand">
             <span aria-hidden="true">◎</span> TRACE
           </span>
           <button className="story-skip" onClick={onExplore}>
-            Explore now <span aria-hidden="true">↗</span>
+            Skip to graph <span aria-hidden="true">↗</span>
           </button>
         </header>
-        <div className="story-content">
-          <div className="story-copy">
-            <span className="story-chapter">{chapter.number}</span>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={active}
-                initial={{ opacity: 0, y: reduced ? 0 : 26 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: reduced ? 0 : -18 }}
-                transition={{
-                  duration: reduced ? 0.12 : 0.46,
-                  ease: "easeOut",
-                }}
-              >
-                <h1>{chapter.title}</h1>
-                <p>{chapter.body}</p>
-              </motion.div>
-            </AnimatePresence>
-            <div className="story-refrain">
-              <strong>Explore now</strong>
-              <span> {chapter.refrain}.</span>
-            </div>
-            {active === 4 && (
-              <motion.button
-                className="story-enter"
-                initial={{ opacity: 0, y: reduced ? 0 : 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                onClick={onExplore}
-              >
-                Explore the graph <span aria-hidden="true">→</span>
-              </motion.button>
-            )}
+        <motion.div
+          className="story-narration"
+          style={reduced ? { opacity: 0 } : { opacity: copyOpacity }}
+          aria-hidden={active === 4}
+        >
+          <span className="story-chapter-spacer" aria-hidden="true" />
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={active}
+              initial={{ opacity: 0, y: reduced ? 0 : 28 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: reduced ? 0 : -18 }}
+              transition={{ duration: reduced ? 0.01 : 0.65 }}
+            >
+              <h2>{chapter.title}</h2>
+              <p>{chapter.body}</p>
+            </motion.div>
+          </AnimatePresence>
+          <div className="story-refrain">
+            <strong>Explore now</strong>
+            <span> {chapter.refrain}.</span>
           </div>
-          <motion.div
-            className="story-visual"
-            style={reduced ? undefined : { scale: visualScale }}
-          >
-            <AnimatePresence mode="wait">
-              {active === 0 ? (
-                <motion.div
-                  key="student"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.45 }}
-                >
-                  <StudentScene reduced={reduced} />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="network"
-                  initial={{ opacity: 0, scale: 0.92 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <NetworkScene phase={active} reduced={reduced} />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        </div>
+        </motion.div>
         <div
           className="story-progress"
           aria-label={`Story chapter ${active + 1} of 5`}
@@ -481,9 +623,6 @@ function StoryIntro({ onExplore }: { onExplore: () => void }) {
           ))}
         </div>
         <div className="story-bottom">
-          <span>
-            {active === 4 ? "THE MAP IS YOURS" : "SCROLL TO FOLLOW THE STORY"}
-          </span>
           <span aria-hidden="true">{active === 4 ? "✦" : "↓"}</span>
         </div>
       </div>

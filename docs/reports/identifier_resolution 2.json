@@ -1,0 +1,633 @@
+{
+  "started_at": "2026-11-14T15:52:51.525394+00:00",
+  "rows": [
+    {
+      "pair": {
+        "citing_paper_id": "W2982399380",
+        "cited_paper_id": "W131533222"
+      },
+      "error": "verification_stopped_after_two_429",
+      "seconds": 20.46900000000005,
+      "requests": 7
+    }
+  ],
+  "requests": [
+    {
+      "provider": "api.openalex.org",
+      "path": "/works/W2982399380",
+      "status": 200,
+      "authenticated": false
+    },
+    {
+      "provider": "api.semanticscholar.org",
+      "path": "/graph/v1/paper/DOI:10.18653/v1/2020.acl-main.703",
+      "status": 404,
+      "authenticated": true
+    },
+    {
+      "provider": "api.semanticscholar.org",
+      "path": "/graph/v1/paper/ARXIV:1910.13461",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "provider": "api.openalex.org",
+      "path": "/works/W131533222",
+      "status": 200,
+      "authenticated": false
+    },
+    {
+      "provider": "api.semanticscholar.org",
+      "path": "/graph/v1/paper/MAG:131533222",
+      "status": 429,
+      "authenticated": true
+    },
+    {
+      "provider": "api.semanticscholar.org",
+      "path": "/graph/v1/paper/MAG:131533222",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "provider": "api.semanticscholar.org",
+      "path": "/graph/v1/paper/395de0bd3837fdf4b4b5e5f04835bcc69c279481/references",
+      "status": 429,
+      "authenticated": true
+    }
+  ],
+  "baseline": {
+    "unique_relationships": 28,
+    "mapped": 18,
+    "with_contexts": 14,
+    "classified": 14,
+    "coverage_percent": 50.0,
+    "semantic_scholar_requests": 56,
+    "http_429": 25,
+    "statuses": {
+      "available": 14,
+      "unresolved_identifiers": 8,
+      "upstream_error": 2,
+      "no_context": 4
+    },
+    "semantic_request_latency": {
+      "count": 56,
+      "median_seconds": 0.156,
+      "max_seconds": 0.39
+    },
+    "retrieval_latency": {
+      "count": 26,
+      "median_seconds": 4.5625,
+      "max_seconds": 27.828
+    },
+    "end_to_end_latency": {
+      "count": 28,
+      "median_seconds": 4.6015,
+      "max_seconds": 27.828
+    },
+    "minimum_semantic_start_spacing_seconds": 1.5
+  },
+  "mappings": {
+    "W2982399380": {
+      "openalex_id": "W2982399380",
+      "title": "BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension",
+      "doi": "10.18653/v1/2020.acl-main.703",
+      "semantic_scholar_paper_id": "395de0bd3837fdf4b4b5e5f04835bcc69c279481",
+      "verified": true,
+      "reason": null
+    },
+    "W131533222": {
+      "openalex_id": "W131533222",
+      "title": "Automatically Constructing a Corpus of Sentential Paraphrases.",
+      "doi": null,
+      "semantic_scholar_paper_id": "475354f10798f110d34792b6d88f31d6d5cb099e",
+      "verified": true,
+      "reason": null
+    }
+  },
+  "cohort": [
+    {
+      "citing_paper_id": "W2970641574",
+      "cited_paper_id": "W1486649854",
+      "baseline_status": "available",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2970641574",
+      "cited_paper_id": "W1840435438",
+      "baseline_status": "available",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2970641574",
+      "cited_paper_id": "W1980776243",
+      "baseline_status": "available",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2970641574",
+      "cited_paper_id": "W2014902591",
+      "baseline_status": "available",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2970641574",
+      "cited_paper_id": "W2070246124",
+      "baseline_status": "available",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2970641574",
+      "cited_paper_id": "W2096733369",
+      "baseline_status": "available",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2970641574",
+      "cited_paper_id": "W2114524997",
+      "baseline_status": "available",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2787560479",
+      "cited_paper_id": "W6908809",
+      "baseline_status": "available",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2787560479",
+      "cited_paper_id": "W581956982",
+      "baseline_status": "unresolved_identifiers",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2787560479",
+      "cited_paper_id": "W1026270304",
+      "baseline_status": "available",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2787560479",
+      "cited_paper_id": "W1522301498",
+      "baseline_status": "available",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2787560479",
+      "cited_paper_id": "W1539309091",
+      "baseline_status": "available",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2787560479",
+      "cited_paper_id": "W1632114991",
+      "baseline_status": "upstream_error",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2787560479",
+      "cited_paper_id": "W1840435438",
+      "baseline_status": "available",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2982399380",
+      "cited_paper_id": "W131533222",
+      "baseline_status": "unresolved_identifiers",
+      "current_status": "verification_stopped_after_two_429"
+    },
+    {
+      "citing_paper_id": "W2982399380",
+      "cited_paper_id": "W1544827683",
+      "baseline_status": "unresolved_identifiers",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2982399380",
+      "cited_paper_id": "W1599016936",
+      "baseline_status": "unresolved_identifiers",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2982399380",
+      "cited_paper_id": "W1614298861",
+      "baseline_status": "unresolved_identifiers",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2982399380",
+      "cited_paper_id": "W2130158090",
+      "baseline_status": "unresolved_identifiers",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2982399380",
+      "cited_paper_id": "W2251939518",
+      "baseline_status": "unresolved_identifiers",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2982399380",
+      "cited_paper_id": "W2418388682",
+      "baseline_status": "unresolved_identifiers",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2911489562",
+      "cited_paper_id": "W1981208470",
+      "baseline_status": "upstream_error",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2911489562",
+      "cited_paper_id": "W2047782770",
+      "baseline_status": "no_context",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2911489562",
+      "cited_paper_id": "W2052217781",
+      "baseline_status": "no_context",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2911489562",
+      "cited_paper_id": "W2071879021",
+      "baseline_status": "no_context",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2911489562",
+      "cited_paper_id": "W2100627415",
+      "baseline_status": "available",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2911489562",
+      "cited_paper_id": "W2136437513",
+      "baseline_status": "no_context",
+      "current_status": "not_tested_after_stop"
+    },
+    {
+      "citing_paper_id": "W2911489562",
+      "cited_paper_id": "W2149369282",
+      "baseline_status": "available",
+      "current_status": "not_tested_after_stop"
+    }
+  ],
+  "openalex_investigation": {
+    "W2982399380": {
+      "id": "https://openalex.org/W2982399380",
+      "doi": "https://doi.org/10.18653/v1/2020.acl-main.703",
+      "ids": {
+        "openalex": "https://openalex.org/W2982399380",
+        "doi": "https://doi.org/10.18653/v1/2020.acl-main.703",
+        "mag": "2982399380"
+      },
+      "title": "BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension",
+      "locations": [
+        {
+          "id": "doi:10.18653/v1/2020.acl-main.703",
+          "doi": "https://doi.org/10.18653/v1/2020.acl-main.703",
+          "is_oa": true,
+          "landing_page_url": "https://doi.org/10.18653/v1/2020.acl-main.703",
+          "pdf_url": "https://www.aclweb.org/anthology/2020.acl-main.703.pdf",
+          "source": {
+            "id": "https://openalex.org/S4393915740",
+            "display_name": "Proceedings of the conference - Association for Computational Linguistics. Meeting",
+            "issn_l": "0736-587X",
+            "issn": [
+              "0736-587X"
+            ],
+            "is_oa": false,
+            "is_in_doaj": false,
+            "is_core": false,
+            "listed_in": [
+              "norway-1"
+            ],
+            "host_organization": null,
+            "host_organization_name": null,
+            "host_organization_lineage": [],
+            "host_organization_lineage_names": [],
+            "type": "conference"
+          },
+          "license": "cc-by",
+          "license_id": "https://openalex.org/licenses/cc-by",
+          "version": "publishedVersion",
+          "is_accepted": true,
+          "is_published": true,
+          "raw_source_name": "Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics",
+          "raw_type": "proceedings-article"
+        },
+        {
+          "id": "pmh:oai:arXiv.org:1910.13461",
+          "doi": null,
+          "is_oa": true,
+          "landing_page_url": "http://arxiv.org/abs/1910.13461",
+          "pdf_url": "https://arxiv.org/pdf/1910.13461",
+          "source": {
+            "id": "https://openalex.org/S4306400194",
+            "display_name": "arXiv (Cornell University)",
+            "issn_l": "2331-8422",
+            "issn": [
+              "2331-8422"
+            ],
+            "is_oa": true,
+            "is_in_doaj": false,
+            "is_core": false,
+            "listed_in": [],
+            "host_organization": "https://openalex.org/I205783295",
+            "host_organization_name": "Cornell University",
+            "host_organization_lineage": [
+              "https://openalex.org/I205783295"
+            ],
+            "host_organization_lineage_names": [],
+            "type": "repository"
+          },
+          "license": null,
+          "license_id": null,
+          "version": "submittedVersion",
+          "is_accepted": false,
+          "is_published": false,
+          "raw_source_name": null,
+          "raw_type": "text"
+        },
+        {
+          "id": "mag:2982399380",
+          "doi": null,
+          "is_oa": true,
+          "landing_page_url": "https://www.arxiv.org/pdf/1910.13461v1",
+          "pdf_url": null,
+          "source": {
+            "id": "https://openalex.org/S4306400194",
+            "display_name": "arXiv (Cornell University)",
+            "issn_l": "2331-8422",
+            "issn": [
+              "2331-8422"
+            ],
+            "is_oa": true,
+            "is_in_doaj": false,
+            "is_core": false,
+            "listed_in": [],
+            "host_organization": "https://openalex.org/I205783295",
+            "host_organization_name": "Cornell University",
+            "host_organization_lineage": [
+              "https://openalex.org/I205783295"
+            ],
+            "host_organization_lineage_names": [],
+            "type": "repository"
+          },
+          "license": null,
+          "license_id": null,
+          "version": "submittedVersion",
+          "is_accepted": false,
+          "is_published": false,
+          "raw_source_name": "arXiv (Cornell University)",
+          "raw_type": null
+        },
+        {
+          "id": "doi:10.48550/arxiv.1910.13461",
+          "doi": "https://doi.org/10.48550/arxiv.1910.13461",
+          "is_oa": true,
+          "landing_page_url": "https://doi.org/10.48550/arxiv.1910.13461",
+          "pdf_url": null,
+          "source": {
+            "id": "https://openalex.org/S4306400194",
+            "display_name": "arXiv (Cornell University)",
+            "issn_l": "2331-8422",
+            "issn": [
+              "2331-8422"
+            ],
+            "is_oa": true,
+            "is_in_doaj": false,
+            "is_core": false,
+            "listed_in": [],
+            "host_organization": "https://openalex.org/I205783295",
+            "host_organization_name": "Cornell University",
+            "host_organization_lineage": [
+              "https://openalex.org/I205783295"
+            ],
+            "host_organization_lineage_names": [],
+            "type": "repository"
+          },
+          "license": null,
+          "license_id": null,
+          "version": null,
+          "is_accepted": false,
+          "is_published": false,
+          "raw_source_name": null,
+          "raw_type": "Preprint"
+        }
+      ]
+    },
+    "W581956982": {
+      "id": "https://openalex.org/W581956982",
+      "doi": null,
+      "ids": {
+        "openalex": "https://openalex.org/W581956982",
+        "mag": "581956982"
+      },
+      "title": "An Empirical Exploration of Recurrent Network Architectures",
+      "locations": [
+        {
+          "id": "pmh:oai:CiteSeerX.psu:10.1.1.936.6503",
+          "doi": null,
+          "is_oa": false,
+          "landing_page_url": "http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.936.6503",
+          "pdf_url": null,
+          "source": null,
+          "license": null,
+          "license_id": null,
+          "version": "submittedVersion",
+          "is_accepted": false,
+          "is_published": false,
+          "raw_source_name": "http://machinelearning.wustl.edu/mlpapers/paper_files/icml2015_jozefowicz15.pdf",
+          "raw_type": "text"
+        },
+        {
+          "id": "mag:581956982",
+          "doi": null,
+          "is_oa": false,
+          "landing_page_url": "http://proceedings.mlr.press/v37/jozefowicz15.pdf",
+          "pdf_url": null,
+          "source": {
+            "id": "https://openalex.org/S4306419644",
+            "display_name": "International Conference on Machine Learning",
+            "issn_l": null,
+            "issn": null,
+            "is_oa": false,
+            "is_in_doaj": false,
+            "is_core": false,
+            "listed_in": [],
+            "host_organization": null,
+            "host_organization_name": null,
+            "host_organization_lineage": [],
+            "host_organization_lineage_names": [],
+            "type": "conference"
+          },
+          "license": null,
+          "license_id": null,
+          "version": null,
+          "is_accepted": false,
+          "is_published": false,
+          "raw_source_name": "International Conference on Machine Learning",
+          "raw_type": null
+        }
+      ]
+    },
+    "W131533222": {
+      "id": "https://openalex.org/W131533222",
+      "doi": null,
+      "ids": {
+        "openalex": "https://openalex.org/W131533222",
+        "mag": "131533222"
+      },
+      "title": "Automatically Constructing a Corpus of Sentential Paraphrases.",
+      "locations": [
+        {
+          "id": "pmh:oai:CiteSeerX.psu:10.1.1.530.1435",
+          "doi": null,
+          "is_oa": false,
+          "landing_page_url": "http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.530.1435",
+          "pdf_url": null,
+          "source": null,
+          "license": null,
+          "license_id": null,
+          "version": "submittedVersion",
+          "is_accepted": false,
+          "is_published": false,
+          "raw_source_name": "http://www.mt-archive.info/IJCNLP-2005-Dolan.pdf",
+          "raw_type": "text"
+        },
+        {
+          "id": "mag:131533222",
+          "doi": null,
+          "is_oa": false,
+          "landing_page_url": "https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/I05-50025B15D.pdf",
+          "pdf_url": null,
+          "source": null,
+          "license": null,
+          "license_id": null,
+          "version": null,
+          "is_accepted": false,
+          "is_published": false,
+          "raw_source_name": null,
+          "raw_type": null
+        }
+      ]
+    },
+    "W1599016936": {
+      "id": "https://openalex.org/W1599016936",
+      "doi": null,
+      "ids": {
+        "openalex": "https://openalex.org/W1599016936",
+        "mag": "1599016936"
+      },
+      "title": "The Winograd Schema Challenge",
+      "locations": [
+        {
+          "id": "pmh:oai:CiteSeerX.psu:10.1.1.185.3274",
+          "doi": null,
+          "is_oa": false,
+          "landing_page_url": "http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.185.3274",
+          "pdf_url": null,
+          "source": null,
+          "license": null,
+          "license_id": null,
+          "version": "submittedVersion",
+          "is_accepted": false,
+          "is_published": false,
+          "raw_source_name": "http://www.cs.toronto.edu/%7Ehector/Papers/winograd.pdf",
+          "raw_type": "text"
+        },
+        {
+          "id": "pmh:oai:CiteSeerX.psu:10.1.1.295.1419",
+          "doi": null,
+          "is_oa": false,
+          "landing_page_url": "http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.295.1419",
+          "pdf_url": null,
+          "source": null,
+          "license": null,
+          "license_id": null,
+          "version": "submittedVersion",
+          "is_accepted": false,
+          "is_published": false,
+          "raw_source_name": "http://cs.nyu.edu/cs/faculty/davise/papers/WSKR2012.pdf",
+          "raw_type": "text"
+        },
+        {
+          "id": "pmh:oai:CiteSeerX.psu:10.1.1.729.9814",
+          "doi": null,
+          "is_oa": false,
+          "landing_page_url": "http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.729.9814",
+          "pdf_url": null,
+          "source": null,
+          "license": null,
+          "license_id": null,
+          "version": "submittedVersion",
+          "is_accepted": false,
+          "is_published": false,
+          "raw_source_name": "http://www.aaai.org/ocs/index.php/KR/KR12/paper/viewFile/4492/4924/",
+          "raw_type": "text"
+        },
+        {
+          "id": "mag:1599016936",
+          "doi": null,
+          "is_oa": false,
+          "landing_page_url": "http://commonsensereasoning.org/2011/papers/Levesque.pdf",
+          "pdf_url": null,
+          "source": {
+            "id": "https://openalex.org/S4306420732",
+            "display_name": "Principles of Knowledge Representation and Reasoning",
+            "issn_l": null,
+            "issn": null,
+            "is_oa": false,
+            "is_in_doaj": false,
+            "is_core": false,
+            "listed_in": [],
+            "host_organization": null,
+            "host_organization_name": null,
+            "host_organization_lineage": [],
+            "host_organization_lineage_names": [],
+            "type": "conference"
+          },
+          "license": null,
+          "license_id": null,
+          "version": null,
+          "is_accepted": false,
+          "is_published": false,
+          "raw_source_name": "Principles of Knowledge Representation and Reasoning",
+          "raw_type": null
+        },
+        {
+          "id": "mag:2267020232",
+          "doi": null,
+          "is_oa": false,
+          "landing_page_url": "https://www.aaai.org/ocs/index.php/SSS/SSS11/paper/view/2502",
+          "pdf_url": null,
+          "source": {
+            "id": "https://openalex.org/S4306420577",
+            "display_name": "National Conference on Artificial Intelligence",
+            "issn_l": null,
+            "issn": null,
+            "is_oa": false,
+            "is_in_doaj": false,
+            "is_core": false,
+            "listed_in": [],
+            "host_organization": null,
+            "host_organization_name": null,
+            "host_organization_lineage": [],
+            "host_organization_lineage_names": [],
+            "type": "conference"
+          },
+          "license": null,
+          "license_id": null,
+          "version": null,
+          "is_accepted": false,
+          "is_published": false,
+          "raw_source_name": "National Conference on Artificial Intelligence",
+          "raw_type": null
+        }
+      ]
+    }
+  }
+}

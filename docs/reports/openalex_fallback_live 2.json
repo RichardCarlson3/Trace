@@ -1,0 +1,98 @@
+{
+  "started_at": "2026-11-14T16:28:26.061110+00:00",
+  "semantic_scholar": "controlled simulated exhausted throttling; no actual requests",
+  "requests": [
+    {
+      "host": "api.openalex.org",
+      "path": "/works/W2982399380",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "host": "api.openalex.org",
+      "path": "/works/W1614298861",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "host": "content.openalex.org",
+      "path": "/works/W2982399380.grobid-xml",
+      "status": 200,
+      "authenticated": true
+    }
+  ],
+  "http_status": 200,
+  "seconds": 1.0554177999993044,
+  "response": {
+    "citing_paper_id": "W2982399380",
+    "cited_paper_id": "W1614298861",
+    "status": "available",
+    "source": "openalex_tei",
+    "fallback_reason": null,
+    "origin": "live",
+    "retrieved_at": "2026-11-14T16:28:26.966595Z",
+    "evidence_urls": [
+      "https://content.openalex.org/works/W2982399380.grobid-xml"
+    ],
+    "observed_context_count": 1,
+    "citing_mapping": {
+      "openalex_id": "W2982399380",
+      "title": "BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension",
+      "doi": "10.18653/v1/2020.acl-main.703",
+      "semantic_scholar_paper_id": null,
+      "verified": true,
+      "reason": null
+    },
+    "cited_mapping": {
+      "openalex_id": "W1614298861",
+      "title": "Efficient Estimation of Word Representations in Vector Space",
+      "doi": "10.48550/arxiv.1301.3781",
+      "semantic_scholar_paper_id": null,
+      "verified": true,
+      "reason": null
+    },
+    "relationship_found": true,
+    "reference_scan_complete": false,
+    "reason": null,
+    "contexts": [
+      {
+        "context_text": "Self-supervised methods have achieved remarkable success in a wide range of NLP tasks (Mikolov et al., 2013;Peters et al., 2018;Devlin et al., 2019;Joshi et al., 2019;Yang et al., 2019;Liu et al., 2019).",
+        "source": "openalex_tei",
+        "source_url": "https://content.openalex.org/works/W2982399380.grobid-xml",
+        "source_url_scope": "document",
+        "bibliography_id": "b17",
+        "citation_marker": "(Mikolov et al., 2013;",
+        "citation_targets": [
+          "b17",
+          "b20",
+          "b2",
+          "b11",
+          "b15"
+        ],
+        "section": [
+          "Introduction"
+        ],
+        "document_sha256": "8017bc8c16466aedbd7544a117b8d7b06f9cecbf9da985ff2d9c0e7e91848650",
+        "retrieved_at": "2026-11-14T16:28:26.966595Z",
+        "identity_evidence": [
+          "ARXIV:1301.3781"
+        ],
+        "document_identity_method": "authenticated_provider_binding",
+        "classification": {
+          "intent": "background",
+          "confidence": 0.8843842684202584,
+          "model_version": "scicite-tfidf-logreg-v1"
+        },
+        "classification_unavailable_reason": null
+      }
+    ],
+    "available": true
+  },
+  "repeat": {
+    "http_status": 200,
+    "seconds": 0.007783299999573501,
+    "upstream_requests": 0,
+    "origin": "memory_cache"
+  },
+  "finished_at": "2026-11-14T16:28:27.427767+00:00"
+}

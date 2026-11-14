@@ -106,13 +106,21 @@ def experiment(monkeypatch, scenario):
                         ],
                     },
                 )
-            kind, value = request.url.path.split("/paper/", 1)[1].split(":", 1)
-            for wid, work in works.items():
-                if kind == "DOI" and work.get("doi") and normalize_doi(work["doi"]) == value:
-                    return httpx.Response(
-                        200, json={"paperId": ids[wid], "externalIds": {"DOI": value}}
-                    )
-            return httpx.Response(404)
+
+            def lookup(identifier):
+                kind, value = identifier.split(":", 1)
+                for wid, work in works.items():
+                    if kind == "DOI" and work.get("doi") and normalize_doi(work["doi"]) == value:
+                        return {"paperId": ids[wid], "externalIds": {"DOI": value}}
+                return None
+
+            if request.url.path.endswith("/paper/batch"):
+                assert request.method == "POST"
+                return httpx.Response(
+                    200, json=[lookup(i) for i in json.loads(request.content)["ids"]]
+                )
+            paper = lookup(request.url.path.split("/paper/", 1)[1])
+            return httpx.Response(200, json=paper) if paper else httpx.Response(404)
         assert request.headers["Authorization"] == "Bearer synthetic-oa-private"
         if request.url.host == "content.openalex.org":
             await clock.sleep(
@@ -221,20 +229,24 @@ def test_measurements(monkeypatch, scenario):
         assert result.contexts[0].classification.confidence == pytest.approx(0.8843842684202584)
     if scenario == "cached":
         assert calls == [] and seconds == pytest.approx(0.02)
+    # Both OpenAlex identities are fetched concurrently and every Semantic Scholar
+    # identifier is resolved in one batch request: a completed primary saves one
+    # paced request (1.5 s, or 2.25 s after a 429). TEI-led paths keep their timing
+    # but include the cited identity fetched in parallel (one OpenAlex request).
     expected = {
-        "success": (3.32, 5),
-        "throttled": (1.17, 5),
-        "slow_throttled": (24.02, 6),
-        "resumed": (7.17, 9),
-        "cooldown": (0.87, 4),
-        "expired_cooldown": (3.32, 5),
-        "normal_pacing": (4.62, 5),
+        "success": (1.82, 4),  # was (3.32, 5)
+        "throttled": (1.17, 6),  # was (1.17, 5)
+        "slow_throttled": (24.02, 7),  # was (24.02, 6)
+        "resumed": (4.92, 8),  # was (7.17, 9)
+        "cooldown": (0.87, 5),  # was (0.87, 4)
+        "expired_cooldown": (1.82, 4),  # was (3.32, 5)
+        "normal_pacing": (3.12, 4),  # was (4.62, 5)
         "tei_only": (0.87, 3),
-        "both_unavailable": (8.52, 6),
+        "both_unavailable": (8.52, 7),  # was (8.52, 6)
         "cached": (0.02, 0),
-        "recovers": (8.92, 9),
-        "fallback_miss": (8.92, 8),
-        "shared": (4.82, 7),
+        "recovers": (6.67, 8),  # was (8.92, 9)
+        "fallback_miss": (6.67, 7),  # was (8.92, 8)
+        "shared": (3.32, 6),  # was (4.82, 7)
     }
     assert seconds == pytest.approx(expected[scenario][0])
     assert len(calls) == expected[scenario][1]

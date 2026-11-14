@@ -1,6 +1,7 @@
 """Synthetic provider fixtures exercise context retrieval without external requests."""
 
 import asyncio
+import json
 from datetime import UTC, datetime, timedelta
 from email.utils import format_datetime
 from types import SimpleNamespace
@@ -73,6 +74,8 @@ def provider(monkeypatch):
     )
 
     def handler(request):
+        if request.url.path.endswith("/paper/batch"):
+            return batch(request)
         state.calls.append(request)
         if state.override:
             response = state.override(request)
@@ -87,6 +90,32 @@ def provider(monkeypatch):
         doi = request.url.path.split("/paper/DOI:", 1)[-1]
         paper = state.papers.get(doi)
         return httpx.Response(200, json=paper) if paper else httpx.Response(404)
+
+    def batch(request):
+        # Answer each id exactly as the single-lookup route (including overrides);
+        # the batch is one recorded request, and any non-404 error is its status.
+        assert request.method == "POST"
+        state.calls.append(request)
+        if state.override:
+            response = state.override(request)
+            if response is not None:
+                return response
+        recorded = len(state.calls)
+        singles = [
+            handler(
+                httpx.Request(
+                    "GET", f"{request.url.scheme}://{request.url.host}/graph/v1/paper/{i}"
+                )
+            )
+            for i in json.loads(request.content)["ids"]
+        ]
+        del state.calls[recorded:]
+        failure = next((r for r in singles if r.status_code not in (200, 404)), None)
+        if failure is not None:
+            return failure
+        return httpx.Response(
+            200, json=[r.json() if r.status_code == 200 else None for r in singles]
+        )
 
     state.handler = handler
     monkeypatch.setattr(module, "SEMANTIC_INTERVAL_SECONDS", 0)
@@ -600,7 +629,10 @@ def test_concurrent_edges_reuse_mapping_and_reference_pages(provider):
             pairs = [PAIR, CitationPair(citing_paper_id="W100", cited_paper_id="W300")]
             results = await asyncio.gather(*(service.retrieve(p, mode="live") for p in pairs * 10))
             assert all(r.available for r in results)
-            assert len(provider.calls) == 7  # three OpenAlex + three S2 mappings + one references
+            # Three OpenAlex identities, one S2 batch per pair (was three single
+            # lookups) and one shared references page.
+            assert len(provider.calls) == 6
+            assert sum(r.url.path.endswith("/paper/batch") for r in provider.calls) == 2
             assert sum(r.url.path.endswith("/references") for r in provider.calls) == 1
             assert service._mappings.coalesced > 0
 
@@ -807,5 +839,244 @@ def test_unverified_metadata_is_not_cached_as_a_resolved_paper(provider):
             provider.papers["10.1000/citing"]["externalIds"]["DOI"] = "10.1000/wrong"
             result = await service._map_paper("W100")
             assert not result.verified and not service._semantic_papers._values
+
+    asyncio.run(run())
+
+
+# Diagnostics regression tests. Every payload below is synthetic and only exercises
+# validation branches; none reproduces a recorded live provider response.
+def _invalid_logs(caplog):
+    return [
+        r.getMessage()
+        for r in caplog.records
+        if "citation_provider_invalid_response" in r.getMessage()
+    ]
+
+
+@pytest.mark.parametrize(
+    ("change", "expected"),
+    [
+        (lambda page: page.update(data="not a list"), "field=data observed=str"),
+        (lambda page: page.pop("data"), "field=data observed=absent"),
+        (lambda page: page.update(next="100"), "field=next observed=str"),
+        (lambda page: page.update(offset=5), "field=offset observed=int"),
+    ],
+)
+def test_page_level_invalid_response_is_attributed(provider, caplog, change, expected):
+    change(provider.pages[0])
+    with pytest.raises(ServiceError) as error:
+        retrieve(provider)
+    assert error.value.code == "semantic_scholar_invalid_response"
+    [message] = _invalid_logs(caplog)
+    assert "stage=reference_page" in message and expected in message
+    assert "recoverable=false" in message
+
+
+def test_row_level_invalid_response_reports_row_without_values(provider, caplog):
+    # Current behavior is preserved: one malformed DOI still rejects the page.
+    provider.pages[0]["data"][0]["citedPaper"]["externalIds"]["DOI"] = "synthetic bad doi"
+    with pytest.raises(ServiceError):
+        retrieve(provider)
+    [message] = _invalid_logs(caplog)
+    assert "category=unnormalizable_doi" in message and "row=0" in message
+    assert "synthetic bad doi" not in caplog.text
+    assert "synthetic context" not in caplog.text.lower()
+
+
+def test_auto_mode_public_reason_is_unchanged(provider, caplog):
+    provider.pages[0].pop("data")
+    result = retrieve(provider, mode="auto")
+    assert result.status == "provider_unavailable"
+    assert result.reason == "semantic_scholar_invalid_response"
+    assert result.contexts == [] and result.relationship_found is None
+    assert "stage=reference_page" in _invalid_logs(caplog)[0]
+
+
+def test_top_level_key_names_are_sanitized(provider, caplog):
+    provider.pages[0].pop("data")
+    provider.pages[0]["bad key with spaces"] = 1
+    with pytest.raises(ServiceError):
+        retrieve(provider)
+    [message] = _invalid_logs(caplog)
+    assert "'offset'" in message and "bad key" not in message
+
+
+# Live observation (2026-11-14, W2140584250, sanitized diagnostics only): HTTP 200
+# with top-level keys exactly {"citingPaperInfo", "data"} and data=null. The page
+# below copies only that observed structure; its field contents are synthetic.
+def _withheld_reference_page():
+    return {"citingPaperInfo": {"title": "Citing fixture"}, "data": None}
+
+
+def test_withheld_reference_list_is_reported_as_unavailable_not_invalid(provider, caplog):
+    provider.pages[0] = _withheld_reference_page()
+    result = retrieve(provider, mode="auto")
+    assert result.status == "provider_unavailable"
+    assert result.reason == "semantic_scholar_references_unavailable"
+    # Withheld references neither prove nor disprove the citation.
+    assert result.relationship_found is None and result.contexts == []
+    assert not _invalid_logs(caplog)
+
+
+def test_withheld_reference_list_raises_explicit_error_in_live_mode(provider):
+    provider.pages[0] = _withheld_reference_page()
+    with pytest.raises(ServiceError) as error:
+        retrieve(provider)
+    assert error.value.code == "semantic_scholar_references_unavailable"
+    assert error.value.status_code == 503
+
+
+def test_withheld_reference_list_is_not_cached_as_a_page(provider):
+    async def run():
+        async with httpx.AsyncClient(transport=httpx.MockTransport(provider.handler)) as client:
+            service = CitationContextService(client, settings())
+            original = provider.pages[0]
+            provider.pages[0] = _withheld_reference_page()
+            with pytest.raises(ServiceError):
+                await service.retrieve(PAIR, mode="live")
+            assert not service._references._values
+            provider.pages[0] = original
+            assert (await service.retrieve(PAIR, mode="live")).available
+
+    asyncio.run(run())
+
+
+def test_null_data_on_a_later_page_stays_invalid(provider, caplog):
+    # Only a withheld first page is a recognised provider state; a list that
+    # disappears mid-pagination remains an invalid response.
+    provider.pages[0]["next"] = 100
+    provider.pages[100] = {"offset": 100, "data": None}
+    with pytest.raises(ServiceError) as error:
+        retrieve(provider)
+    assert error.value.code == "semantic_scholar_invalid_response"
+    assert "field=data observed=NoneType" in _invalid_logs(caplog)[0]
+
+
+def test_malformed_doi_on_alternative_identifier_match_fails_closed(provider):
+    # Previously an uncaught ValueError escaped retrieval (unhandled server error).
+    provider.works["W200"] = {
+        "id": "https://openalex.org/W200",
+        "title": "Cited fixture",
+        "doi": None,
+        "ids": {"mag": "200"},
+    }
+
+    def override(request):
+        if request.url.host == "api.semanticscholar.org" and "/paper/MAG:" in request.url.path:
+            return httpx.Response(
+                200, json={"paperId": CITED, "externalIds": {"MAG": "200", "DOI": "not a doi"}}
+            )
+        return None
+
+    provider.override = override
+    result = retrieve(provider, mode="auto")
+    assert result.status == "unresolved_identifiers"
+    assert not result.cited_mapping.verified
+    assert result.cited_mapping.reason == "unverified_semantic_scholar_doi"
+    assert result.contexts == [] and result.relationship_found is None
+    assert not any(request.url.path.endswith("/references") for request in provider.calls)
+
+
+def test_alternative_identifier_match_with_valid_doi_still_verifies(provider):
+    provider.works["W200"] = {
+        "id": "https://openalex.org/W200",
+        "title": "Cited fixture",
+        "doi": None,
+        "ids": {"mag": "200"},
+    }
+
+    def override(request):
+        if request.url.host == "api.semanticscholar.org" and "/paper/MAG:" in request.url.path:
+            return httpx.Response(
+                200, json={"paperId": CITED, "externalIds": {"MAG": "200", "DOI": "10.1000/cited"}}
+            )
+        return None
+
+    provider.override = override
+    result = retrieve(provider)
+    assert result.cited_mapping.verified and result.status == "available"
+
+
+# Batched identifier resolution (synthetic fixture; same verification rules).
+def s2_requests(provider, suffix=""):
+    return [
+        r
+        for r in provider.calls
+        if r.url.host == "api.semanticscholar.org" and r.url.path.endswith(suffix)
+    ]
+
+
+def test_one_batch_replaces_sequential_identifier_lookups(provider):
+    result = retrieve(provider)
+    assert result.available and result.citing_mapping.verified and result.cited_mapping.verified
+    [batch] = s2_requests(provider, "/paper/batch")
+    assert batch.method == "POST" and batch.url.params["fields"] == "paperId,externalIds"
+    assert json.loads(batch.content) == {"ids": ["DOI:10.1000/citing", "DOI:10.1000/cited"]}
+    # No individual GET lookups remain; only the batch and one references page.
+    assert [r.url.path.rsplit("/", 1)[-1] for r in s2_requests(provider)] == [
+        "batch",
+        "references",
+    ]
+
+
+def test_batch_results_still_pass_through_identity_verification(provider):
+    # The batch returns a record whose DOI contradicts OpenAlex: never verified.
+    provider.papers["10.1000/cited"]["externalIds"]["DOI"] = "10.1000/other"
+    result = retrieve(provider)
+    assert result.status == "unresolved_identifiers" and not result.cited_mapping.verified
+    assert result.cited_mapping.reason == "semantic_scholar_doi_mismatch"
+    assert result.contexts == [] and len(s2_requests(provider, "/paper/batch")) == 1
+
+
+@pytest.mark.parametrize(
+    "rejection",
+    [
+        httpx.Response(400),
+        httpx.Response(200, json={"not": "a list"}),
+        httpx.Response(200, json=[None]),  # wrong length
+    ],
+)
+def test_rejected_or_malformed_batch_falls_back_to_single_lookups(provider, rejection):
+    provider.override = lambda r: rejection if r.url.path.endswith("/paper/batch") else None
+    result = retrieve(provider)
+    assert result.available and result.cited_mapping.verified
+    singles = [r for r in s2_requests(provider) if "/paper/DOI:" in r.url.path]
+    assert len(s2_requests(provider, "/paper/batch")) == 1 and len(singles) == 2
+
+
+def test_throttled_batch_does_not_multiply_requests(provider):
+    provider.override = lambda r: (
+        httpx.Response(429) if r.url.host == "api.semanticscholar.org" else None
+    )
+    result = retrieve(provider, mode="auto")
+    assert result.status == "provider_unavailable"
+    assert result.reason == "semantic_scholar_rate_limited"
+    # Three bounded attempts of one batch; no fallback storm of single lookups.
+    assert [r.url.path.endswith("/paper/batch") for r in s2_requests(provider)] == [True] * 3
+
+
+def test_cached_identifiers_are_not_requested_again(provider):
+    provider.works["W300"] = {"id": "https://openalex.org/W300", "doi": "10.1000/third"}
+    provider.papers["10.1000/third"] = {
+        "paperId": "d" * 40,
+        "externalIds": {"DOI": "10.1000/third"},
+    }
+    provider.pages[0]["data"].append(
+        {"citedPaper": provider.papers["10.1000/third"], "contexts": ["Synthetic third passage."]}
+    )
+
+    async def run():
+        async with httpx.AsyncClient(transport=httpx.MockTransport(provider.handler)) as client:
+            service = CitationContextService(client, settings())
+            service._examples = {}
+            await service.retrieve(PAIR, mode="live")
+            provider.calls.clear()
+            third = await service.retrieve(
+                CitationPair(citing_paper_id="W100", cited_paper_id="W300"), mode="live"
+            )
+            assert third.available
+            # The citing mapping is cached; one remaining identifier needs no batch.
+            lookups = [r.url.path for r in s2_requests(provider) if "/references" not in r.url.path]
+            assert lookups == ["/graph/v1/paper/DOI:10.1000/third"]
 
     asyncio.run(run())
