@@ -1,8 +1,6 @@
 .tools {
-  position: absolute;
+  position: relative;
   z-index: 6;
-  right: 22px;
-  bottom: 76px;
 }
 .actions {
   display: flex;
@@ -11,7 +9,7 @@
 }
 .panel {
   position: absolute;
-  bottom: calc(100% + 12px);
+  top: calc(100% + 12px);
   right: 0;
   width: min(390px, calc(100vw - 44px));
   max-height: calc(100dvh - 200px);
@@ -83,10 +81,8 @@
   font-size: 12px;
 }
 @media (max-width: 650px) {
-  .tools {
-    right: 14px;
-  }
   .panel {
-    width: calc(100vw - 28px);
+    width: min(390px, calc(100vw - 28px));
+    max-height: calc(100dvh - 150px);
   }
 }

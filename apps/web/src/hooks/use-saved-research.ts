@@ -24,14 +24,12 @@ export function useSavedResearch({
   citationGraph,
   filters,
   onRestore,
-  onSearch,
   onOpen,
   canvasRef,
 }: {
   citationGraph: ReturnType<typeof useCitationGraph>;
   filters: GraphSnapshot["filters"];
   onRestore: (saved: LocalSavedGraph) => void;
-  onSearch: (query: string) => void;
   onOpen: () => void;
   canvasRef: RefObject<CitationCanvasHandle | null>;
 }) {
@@ -116,7 +114,6 @@ export function useSavedResearch({
     startGraph,
     save,
     openSaved,
-    onSearch,
     setName: (name: string) =>
       setSession((current) => ({ ...current, name, message: null })),
     show: () => {

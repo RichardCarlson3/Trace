@@ -78,7 +78,7 @@ describe("ResearchWorkspace", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Save graph" }));
     const library = screen.getByRole("complementary", {
-      name: "Saved graphs and recent searches",
+      name: "Saved graphs",
     });
     fireEvent.change(within(library).getByLabelText("Graph name"), {
       target: { value: "My paper map" },
@@ -94,7 +94,7 @@ describe("ResearchWorkspace", () => {
     first.unmount();
     vi.mocked(api.neighbors).mockClear();
     render(<ResearchWorkspace />);
-    fireEvent.click(screen.getByRole("button", { name: "Saved & recent" }));
+    fireEvent.click(screen.getByRole("button", { name: "Saved" }));
     fireEvent.click(
       screen.getByRole("button", { name: "Open saved graph My paper map" }),
     );
@@ -117,18 +117,18 @@ describe("ResearchWorkspace", () => {
     first.unmount();
     vi.mocked(api.search).mockClear();
     render(<ResearchWorkspace />);
-    fireEvent.click(screen.getByRole("button", { name: "Saved & recent" }));
+    fireEvent.focus(screen.getByRole("searchbox"));
     fireEvent.click(
       screen.getByRole("button", {
         name: "Search again for Synthetic history query",
       }),
     );
     expect(api.search).toHaveBeenCalledWith(
-      "Synthetic history query",
+      "synthetic history query",
       expect.any(AbortSignal),
     );
     await screen.findByRole("button", { name: /Fixture paper/ });
-    fireEvent.click(screen.getByRole("button", { name: "Saved & recent" }));
+    fireEvent.focus(screen.getByRole("searchbox"));
     fireEvent.click(screen.getByRole("button", { name: "Clear history" }));
     expect(
       screen.queryByRole("button", { name: /Search again for/ }),

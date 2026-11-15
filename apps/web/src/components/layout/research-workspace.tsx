@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { SavedResearchControls } from "@/components/layout/saved-research-controls";
+import { PaperSearch } from "@/components/layout/paper-search";
 import {
   CitationCanvas,
   type CitationCanvasHandle,
@@ -31,7 +32,7 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
   const [yearFrom, setYearFrom] = useState("");
   const [yearTo, setYearTo] = useState("");
   const linkVersion = useRef(0);
-  const { connection, result, loading, error, search, clearSearch } =
+  const { result, loading, error, searchNotice, search, clearSearch } =
     useResearch();
   const citationGraph = useCitationGraph();
   const canvasRef = useRef<CitationCanvasHandle>(null);
@@ -42,10 +43,6 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
     onOpen: () => {
       setFiltersOpen(false);
       setCitationPopup(null);
-    },
-    onSearch: (value) => {
-      setQuery(value);
-      void runSearch(value);
     },
     onRestore: (saved) => {
       ++linkVersion.current;
@@ -145,23 +142,17 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
   }
 
   const searchForm = (
-    <form className="search-form" onSubmit={submit} role="search">
-      <input
-        type="search"
-        aria-label="Search scientific papers or paste an article link"
-        placeholder="Search a paper or paste an article link / DOI"
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-        maxLength={500}
-      />
-      <button
-        className="primary-button"
-        type="submit"
-        disabled={loading || resolving || !query.trim()}
-      >
-        {loading || resolving ? "Finding…" : "Explore"}
-      </button>
-    </form>
+    <PaperSearch
+      query={query}
+      onChange={setQuery}
+      onSubmit={submit}
+      onSearch={(value) => {
+        setQuery(value);
+        void runSearch(value);
+      }}
+      busy={loading || resolving}
+      library={savedResearch.library}
+    />
   );
 
   const searchFeedback = (
@@ -178,6 +169,11 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
       )}
       {result && resultsOpen && (
         <div className="results" aria-label="Search results">
+          {searchNotice && (
+            <p className="feedback" role="status">
+              {searchNotice}
+            </p>
+          )}
           <h2>
             {result.total.toLocaleString()} results · showing{" "}
             {result.papers.length}
@@ -258,35 +254,31 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
           </span>
           TRACE
         </Link>
-        {hasGraph && (
-          <div className="topbar-actions">
-            <button
-              className="toolbar-button"
-              onClick={() => setFiltersOpen((open) => !open)}
-              aria-expanded={filtersOpen}
-            >
-              Filters
-            </button>
-            <button
-              className="toolbar-button"
-              onClick={() => {
-                setCitationPopup(null);
-                setDetailsOpen((open) => !open);
-              }}
-              aria-expanded={detailsOpen}
-            >
-              Details
-            </button>
-            <span className="connection" role="status">
-              <span
-                className={`dot ${connection === "API connected" ? "result-dot" : "unknown-dot"}`}
-              />
-              {connection}
-            </span>
-          </div>
-        )}
+        <div className="topbar-actions">
+          {hasGraph && (
+            <>
+              <button
+                className="toolbar-button"
+                onClick={() => setFiltersOpen((open) => !open)}
+                aria-expanded={filtersOpen}
+              >
+                Filters
+              </button>
+              <button
+                className="toolbar-button"
+                onClick={() => {
+                  setCitationPopup(null);
+                  setDetailsOpen((open) => !open);
+                }}
+                aria-expanded={detailsOpen}
+              >
+                Details
+              </button>
+            </>
+          )}
+          <SavedResearchControls research={savedResearch} />
+        </div>
       </header>
-      <SavedResearchControls research={savedResearch} />
       {!hasGraph ? (
         <section className="hero" aria-label="Start exploring">
           <h1>Follow the connections.</h1>

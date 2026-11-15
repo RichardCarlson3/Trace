@@ -1,0 +1,306 @@
+name: Backend benchmarks
+
+"on":
+  pull_request:
+    branches: [dev, main]
+    paths:
+      - "apps/api/**"
+      - ".github/workflows/backend-benchmarks.yml"
+      - "docs/BACKEND_BENCHMARKS.md"
+      - "docs/BACKEND_BENCHMARK_CI.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-benchmarks-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    name: Offline backend benchmark report
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.13.8"
+          enable-cache: true
+          cache-dependency-glob: apps/api/uv.lock
+      - name: Install Python and locked dependencies
+        timeout-minutes: 5
+        run: |
+          uv python install 3.12
+          uv sync --project apps/api --locked --group dev
+
+      - name: Run the existing offline benchmark
+        id: run
+        timeout-minutes: 4
+        env:
+          BENCHMARK_DIR: ${{ runner.temp }}/backend-benchmarks
+          UV_OFFLINE: "1"
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+          from pathlib import Path
+
+          SCENARIOS = ["health", "search", "neighbors", "classification", "health_under_load"]
+
+          def model_selection(directory):
+              files = [directory / "citation_pipeline.joblib", directory / "model_metadata.json"]
+              missing = [p.name for p in files if not p.is_file()]
+              if not missing:
+                  return "included", []
+              if not any(p.exists() or p.is_symlink() for p in files):
+                  return "skipped_missing_artifacts", missing
+              return "invalid_artifact_pair", missing
+
+          def main(model_dir=Path("apps/api/artifacts")):
+              directory = Path(os.environ["BENCHMARK_DIR"])
+              directory.mkdir(parents=True, exist_ok=True)
+              model_dir = model_dir.resolve()
+              state, missing = model_selection(model_dir)
+              scenarios = [s for s in SCENARIOS if s != "classification" or state == "included"]
+              execution = {
+                  "classification_status": state,
+                  "missing_artifacts": missing,
+                  "scenarios": scenarios,
+                  "return_code": None,
+                  "execution_error": None,
+              }
+              command = [
+                  "uv", "run", "--offline", "--project", "apps/api", "python",
+                  "apps/api/scripts/benchmark_api.py",
+                  "--concurrency", "1", "5", "10", "--requests", "30",
+                  "--provider-delay-ms", "10", "--provider-status", "200",
+                  "--request-timeout-seconds", "10", "--case-timeout-seconds", "30",
+                  "--total-timeout-seconds", "120", "--artifact-dir", str(model_dir),
+                  "--json", str(directory / "benchmark.json"), "--scenarios", *scenarios,
+              ]
+              metadata = directory / "execution.json"
+              metadata.write_text(json.dumps(execution, indent=2) + "\n", encoding="utf-8")
+              with (directory / "benchmark.log").open("w", encoding="utf-8") as log:
+                  try:
+                      execution["return_code"] = subprocess.run(
+                          command, stdout=log, stderr=subprocess.STDOUT,
+                          timeout=210, check=False,
+                      ).returncode
+                  except (OSError, subprocess.TimeoutExpired) as exc:
+                      execution["execution_error"] = type(exc).__name__
+              metadata.write_text(json.dumps(execution, indent=2) + "\n", encoding="utf-8")
+              print((directory / "benchmark.log").read_text(encoding="utf-8"))
+              if state == "skipped_missing_artifacts":
+                  print("Classification SKIPPED/INCOMPLETE: local model artifacts are absent.")
+              if state == "invalid_artifact_pair":
+                  print("Model artifact pair is incomplete or is not a pair of regular files.")
+                  return 1
+              if execution["execution_error"]:
+                  return 1
+              return execution["return_code"] if execution["return_code"] is not None else 1
+
+          if __name__ == "__main__":
+              raise SystemExit(main())
+          PY
+
+      - name: Validate report and write job summary
+        id: report
+        if: ${{ always() }}
+        timeout-minutes: 2
+        env:
+          BENCHMARK_DIR: ${{ runner.temp }}/backend-benchmarks
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import html
+          import json
+          import math
+          import os
+          from pathlib import Path
+
+          SCENARIOS = ["health", "search", "neighbors", "classification", "health_under_load"]
+          LEVELS = [1, 5, 10]
+
+          def require(condition, message):
+              if not condition:
+                  raise ValueError(message)
+
+          def integer(value, minimum=0):
+              return type(value) is int and value >= minimum
+
+          def number(value):
+              return type(value) in (int, float) and math.isfinite(value) and value >= 0
+
+          def metrics(row, count, callers):
+              require(type(row) is dict, "Request metrics must be an object")
+              for key in ("request_count", "completed_requests", "success_count"):
+                  require(type(row[key]) is int and row[key] == count, f"Invalid {key}")
+              for key in ("error_count", "cancelled_requests", "classification_unavailable_count"):
+                  require(type(row[key]) is int and row[key] == 0, f"Nonzero/invalid {key}")
+              require(row["error_codes"] == {}, "Request errors reported")
+              require(type(row["status_counts"]) is dict and row["status_counts"] == {"200": count}
+                      and all(type(v) is int for v in row["status_counts"].values()), "Unexpected HTTP statuses")
+              require(row["case_timed_out"] is False, "Case deadline exceeded")
+              require(integer(row["peak_in_flight"], 1) and row["peak_in_flight"] <= callers,
+                      "Invalid observed concurrency")
+              for key in ("median_ms", "p95_ms", "max_ms", "elapsed_seconds", "requests_per_second"):
+                  require(number(row[key]), f"Invalid numeric metric: {key}")
+              require(row["median_ms"] <= row["p95_ms"] <= row["max_ms"], "Invalid percentile order")
+              require(row["elapsed_seconds"] > 0 and row["requests_per_second"] > 0,
+                      "Missing elapsed time or throughput")
+              overlap = row["requests_overlapping_provider_work"]
+              require(integer(overlap) and overlap <= count, "Invalid health overlap count")
+              require(type(row["model_versions"]) is list and all(
+                  type(v) is str and v.strip() for v in row["model_versions"]), "Invalid model versions")
+
+          def validate(report, execution):
+              require(type(execution) is dict and type(report) is dict, "Expected JSON objects")
+              state = execution["classification_status"]
+              require(state in ("included", "skipped_missing_artifacts"), "Invalid/incomplete artifact pair")
+              missing = execution["missing_artifacts"]
+              expected_missing = {"citation_pipeline.joblib", "model_metadata.json"}
+              require(type(missing) is list and all(type(x) is str for x in missing), "Invalid model status")
+              require(missing == [] if state == "included" else set(missing) == expected_missing,
+                      "Inconsistent missing-model declaration")
+              require(type(execution["return_code"]) is int and execution["return_code"] == 0,
+                      "Benchmark command failed or did not finish")
+              require(execution["execution_error"] is None, "Benchmark execution error/deadline")
+              scenarios = [s for s in SCENARIOS if s != "classification" or state == "included"]
+              require(execution["scenarios"] == scenarios, "Unexpected scenario selection")
+              require(type(report["schema_version"]) is int and report["schema_version"] == 1,
+                      "Unsupported report schema")
+              require(report["measurement_mode"] == "offline_in_process_asgi_real_clock", "Not an offline report")
+              for key in ("blocked_network_attempts", "unexpected_provider_requests"):
+                  require(type(report[key]) is int and report[key] == 0, f"Nonzero/invalid {key}")
+              require(report["run_error"] is None and report["valid_run"] is True, "Invalid run/deadline")
+              require(report["all_requests_successful"] is True, "Benchmark requests failed")
+              config = report["config"]
+              expected_config = {
+                  "concurrency": LEVELS, "requests": 30, "scenarios": scenarios,
+                  "provider_delay_ms": 10, "provider_status": 200,
+                  "request_timeout_seconds": 10, "case_timeout_seconds": 30,
+                  "total_timeout_seconds": 120,
+              }
+              require(type(config) is dict and all(config[k] == value for k, value in expected_config.items()),
+                      "Unexpected benchmark configuration")
+              require(all(type(n) is int for n in config["concurrency"]), "Invalid caller levels")
+              fixture_paths = [
+                  Path("apps/api/tests/fixtures/performance/provider_responses.json"),
+                  Path("apps/api/tests/fixtures/tei/works.json"),
+                  Path("apps/api/tests/fixtures/tei/bart.xml"),
+              ]
+              require(report["fixture_sha256"] == {
+                  p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in fixture_paths
+              }, "Fixture fingerprints differ from this checkout")
+              expected = {(s, n, phase) for s in scenarios for n in LEVELS
+                          for phase in (("providers_held",) if s == "health_under_load" else ("cold", "warm"))}
+              require(type(report["results"]) is list, "Missing result rows")
+              seen = set()
+              for row in report["results"]:
+                  require(type(row) is dict and type(row["concurrency"]) is int, "Invalid result row")
+                  key = (row["scenario"], row["concurrency"], row["phase"])
+                  require(key in expected and key not in seen, "Unexpected or duplicate result row")
+                  seen.add(key)
+                  scenario, level, phase = key
+                  count = level if phase == "cold" else 30
+                  metrics(row, count, 1 if scenario == "health_under_load" else level)
+                  require(integer(row["provider_request_count"]), "Invalid provider count")
+                  kinds = row["provider_requests_by_kind"]
+                  require(type(kinds) is dict and all(integer(v) for v in kinds.values())
+                          and sum(kinds.values()) == row["provider_request_count"], "Invalid provider counters")
+                  require(integer(row["provider_peak_in_flight"]), "Invalid provider concurrency")
+                  if scenario == "health_under_load":
+                      require(row["overlap_verified"] is True and row["probe_concurrency"] == 1,
+                              "Health/provider overlap failed")
+                      require(row["requests_overlapping_provider_work"] == count, "Incomplete health overlap")
+                      metrics(row["background_search"], level, level)
+                  else:
+                      require(row["cache_precondition"] == ("fresh_app" if phase == "cold" else "primed"),
+                              "Cold/warm precondition not established")
+                  if scenario == "classification":
+                      require(bool(row["model_versions"]), "No actual model classification returned")
+              require(seen == expected, "Report is missing expected scenarios/concurrency/phase rows")
+
+          def safe(value):
+              return html.escape(str(value)).replace("|", "&#124;").replace("\r", " ").replace("\n", " ")
+
+          def metric(value):
+              return f"{value:.2f}" if number(value) else "invalid"
+
+          def main():
+              directory = Path(os.environ["BENCHMARK_DIR"])
+              directory.mkdir(parents=True, exist_ok=True)
+              report, execution, errors = {}, {}, []
+              try:
+                  execution = json.loads((directory / "execution.json").read_text(encoding="utf-8"))
+                  report = json.loads((directory / "benchmark.json").read_text(encoding="utf-8"))
+                  validate(report, execution)
+              except Exception as exc:
+                  errors.append(f"{type(exc).__name__}: {exc}")
+              lines = ["# Offline backend benchmark report", "",
+                       "Timing is informational: in-process ASGI with mocked providers, not production latency.", ""]
+              if type(execution) is dict:
+                  state = execution.get("classification_status", "not established")
+                  lines += [f"**Classification: {safe(state)}**", ""]
+                  if state == "skipped_missing_artifacts":
+                      lines += ["**INCOMPLETE COVERAGE:** both local model files are absent. Classification was skipped; other scenarios still ran. No model was downloaded or trained.", ""]
+                  elif state == "invalid_artifact_pair":
+                      lines += ["**FAILURE:** a partial or invalid model artifact pair exists.", ""]
+              lines += [f"**Validation: {'FAIL' if errors else 'PASS'}**", ""]
+              lines += [f"- {safe(error)}" for error in errors]
+              lines += ["", "| Scenario | Phase | Callers | Median ms | P95 ms | Req/s | Errors | Provider calls | Health overlap |",
+                        "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |"]
+              if type(report) is dict and type(report.get("results")) is list:
+                  for row in report["results"]:
+                      if type(row) is not dict:
+                          continue
+                      overlap = row.get("overlap_verified", "n/a")
+                      cells = [safe(row.get("scenario")), safe(row.get("phase")), safe(row.get("concurrency")),
+                               metric(row.get("median_ms")), metric(row.get("p95_ms")),
+                               metric(row.get("requests_per_second")), safe(row.get("error_count")),
+                               safe(row.get("provider_request_count")), safe(overlap)]
+                      lines.append("| " + " | ".join(cells) + " |")
+                      if row.get("error_codes"):
+                          lines += ["", f"Errors: `{safe(json.dumps(row['error_codes']))}`", ""]
+                      background = row.get("background_search")
+                      if type(background) is dict and background.get("error_count"):
+                          lines += ["", f"Background search errors: {safe(background['error_count'])}", ""]
+                  lines += ["", f"Blocked network attempts: {safe(report.get('blocked_network_attempts'))}; "
+                            f"unexpected provider requests: {safe(report.get('unexpected_provider_requests'))}.", ""]
+              lines += ["Download the backend-benchmarks artifact for JSON, execution metadata and logs.",
+                        "Health-under-load callers refer to background searches; probes run sequentially.",
+                        "Cold waves have few samples. No latency or throughput thresholds are enforced.", ""]
+              summary = "\n".join(lines)
+              (directory / "summary.md").write_text(summary, encoding="utf-8")
+              (directory / "ci-result.json").write_text(json.dumps({
+                  "passed": not errors, "errors": errors,
+                  "classification_status": execution.get("classification_status")
+                  if type(execution) is dict else None,
+              }, indent=2) + "\n", encoding="utf-8")
+              if os.environ.get("GITHUB_STEP_SUMMARY"):
+                  with Path(os.environ["GITHUB_STEP_SUMMARY"]).open("a", encoding="utf-8") as handle:
+                      handle.write(summary)
+              print("Benchmark report validation " + ("FAILED" if errors else "PASSED"))
+              return 1 if errors else 0
+
+          if __name__ == "__main__":
+              raise SystemExit(main())
+          PY
+
+      - name: Upload benchmark report and diagnostics
+        if: ${{ always() }}
+        timeout-minutes: 2
+        uses: actions/upload-artifact@v7
+        with:
+          name: backend-benchmarks-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/backend-benchmarks/
+          if-no-files-found: error
+          retention-days: 7
