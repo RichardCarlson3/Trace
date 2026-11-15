@@ -20,15 +20,6 @@ export function SavedResearchControls({
         >
           Saved
         </button>
-        {research.hasGraph && (
-          <button
-            className="toolbar-button"
-            disabled={!research.canSave}
-            onClick={research.show}
-          >
-            Save graph
-          </button>
-        )}
       </div>
       {research.session.open && (
         <BrowserLibrary

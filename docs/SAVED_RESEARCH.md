@@ -4,7 +4,7 @@ This feature saves research in the current browser profile using `localStorage`.
 
 ## Using it
 
-1. Open a paper and choose **Save graph** in the top toolbar beside **Filters**, **Details**, and **Saved**.
+1. Open a paper, choose **Saved** in the top toolbar beside **Filters** and **Details**, then use **Save graph** inside that panel. There is no separate toolbar save button.
 2. Give the graph a name and save. Reopening and saving it again updates that snapshot.
 3. After a refresh, open **Saved** and choose the saved graph. **Delete** removes an individual saved graph.
 4. Focus or click the search field to see recent searches. The browser retains the latest 20 unique queries and shows up to eight matching the text you have typed, ignoring capitalization. Clear the field to see the newest queries. Choose one to run it again, or use **Clear history**. Arrow keys move through visible suggestions, Tab reaches the controls, and Escape closes the history. Moving focus outside the search area closes it too.
