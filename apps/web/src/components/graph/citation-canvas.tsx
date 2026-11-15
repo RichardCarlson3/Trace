@@ -107,10 +107,10 @@ function CitationEdge(props: EdgeProps) {
 }
 const edgeTypes = { citation: CitationEdge };
 const intentColors = {
-  background: "#ad98ff",
-  method: "#6fafff",
-  result: "#62d8aa",
-  unknown: "#8e9bb7",
+  background: "#bd9097",
+  method: "#c5bcb1",
+  result: "#e5e1da",
+  unknown: "#9a9da3",
 };
 
 function positionNewNode(
@@ -592,7 +592,7 @@ export function CitationCanvas({
         maxZoom={2}
         colorMode="dark"
       >
-        <Background color="#35384c" gap={30} size={1} />
+        <Background color="#282a30" gap={30} size={1} />
         {seedId && <Controls showInteractive={false} />}
       </ReactFlow>
       {hover && (

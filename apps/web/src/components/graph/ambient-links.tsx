@@ -87,7 +87,7 @@ export function AmbientLinks({ canDraw = true }: { canDraw?: boolean }) {
           ctx.beginPath();
           ctx.moveTo(from.x, from.y);
           ctx.lineTo(nearest.point.x, nearest.point.y);
-          ctx.strokeStyle = "rgba(126, 118, 181, 0.1)";
+          ctx.strokeStyle = "rgba(177, 178, 183, 0.1)";
           ctx.lineWidth = 1;
           ctx.stroke();
         }
@@ -100,7 +100,7 @@ export function AmbientLinks({ canDraw = true }: { canDraw?: boolean }) {
         ctx.beginPath();
         ctx.moveTo(from.x, from.y);
         ctx.lineTo(to.x, to.y);
-        ctx.strokeStyle = `rgba(150, 139, 255, ${0.62 * (1 - age)})`;
+        ctx.strokeStyle = `rgba(199, 88, 103, ${0.7 * (1 - age)})`;
         ctx.lineWidth = 1.5;
         ctx.stroke();
       }
@@ -111,12 +111,12 @@ export function AmbientLinks({ canDraw = true }: { canDraw?: boolean }) {
         const y = point.y * height;
         ctx.beginPath();
         ctx.arc(x, y, 7, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(190, 175, 255, ${0.7 * (1 - age)})`;
+        ctx.strokeStyle = `rgba(222, 221, 219, ${0.7 * (1 - age)})`;
         ctx.lineWidth = 1.5;
         ctx.stroke();
         ctx.beginPath();
         ctx.arc(x, y, 2.8, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(220, 210, 255, ${1 - age})`;
+        ctx.fillStyle = `rgba(248, 240, 241, ${1 - age})`;
         ctx.fill();
       }
 
@@ -129,14 +129,14 @@ export function AmbientLinks({ canDraw = true }: { canDraw?: boolean }) {
           ctx.beginPath();
           ctx.moveTo(position.x, position.y);
           ctx.lineTo(cursor.x, cursor.y);
-          ctx.strokeStyle = `rgba(117, 179, 255, ${0.32 * (1 - distance / 140)})`;
+          ctx.strokeStyle = `rgba(196, 92, 105, ${0.4 * (1 - distance / 140)})`;
           ctx.lineWidth = 1;
           ctx.stroke();
         }
         const pulse = reduceMotion ? 0 : Math.sin(time / 900 + dot.phase) * 0.7;
         ctx.beginPath();
         ctx.arc(position.x, position.y, 2.3 + pulse, 0, Math.PI * 2);
-        ctx.fillStyle = distance < 140 ? "#b8caff" : "#6e719e";
+        ctx.fillStyle = distance < 140 ? "#f5f4f2" : "#999a9e";
         ctx.fill();
       });
 
@@ -149,8 +149,8 @@ export function AmbientLinks({ canDraw = true }: { canDraw?: boolean }) {
           cursor.y,
           90,
         );
-        glow.addColorStop(0, "rgba(133, 112, 255, 0.15)");
-        glow.addColorStop(1, "rgba(133, 112, 255, 0)");
+        glow.addColorStop(0, "rgba(183, 65, 81, 0.16)");
+        glow.addColorStop(1, "rgba(183, 65, 81, 0)");
         ctx.fillStyle = glow;
         ctx.beginPath();
         ctx.arc(cursor.x, cursor.y, 90, 0, Math.PI * 2);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Image from "next/image";
 import {
   AnimatePresence,
   MotionConfig,
@@ -66,16 +67,16 @@ function StudentScene({
           <path d="M594 38c-24 0-39 18-39 38 0 17 10 25 18 34 4 4 7 11 7 17h28c0-6 3-13 7-17 8-9 18-17 18-34 0-20-15-38-39-38z" />
         </clipPath>
         <radialGradient id="screen-glow">
-          <stop stopColor="#8274ee" stopOpacity=".56" />
-          <stop offset="1" stopColor="#8274ee" stopOpacity="0" />
+          <stop stopColor="#a18d90" stopOpacity=".56" />
+          <stop offset="1" stopColor="#a18d90" stopOpacity="0" />
         </radialGradient>
         <linearGradient id="screen-face" x1="0" y1="0" x2="1" y2="1">
-          <stop stopColor="#34365e" />
-          <stop offset="1" stopColor="#171d38" />
+          <stop stopColor="#282a30" />
+          <stop offset="1" stopColor="#17191d" />
         </linearGradient>
         <linearGradient id="window-night" x1="0" y1="0" x2="1" y2="1">
-          <stop stopColor="#111934" />
-          <stop offset="1" stopColor="#202546" />
+          <stop stopColor="#17191d" />
+          <stop offset="1" stopColor="#1f2126" />
         </linearGradient>
       </defs>
       <rect
@@ -85,16 +86,16 @@ function StudentScene({
         height="215"
         rx="15"
         fill="url(#window-night)"
-        stroke="#4c527c"
+        stroke="#53565e"
         strokeWidth="3"
       />
-      <path d="M147 47v215M43 154h208" stroke="#4c527c" strokeWidth="5" />
+      <path d="M147 47v215M43 154h208" stroke="#53565e" strokeWidth="5" />
       <circle cx="198" cy="103" r="17" fill="#e4d6a8" opacity=".78" />
-      <circle cx="83" cy="86" r="2" fill="#d6d9ff" />
-      <circle cx="113" cy="128" r="1.5" fill="#d6d9ff" />
-      <circle cx="219" cy="201" r="2" fill="#d6d9ff" />
-      <path d="M0 431h700" stroke="#8175b1" strokeWidth="5" />
-      <ellipse cx="349" cy="448" rx="300" ry="19" fill="#080b18" opacity=".5" />
+      <circle cx="83" cy="86" r="2" fill="#f5f4f2" />
+      <circle cx="113" cy="128" r="1.5" fill="#f5f4f2" />
+      <circle cx="219" cy="201" r="2" fill="#f5f4f2" />
+      <path d="M0 431h700" stroke="#adaeb0" strokeWidth="5" />
+      <ellipse cx="349" cy="448" rx="300" ry="19" fill="#0c0d10" opacity=".5" />
       <motion.circle
         cx="346"
         cy="266"
@@ -105,8 +106,8 @@ function StudentScene({
       />
       <path
         d="M242 365h235l-19 64H260z"
-        fill="#34334e"
-        stroke="#77749c"
+        fill="#282a30"
+        stroke="#999a9e"
         strokeWidth="3"
       />
       <rect
@@ -115,8 +116,8 @@ function StudentScene({
         width="277"
         height="208"
         rx="19"
-        fill="#111529"
-        stroke="#8f89b9"
+        fill="#17191d"
+        stroke="#adaeb0"
         strokeWidth="5"
       />
       <rect
@@ -133,27 +134,27 @@ function StudentScene({
         width="112"
         height="9"
         rx="4.5"
-        fill="#3EE0D0"
+        fill="#bc5361"
         opacity=".8"
       />
-      <rect x="261" y="224" width="177" height="6" rx="3" fill="#747ea9" />
-      <rect x="261" y="241" width="149" height="6" rx="3" fill="#747ea9" />
-      <rect x="261" y="258" width="160" height="6" rx="3" fill="#747ea9" />
-      <circle cx="287" cy="303" r="7" fill="#b3a3ff" />
-      <circle cx="355" cy="291" r="7" fill="#3EE0D0" />
-      <circle cx="422" cy="312" r="7" fill="#b3a3ff" />
-      <path d="M293 303l55-12" stroke="#3EE0D0" strokeWidth="3" opacity=".7" />
-      <path d="M362 292l53 18" stroke="#9e99da" strokeWidth="3" />
+      <rect x="261" y="224" width="177" height="6" rx="3" fill="#adaeb0" />
+      <rect x="261" y="241" width="149" height="6" rx="3" fill="#adaeb0" />
+      <rect x="261" y="258" width="160" height="6" rx="3" fill="#adaeb0" />
+      <circle cx="287" cy="303" r="7" fill="#b8b7b6" />
+      <circle cx="355" cy="291" r="7" fill="#c45b69" />
+      <circle cx="422" cy="312" r="7" fill="#b8b7b6" />
+      <path d="M293 303l55-12" stroke="#bc5361" strokeWidth="3" opacity=".8" />
+      <path d="M362 292l53 18" stroke="#a18d90" strokeWidth="3" />
       <path
         d="M347 365v63m-54 0h111"
-        stroke="#77749c"
+        stroke="#999a9e"
         strokeWidth="6"
         strokeLinecap="round"
       />
       <path
         d="M526 433v-94c0-69 22-112 73-112s64 44 64 112v94"
-        fill="#342b50"
-        stroke="#8b76b5"
+        fill="#282a30"
+        stroke="#adaeb0"
         strokeWidth="3"
       />
       <motion.g
@@ -164,14 +165,14 @@ function StudentScene({
         <circle cx="594" cy="215" r="43" fill="#c69c8d" />
         <path
           d="M552 203c0-35 17-54 42-54 28 0 46 19 45 54-12-8-21-20-26-33-13 18-32 28-61 33z"
-          fill="#29243e"
+          fill="#1f2126"
         />
       </motion.g>
-      <path d="M491 431c-12-25-17-50-15-72l82-39 83 22 16 89" fill="#342b50" />
+      <path d="M491 431c-12-25-17-50-15-72l82-39 83 22 16 89" fill="#282a30" />
       <path
         d="M551 321c-22 4-36 22-49 50l27 16c15-21 30-35 47-42z"
-        fill="#342b50"
-        stroke="#8b76b5"
+        fill="#282a30"
+        stroke="#adaeb0"
         strokeWidth="3"
       />
       <motion.g
@@ -187,8 +188,8 @@ function StudentScene({
           strokeLinecap="round"
         />
       </motion.g>
-      <path d="M67 395h118l-7 34H76z" fill="#a185ae" />
-      <path d="M80 381h100l-4 17H76z" fill="#5f658c" />
+      <path d="M67 395h118l-7 34H76z" fill="#adaeb0" />
+      <path d="M80 381h100l-4 17H76z" fill="#53565e" />
       <rect
         x="94"
         y="347"
@@ -200,16 +201,16 @@ function StudentScene({
       />
       <path
         d="M106 361l49-6m-46 18 44-6m-42 18 47-6"
-        stroke="#898ba7"
+        stroke="#adaeb0"
         strokeWidth="3"
       />
       <path
         d="M69 411h115l-10 20H78z"
-        fill="#5f658c"
-        stroke="#888bad"
+        fill="#53565e"
+        stroke="#adaeb0"
         strokeWidth="2"
       />
-      <path d="M85 458h104m-52-25v25" stroke="#756e98" strokeWidth="4" />
+      <path d="M85 458h104m-52-25v25" stroke="#999a9e" strokeWidth="4" />
       <motion.g
         className="story-bulb"
         animate={reduced ? undefined : { y: [0, -7, 0], rotate: [-3, 3, -3] }}
@@ -218,7 +219,7 @@ function StudentScene({
       >
         <path
           d="M594 38c-24 0-39 18-39 38 0 17 10 25 18 34 4 4 7 11 7 17h28c0-6 3-13 7-17 8-9 18-17 18-34 0-20-15-38-39-38z"
-          fill="#534657"
+          fill="#282a30"
           stroke="#f3ddb8"
           strokeWidth="3"
         />
@@ -237,7 +238,7 @@ function StudentScene({
           strokeLinecap="round"
         />
       </motion.g>
-      <text x="84" y="488" fill="#aca9d1" fontSize="15" letterSpacing="3">
+      <text x="84" y="488" fill="#e0dedb" fontSize="15" letterSpacing="3">
         1:47 AM
       </text>
     </svg>
@@ -269,8 +270,8 @@ function MapNode({
         cx={x}
         cy={y}
         r={small ? 48 : 69}
-        fill={small ? "#29294c" : "#3c315f"}
-        stroke={small ? "#a9a3e4" : "#d2b9ff"}
+        fill={small ? "#1f2126" : "#282a30"}
+        stroke={small ? "#b8b7b6" : "#f5f4f2"}
         strokeWidth="2.5"
       />
       <circle
@@ -278,15 +279,15 @@ function MapNode({
         cy={y}
         r={small ? 57 : 82}
         fill="none"
-        stroke="#aa8cff"
-        opacity=".16"
+        stroke="#bc5361"
+        opacity=".3"
         strokeWidth="2"
       />
       <text
         x={x}
         y={y + 5}
         textAnchor="middle"
-        fill="#f6f2ff"
+        fill="#f5f4f2"
         fontSize={compactLabel ? "11" : small ? "14" : "16"}
         fontWeight="700"
       >
@@ -317,14 +318,14 @@ function NetworkScene({ phase, reduced }: { phase: number; reduced: boolean }) {
           markerHeight="7"
           orient="auto"
         >
-          <path d="M0 0L10 5L0 10z" fill="#b8adf7" />
+          <path d="M0 0L10 5L0 10z" fill="#b8b7b6" />
         </marker>
       </defs>
-      <circle cx="350" cy="260" r="214" fill="#6c58b8" opacity=".045" />
+      <circle cx="350" cy="260" r="214" fill="#ac4050" opacity=".1" />
       <motion.path
         d="M292 219 C238 150 207 145 177 144"
         fill="none"
-        stroke="#a6a0e8"
+        stroke="#b8b7b6"
         strokeWidth="3"
         markerEnd="url(#story-arrow)"
         initial={{ pathLength: 0, opacity: 0 }}
@@ -334,7 +335,7 @@ function NetworkScene({ phase, reduced }: { phase: number; reduced: boolean }) {
       <motion.path
         d="M291 302 C230 360 211 371 178 373"
         fill="none"
-        stroke="#a6a0e8"
+        stroke="#b8b7b6"
         strokeWidth="3"
         markerEnd="url(#story-arrow)"
         initial={{ pathLength: 0, opacity: 0 }}
@@ -344,7 +345,7 @@ function NetworkScene({ phase, reduced }: { phase: number; reduced: boolean }) {
       <motion.path
         d="M525 143 C470 147 442 183 410 221"
         fill="none"
-        stroke="#3EE0D0"
+        stroke="#bc5361"
         strokeWidth="3"
         markerEnd="url(#story-arrow)"
         initial={{ pathLength: 0, opacity: 0 }}
@@ -357,7 +358,7 @@ function NetworkScene({ phase, reduced }: { phase: number; reduced: boolean }) {
       <motion.path
         d="M527 376 C477 369 443 330 412 301"
         fill="none"
-        stroke="#8ddbc9"
+        stroke="#a18d90"
         strokeWidth="3"
         markerEnd="url(#story-arrow)"
         initial={{ pathLength: 0, opacity: 0 }}
@@ -389,20 +390,20 @@ function NetworkScene({ phase, reduced }: { phase: number; reduced: boolean }) {
           width="270"
           height="68"
           rx="13"
-          fill="#1a1b34"
-          stroke="#8c7dc3"
+          fill="#17191d"
+          stroke="#8a6b70"
         />
         <text
           x="350"
           y="408"
           textAnchor="middle"
-          fill="#b9a9fc"
+          fill="#b8b7b6"
           fontSize="12"
           letterSpacing="2"
         >
           CITATION EVIDENCE
         </text>
-        <text x="350" y="433" textAnchor="middle" fill="#f2eeff" fontSize="15">
+        <text x="350" y="433" textAnchor="middle" fill="#f5f4f2" fontSize="15">
           What does this connection mean?
         </text>
       </motion.g>
@@ -410,7 +411,7 @@ function NetworkScene({ phase, reduced }: { phase: number; reduced: boolean }) {
         x="350"
         y="32"
         textAnchor="middle"
-        fill="#858ba9"
+        fill="#adaeb0"
         fontSize="12"
         letterSpacing="3"
       >
@@ -582,7 +583,15 @@ function StoryIntro({ onExplore }: { onExplore: () => void }) {
         </motion.div>
         <header className="story-nav">
           <span className="story-brand">
-            <span aria-hidden="true">◎</span> TRACE
+            <Image
+              className="story-brand-mark"
+              src="/umass-u-from-logo.png"
+              width={52}
+              height={47}
+              alt=""
+              aria-hidden="true"
+            />
+            TRACE
           </span>
           <button className="story-skip" onClick={onExplore}>
             Skip to graph <span aria-hidden="true">↗</span>

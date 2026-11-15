@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState, type FormEvent } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { SavedResearchControls } from "@/components/layout/saved-research-controls";
 import { PaperSearch } from "@/components/layout/paper-search";
@@ -249,9 +250,14 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
             goHome();
           }}
         >
-          <span className="brand-mark" aria-hidden="true">
-            ◎
-          </span>
+          <Image
+            className="brand-mark"
+            src="/umass-u-from-logo.png"
+            width={52}
+            height={47}
+            alt=""
+            aria-hidden="true"
+          />
           TRACE
         </Link>
         <div className="topbar-actions">

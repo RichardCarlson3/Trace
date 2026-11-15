@@ -15,10 +15,10 @@
   max-height: calc(100dvh - 200px);
   overflow-y: auto;
   padding: 22px;
-  border: 1px solid #44415f;
+  border: 1px solid #393b42;
   border-radius: 16px;
-  box-shadow: 0 22px 60px #0506108c;
-  background: #131622f5;
+  box-shadow: 0 22px 60px #0c0d108c;
+  background: #17191df5;
   backdrop-filter: blur(18px);
 }
 .heading {
@@ -56,7 +56,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  border-bottom: 1px solid #35384c;
+  border-bottom: 1px solid #282a30;
 }
 .open {
   flex: 1;
@@ -64,20 +64,20 @@
   padding: 12px 0;
   border: 0;
   background: transparent;
-  color: #ddd8f0;
+  color: #f5f4f2;
   text-align: left;
   overflow-wrap: anywhere;
 }
 .open span {
   display: block;
   margin-top: 5px;
-  color: #9fa8c2;
+  color: #c9c9c8;
   font-size: 12px;
 }
 .remove {
   border: 0;
   background: transparent;
-  color: #c5b5ff;
+  color: #b8b7b6;
   font-size: 12px;
 }
 @media (max-width: 650px) {
