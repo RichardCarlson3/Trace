@@ -55,6 +55,9 @@ def normalize_identifier(kind: str, value: str) -> str:
             value = value[:-4]
     value = re.sub(rf"^{kind}:", "", value, flags=re.IGNORECASE)
     if kind == "ARXIV":
+        # GROBID copies arXiv's PDF side-stamp into TEI headers as
+        # "arXiv:1506.06726v1[cs.CL]"; the bracketed category is not part of the ID.
+        value = re.sub(r"\s*\[[a-z-]+(?:\.[A-Za-z-]+)?\]$", "", value)
         value = re.sub(r"v[1-9][0-9]*$", "", value)
         if re.fullmatch(r"(?:[0-9]{4}\.[0-9]{4,5}|[a-zA-Z-]+(?:\.[A-Z]{2})?/[0-9]{7})", value):
             return value

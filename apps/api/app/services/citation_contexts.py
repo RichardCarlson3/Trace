@@ -895,6 +895,64 @@ class CitationContextService:
         return result
 
 
+# Reasons meaning a source was checked and holds no usable passage for this edge.
+COVERAGE_REASONS = {
+    "semantic_scholar_references_unavailable",
+    "openalex_tei_content_unavailable",
+    "openalex_relationship_not_verified",
+    "tei_no_safe_body_sentence",
+    "tei_bibliography_not_verified",
+    "tei_ambiguous_bibliography",
+    "tei_ambiguous_reference_list",
+    "tei_conflicting_bibliography_identifier",
+}
+# Reasons meaning paper or document identity could not be verified.
+IDENTITY_REASONS = {
+    "ambiguous_paper_pair",
+    "ambiguous_reference_identity",
+    "openalex_work_identity_mismatch",
+    "tei_document_identity_mismatch",
+    "tei_unrecognized_header_identifier",
+}
+# Reasons meaning a source was deliberately not consulted.
+NOT_ATTEMPTED_REASONS = {
+    "semantic_scholar_disabled",
+    "openalex_tei_disabled",
+    "openalex_key_missing",
+    "no_verified_example",
+}
+
+
+def evidence_outcome(result: CitationContexts) -> str:
+    """Diagnostic category for one classification response (never shown as evidence).
+
+    Transient failures take precedence: a throttled or failed source might still
+    hold a passage, so its absence is never reported as genuine unavailability.
+    """
+    if result.contexts:
+        if any(context.classification for context in result.contexts):
+            return "classified"
+        return "classification_failed"
+    reasons = [reason for reason in (result.reason, result.fallback_reason) if reason]
+    if any(
+        "rate_limited" in reason or reason.endswith(("_http_429", "_cooldown"))
+        for reason in reasons
+    ):
+        return "rate_limited"
+    if result.status == "example_not_found" or (
+        result.status == "provider_unavailable"
+        and reasons
+        and all(reason in NOT_ATTEMPTED_REASONS for reason in reasons)
+    ):
+        return "not_attempted"
+    known = COVERAGE_REASONS | IDENTITY_REASONS | NOT_ATTEMPTED_REASONS
+    if result.status == "incomplete" or any(reason not in known for reason in reasons):
+        return "provider_failed"
+    if result.status == "unresolved_identifiers" or any(r in IDENTITY_REASONS for r in reasons):
+        return "identifier_resolution_failed"
+    return "context_unavailable"
+
+
 @timed("model_inference")
 def classify_contexts(result: CitationContexts, inference: InferenceService) -> CitationContexts:
     """Classify retrieved evidence for this pair only, preserving its exact attribution."""
