@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { SavedResearchControls } from "@/components/layout/saved-research-controls";
+import savedResearchStyles from "./saved-research.module.css";
 import {
   CitationCanvas,
   type CitationCanvasHandle,
@@ -31,8 +32,7 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
   const [yearFrom, setYearFrom] = useState("");
   const [yearTo, setYearTo] = useState("");
   const linkVersion = useRef(0);
-  const { connection, result, loading, error, search, clearSearch } =
-    useResearch();
+  const { result, loading, error, search, clearSearch } = useResearch();
   const citationGraph = useCitationGraph();
   const canvasRef = useRef<CitationCanvasHandle>(null);
   const savedResearch = useSavedResearch({
@@ -210,7 +210,7 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
 
   return (
     <main
-      className={`workspace ${hasGraph ? "has-graph" : "is-empty"}`}
+      className={`workspace ${savedResearchStyles.workspace} ${hasGraph ? "has-graph" : "is-empty"}`}
       id="workspace"
     >
       <CitationCanvas
@@ -258,35 +258,31 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
           </span>
           TRACE
         </Link>
-        {hasGraph && (
-          <div className="topbar-actions">
-            <button
-              className="toolbar-button"
-              onClick={() => setFiltersOpen((open) => !open)}
-              aria-expanded={filtersOpen}
-            >
-              Filters
-            </button>
-            <button
-              className="toolbar-button"
-              onClick={() => {
-                setCitationPopup(null);
-                setDetailsOpen((open) => !open);
-              }}
-              aria-expanded={detailsOpen}
-            >
-              Details
-            </button>
-            <span className="connection" role="status">
-              <span
-                className={`dot ${connection === "API connected" ? "result-dot" : "unknown-dot"}`}
-              />
-              {connection}
-            </span>
-          </div>
-        )}
+        <div className="topbar-actions">
+          {hasGraph && (
+            <>
+              <button
+                className="toolbar-button"
+                onClick={() => setFiltersOpen((open) => !open)}
+                aria-expanded={filtersOpen}
+              >
+                Filters
+              </button>
+              <button
+                className="toolbar-button"
+                onClick={() => {
+                  setCitationPopup(null);
+                  setDetailsOpen((open) => !open);
+                }}
+                aria-expanded={detailsOpen}
+              >
+                Details
+              </button>
+            </>
+          )}
+          <SavedResearchControls research={savedResearch} />
+        </div>
       </header>
-      <SavedResearchControls research={savedResearch} />
       {!hasGraph ? (
         <section className="hero" aria-label="Start exploring">
           <h1>Follow the connections.</h1>

@@ -4,7 +4,7 @@ This feature saves research in the current browser profile using `localStorage`.
 
 ## Using it
 
-1. Open a paper and choose **Save graph** in the separate controls at the bottom right.
+1. Open a paper and choose **Save graph** in the top toolbar beside **Filters**, **Details**, and **Saved & recent**.
 2. Give the graph a name and save. Reopening and saving it again updates that snapshot.
 3. After a refresh, open **Saved & recent** and choose the saved graph.
 4. Recent searches lists the latest 20 unique searches. Choose one to run it again, or use **Clear history**. **Delete** removes an individual saved graph.
@@ -15,7 +15,7 @@ Keep using the same browser profile and website address, including the port. Cle
 
 ## Ownership and integration for Dev 1
 
-Storage, validation, UI controls, CSS, controller logic and feature tests live in new files. Existing global styles, toolbar/search placement, shared API types, dependency manifests, and existing tests are unchanged.
+Storage, validation, UI controls, CSS, controller logic and feature tests live in separate files. The controls now sit in the top toolbar; responsive toolbar/search spacing is scoped to `saved-research.module.css`. Global styles, shared API types and dependency manifests are unchanged.
 
 Three existing frontend files have integration changes:
 
@@ -23,7 +23,7 @@ Three existing frontend files have integration changes:
 - `apps/web/src/hooks/use-citation-graph.ts`: exposes `edgeGroups` and adds `restore(snapshot)` to load saved state while cancelling earlier requests. Existing graph expansion behavior is retained.
 - `apps/web/src/components/graph/citation-canvas.tsx`: accepts an optional initial layout and a ref exposing `getLayout()`. Existing callers can omit both. Reopening preserves saved positions; Dev 1's overlap spacing resumes when the focus or visible graph changes, and drag behavior is retained. Changing focus leaves already spaced nodes in place.
 
-`SavedResearchControls` is a separate floating control with styles scoped to `saved-research.module.css`. Dev 1 can relocate this component without changing the storage implementation. Keep the integration changes together in review; conflicts remain possible if these three files change concurrently. No Dev 3 backend or ML files are modified.
+`SavedResearchControls` is a separate toolbar component with a dropdown panel and styles scoped to `saved-research.module.css`. **Saved & recent** remains available before opening a paper. Keep the integration changes together in review; conflicts remain possible if these three files change concurrently. No Dev 3 backend or ML files are modified.
 
 The stored data format is version 1, under `trace.saved-graphs.v1` and `trace.recent-searches.v1`. Keep these keys and snapshot fields compatible when adjusting the UI.
 
