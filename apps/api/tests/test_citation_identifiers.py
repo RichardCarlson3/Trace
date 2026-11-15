@@ -51,6 +51,11 @@ def test_invalid_doi_does_not_become_an_identity(raw):
     [
         ("ARXIV", "https://arxiv.org/pdf/1910.13461v2.pdf", "1910.13461"),
         ("ARXIV", "hep-th/9901001v1", "hep-th/9901001"),
+        # GROBID's copy of the arXiv PDF side-stamp (recorded Skip-Thought header).
+        ("ARXIV", "arXiv:1506.06726v1[cs.CL]", "1506.06726"),
+        ("ARXIV", "arXiv:1810.04805v2 [cs.CL]", "1810.04805"),
+        ("ARXIV", "arXiv:1706.03762v5[stat.ML]", "1706.03762"),
+        ("ARXIV", "arXiv:cs/0112017v1[cs.LG]", "cs/0112017"),
         ("PMID", "https://pubmed.ncbi.nlm.nih.gov/12345/", "12345"),
         ("PMCID", "https://pmc.ncbi.nlm.nih.gov/articles/PMC12345/", "12345"),
         ("PMCID", "PMC12345", "12345"),
@@ -59,6 +64,14 @@ def test_invalid_doi_does_not_become_an_identity(raw):
 )
 def test_supported_exact_identifier_formats(kind, raw, expected):
     assert normalize_identifier(kind, raw) == expected
+
+
+@pytest.mark.parametrize(
+    "raw", ["arXiv:1506.06726v1[cs.CL]extra", "[cs.CL]", "arXiv:15060.6726[cs.CL]"]
+)
+def test_arxiv_stamp_suffix_does_not_admit_malformed_identifiers(raw):
+    with pytest.raises(ValueError):
+        normalize_identifier("ARXIV", raw)
 
 
 @pytest.mark.parametrize(

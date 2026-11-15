@@ -114,6 +114,24 @@ The provider also offers a cited paper's `/citations` endpoint with `citingPaper
 
 `available` is computed from the returned passages. `relationship_found` is true for an observed matching relationship and null when identity or an incomplete scan prevents a determination. A missing context or an unmatched Semantic Scholar record does not disprove an OpenAlex citation edge. `reason` and mapping-specific reasons explain unresolved or unavailable outcomes.
 
+### Evidence outcome diagnostics
+
+Every `POST /classify` logs one INFO line, `citation_evidence_outcome`. It records the citing and cited IDs, `status`, `source`, `origin`, `reason`, `fallback_reason`, and passage and classification counts. Passages are never logged. `outcome` is derived from the existing response fields by `evidence_outcome()` and takes one of these values:
+
+| `outcome` | Meaning |
+| --- | --- |
+| `classified` | At least one passage was classified |
+| `classification_failed` | Passages were found but the model could not label them |
+| `rate_limited` | A source was throttled, so not every source was checked |
+| `provider_failed` | A source errored, timed out or did not finish |
+| `identifier_resolution_failed` | Paper or document identity could not be verified |
+| `not_attempted` | The sources are disabled |
+| `context_unavailable` | The sources checked hold no usable passage |
+
+Transient categories take precedence, so a throttled or failed source is never reported as genuine absence. The frontend mirrors this in `lib/citation-evidence.ts`. It shows a matching explanation, offers a manual "Try again" only for transient outcomes, and logs `[citation-evidence]` at the browser's verbose/debug level, including `displayed: false` when a result arrives after the popup closed. Classification results are shown in the popup and are not written back onto graph edges.
+
+GROBID copies arXiv's PDF side-stamp into TEI headers as `arXiv:1506.06726v1[cs.CL]`. The bracketed category is ignored when the identifier is normalized, and the header identity check still applies. Previously this rejected whole arXiv-stamped documents, and with them the TEI fallback for every reference edge of such a paper. A header identifier that still cannot be read now fails closed as `tei_unrecognized_header_identifier`, not as invalid XML.
+
 ### Invalid-response diagnostics
 
 The public reason `semantic_scholar_invalid_response` (or `openalex_invalid_response`) is unchanged, but each rejection also emits one internal `WARNING` log line, `citation_provider_invalid_response`, with fixed labels: `provider`, `stage` (`mapping`, `references`, `reference_page`, `reference_match`), `category` (for example `missing_or_wrong_type`, `unnormalizable_doi`, `offset_mismatch`), `field`, `observed` (JSON type name or `absent`), `row` index, sanitized top-level key names, and `recoverable=false`. Bodies, passages, identifier values and credentials are never logged. Search server logs for this line to attribute a live failure before changing any validation rule.

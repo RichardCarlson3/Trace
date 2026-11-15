@@ -229,7 +229,12 @@ def parse_document(data: bytes, work: dict) -> Document:
         if len(headers) != 1 or not any(local(n) == "tei" for n in nodes):
             raise TEIUnavailable("tei_header_missing")
         known = metadata_identifiers(work)
-        header_ids = {p for p in element_identifiers(headers[0]) if p[0] != "URL"}
+        try:
+            header_ids = {p for p in element_identifiers(headers[0]) if p[0] != "URL"}
+        except ValueError:
+            # An identity claim that cannot be read cannot be checked; fail closed,
+            # but say why instead of reporting the whole document as invalid XML.
+            raise TEIUnavailable("tei_unrecognized_header_identifier") from None
         if header_ids - known:
             raise TEIUnavailable("tei_document_identity_mismatch")
         bibliography = []

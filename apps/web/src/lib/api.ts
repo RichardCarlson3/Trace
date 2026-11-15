@@ -5,6 +5,10 @@ export interface CitationContexts {
   citing_paper_id: string;
   cited_paper_id: string;
   origin: "live" | "memory_cache" | "verified_example" | "unavailable";
+  // Existing response fields, read only to explain why no passage was shown.
+  status?: string;
+  reason?: string | null;
+  fallback_reason?: string | null;
   contexts: {
     context_text: string;
     source: "semantic_scholar" | "openalex_tei";

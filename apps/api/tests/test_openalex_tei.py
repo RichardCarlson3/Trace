@@ -139,9 +139,35 @@ def test_document_size_depth_and_header_identity_limits(upstream, monkeypatch):
         parse_document(altered, upstream[0][BART])
     with pytest.raises(TEIUnavailable, match="header_missing"):
         parse_document(b"<TEI><text><body/></text></TEI>", upstream[0][BART])
+    # An unreadable header identity claim fails closed with its own reason.
+    unreadable = data.replace(
+        b'<idno type="MD5">', b'<idno type="arXiv">arXiv:not-an-id</idno><idno type="MD5">', 1
+    )
+    with pytest.raises(TEIUnavailable, match="tei_unrecognized_header_identifier"):
+        parse_document(unreadable, upstream[0][BART])
     monkeypatch.setattr(module, "MAX_NODES", 1)
     with pytest.raises(TEIUnavailable, match="structure_limit"):
         parse_document(data, upstream[0][BART])
+
+
+def test_grobid_arxiv_stamp_header_is_checked_not_rejected(upstream):
+    # GROBID writes arXiv's PDF side-stamp into the header as observed for
+    # Skip-Thought (W1486649854); here BART's real document carries its own ID.
+    stamped = (
+        (FIXTURES / "bart.xml")
+        .read_bytes()
+        .replace(
+            b'<idno type="MD5">',
+            b'<idno type="arXiv">arXiv:1910.13461v1[cs.CL]</idno><idno type="MD5">',
+            1,
+        )
+    )
+    document = parse_document(stamped, upstream[0][BART])
+    assert document.identity_method == "header_identifier_and_provider_binding"
+    # A stamped ID for a different paper is still a contradiction.
+    other = stamped.replace(b"1910.13461v1[cs.CL]", b"1506.06726v1[cs.CL]")
+    with pytest.raises(TEIUnavailable, match="identity_mismatch"):
+        parse_document(other, upstream[0][BART])
 
 
 @pytest.mark.parametrize(

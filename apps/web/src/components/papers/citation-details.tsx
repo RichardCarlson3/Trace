@@ -1,6 +1,30 @@
 import { useEffect, useState } from "react";
 import { api, type CitationContexts } from "@/lib/api";
+import {
+  evidenceOutcome,
+  outcomeExplanation,
+  retryableOutcomes,
+} from "@/lib/citation-evidence";
 import type { Citation, Paper } from "@/lib/types";
+
+// Developer diagnostic (browser console, verbose level): ids and fixed codes only.
+function logEvidence(
+  pair: string,
+  result: CitationContexts,
+  displayed: boolean,
+) {
+  console.debug("[citation-evidence]", {
+    pair,
+    outcome: evidenceOutcome(result),
+    status: result.status,
+    reason: result.reason,
+    fallbackReason: result.fallback_reason,
+    passages: result.contexts.length,
+    classified: result.contexts.filter((context) => context.classification)
+      .length,
+    displayed,
+  });
+}
 
 const intentNames = {
   background: "Background",
@@ -28,6 +52,8 @@ export function CitationDetails({
     result?: CitationContexts;
     error?: string;
   } | null>(null);
+  // Bumped only by the user's "Try again" for transient outcomes.
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     if (isPreview) return;
@@ -42,6 +68,7 @@ export function CitationDetails({
           target,
           controller.signal,
         );
+        logEvidence(pair, result, active);
         if (active) setResponse({ pair, result });
       } catch (error) {
         if (active)
@@ -58,10 +85,11 @@ export function CitationDetails({
       active = false;
       controller.abort();
     };
-  }, [source, target, pair, isPreview]);
+  }, [source, target, pair, isPreview, attempt]);
 
   const current = response?.pair === pair ? response : null;
   const result = current?.result;
+  const outcome = result ? evidenceOutcome(result) : null;
   // Display one passage and its own prediction, never an aggregate across texts.
   const passage =
     result?.contexts.find((context) => context.classification) ??
@@ -111,8 +139,23 @@ export function CitationDetails({
         <>
           <p className="citation-excerpt">
             {passage?.context_text ||
-              "Citation evidence unavailable. No verified passage was returned; intent and confidence are unknown."}
+              `Citation evidence unavailable. ${
+                (outcome && outcomeExplanation[outcome]) ??
+                "No verified passage was returned."
+              } Intent and confidence are unknown.`}
           </p>
+          {outcome && retryableOutcomes.has(outcome) && (
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => {
+                setResponse(null);
+                setAttempt((value) => value + 1);
+              }}
+            >
+              Try again
+            </button>
+          )}
           <div className="intent-card">
             <span className={`intent-dot ${prediction?.intent ?? "unknown"}`} />
             <div>
