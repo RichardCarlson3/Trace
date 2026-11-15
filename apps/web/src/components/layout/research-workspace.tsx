@@ -252,9 +252,9 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
         >
           <Image
             className="brand-mark"
-            src="/umass-athletics-logo.webp"
-            width={58}
-            height={48}
+            src="/umass-u-from-logo.png"
+            width={52}
+            height={47}
             alt=""
             aria-hidden="true"
           />

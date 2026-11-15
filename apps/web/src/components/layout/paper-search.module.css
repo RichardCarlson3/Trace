@@ -3,7 +3,7 @@
 }
 .history {
   padding: 12px;
-  border-top: 1px solid #321a1e;
+  border-top: 1px solid #282a30;
   text-align: left;
   max-height: 300px;
   overflow-y: auto;
@@ -14,7 +14,7 @@
   align-items: center;
   gap: 12px;
   font-size: 13px;
-  color: #c5b7ba;
+  color: #c9c9c8;
 }
 .history ul {
   list-style: none;
@@ -24,7 +24,7 @@
 .history button {
   border: 0;
   background: transparent;
-  color: #f6f0f1;
+  color: #f5f4f2;
   text-align: left;
 }
 .history li button {
@@ -35,5 +35,5 @@
 }
 .history li button:hover,
 .history li button:focus-visible {
-  background: #211215;
+  background: #1f2126;
 }
