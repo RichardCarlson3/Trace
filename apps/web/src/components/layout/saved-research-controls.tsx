@@ -18,7 +18,7 @@ export function SavedResearchControls({
           aria-controls="browser-library"
           onClick={research.toggle}
         >
-          Saved & recent
+          Saved
         </button>
         {research.hasGraph && (
           <button
@@ -41,7 +41,6 @@ export function SavedResearchControls({
           onSave={research.save}
           onOpen={research.openSaved}
           onDelete={research.deleteGraph}
-          onSearch={research.onSearch}
           onClose={research.close}
         />
       )}

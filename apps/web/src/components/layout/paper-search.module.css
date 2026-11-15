@@ -1,0 +1,39 @@
+.root {
+  width: 100%;
+}
+.history {
+  padding: 12px;
+  border-top: 1px solid #35384c;
+  text-align: left;
+  max-height: 300px;
+  overflow-y: auto;
+}
+.heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: #9fa8c2;
+}
+.history ul {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+}
+.history button {
+  border: 0;
+  background: transparent;
+  color: #ddd8f0;
+  text-align: left;
+}
+.history li button {
+  width: 100%;
+  padding: 10px 8px;
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+}
+.history li button:hover,
+.history li button:focus-visible {
+  background: #332a50;
+}

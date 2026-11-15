@@ -15,7 +15,6 @@ export function BrowserLibrary({
   onSave,
   onOpen,
   onDelete,
-  onSearch,
   onClose,
 }: {
   library: ReturnType<typeof useBrowserLibrary>;
@@ -27,29 +26,24 @@ export function BrowserLibrary({
   onSave: (event: FormEvent<HTMLFormElement>) => void;
   onOpen: (graph: LocalSavedGraph) => void;
   onDelete: (id: string) => void;
-  onSearch: (query: string) => void;
   onClose: () => void;
 }) {
   return (
     <aside
       className={styles.panel}
-      aria-label="Saved graphs and recent searches"
+      aria-label="Saved graphs"
       id="browser-library"
     >
       <div className={styles.heading}>
-        <h2>Saved & recent</h2>
+        <h2>Saved</h2>
         <button
           className="toolbar-button"
           onClick={onClose}
-          aria-label="Close saved graphs and recent searches"
+          aria-label="Close saved graphs"
         >
           Close
         </button>
       </div>
-      <p className="muted">
-        Saved in this browser on this computer. Clearing site data removes these
-        items.
-      </p>
       {canSave && (
         <form className={styles.save} onSubmit={onSave}>
           <label htmlFor="saved-graph-name">Graph name</label>
@@ -114,37 +108,6 @@ export function BrowserLibrary({
           Clear saved graphs
         </button>
       )}
-      <div className={styles.heading}>
-        <h3>Recent searches</h3>
-        <button
-          className={styles.remove}
-          onClick={library.clearSearches}
-          disabled={!library.recentSearches.length && !library.searchError}
-        >
-          Clear history
-        </button>
-      </div>
-      {library.searchError && (
-        <p className="feedback error" role="alert">
-          {library.searchError}
-        </p>
-      )}
-      {library.recentSearches.length === 0 && (
-        <p className="muted">Your latest searches will appear here.</p>
-      )}
-      <ul className={styles.list}>
-        {library.recentSearches.map((item) => (
-          <li key={item.query.toLowerCase()}>
-            <button
-              className={styles.open}
-              onClick={() => onSearch(item.query)}
-              aria-label={`Search again for ${item.query}`}
-            >
-              {item.query}
-            </button>
-          </li>
-        ))}
-      </ul>
     </aside>
   );
 }

@@ -3,12 +3,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import type { SearchResponse } from "@/lib/types";
+import { fuzzySearchQuery, normalizeSearchQuery } from "@/lib/search-query";
 
 export function useResearch() {
   const [connection, setConnection] = useState("Checking API");
   const [result, setResult] = useState<SearchResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searchNotice, setSearchNotice] = useState<string | null>(null);
   const activeRequest = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -31,12 +33,29 @@ export function useResearch() {
     activeRequest.current = controller;
     setLoading(true);
     setError(null);
+    setSearchNotice(null);
     setResult(null);
     try {
-      const data = await api.search(
-        query,
-        AbortSignal.any([controller.signal, AbortSignal.timeout(35000)]),
-      );
+      const normalized = normalizeSearchQuery(query);
+      const signal = AbortSignal.any([
+        controller.signal,
+        AbortSignal.timeout(35000),
+      ]);
+      let data = await api.search(normalized, signal);
+      const fuzzy = fuzzySearchQuery(normalized);
+      if (
+        !controller.signal.aborted &&
+        data.total === 0 &&
+        data.papers.length === 0 &&
+        fuzzy
+      ) {
+        data = await api.search(fuzzy, signal);
+        if (!controller.signal.aborted && data.papers.length > 0) {
+          setSearchNotice(
+            "No matches for the original wording. Showing close matches; check the titles before selecting.",
+          );
+        }
+      }
       if (!controller.signal.aborted) {
         setResult(data);
         setConnection("API connected");
@@ -58,7 +77,16 @@ export function useResearch() {
     setResult(null);
     setLoading(false);
     setError(null);
+    setSearchNotice(null);
   }, []);
 
-  return { connection, result, loading, error, search, clearSearch };
+  return {
+    connection,
+    result,
+    loading,
+    error,
+    searchNotice,
+    search,
+    clearSearch,
+  };
 }
