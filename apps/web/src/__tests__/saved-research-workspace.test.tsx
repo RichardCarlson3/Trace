@@ -66,9 +66,7 @@ describe("ResearchWorkspace", () => {
     fireEvent.click(
       await screen.findByRole("button", { name: /Fixture paper/ }),
     );
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "Save graph" })).toBeEnabled(),
-    );
+    expect(screen.queryByRole("button", { name: "Save graph" })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Filters" }));
     fireEvent.change(screen.getByLabelText("Citation direction"), {
       target: { value: "references" },
@@ -76,10 +74,15 @@ describe("ResearchWorkspace", () => {
     fireEvent.change(screen.getByLabelText("Publication year"), {
       target: { value: "2020" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Save graph" }));
+    fireEvent.click(screen.getByRole("button", { name: "Saved" }));
     const library = screen.getByRole("complementary", {
       name: "Saved graphs",
     });
+    await waitFor(() =>
+      expect(
+        within(library).getByRole("button", { name: "Save graph" }),
+      ).toBeEnabled(),
+    );
     fireEvent.change(within(library).getByLabelText("Graph name"), {
       target: { value: "My paper map" },
     });
