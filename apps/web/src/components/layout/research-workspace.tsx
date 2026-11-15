@@ -252,13 +252,12 @@ export function ResearchWorkspace({ onHome }: { onHome?: () => void } = {}) {
         >
           <Image
             className="brand-mark"
-            src="/umass-u-from-logo.png"
-            width={52}
-            height={47}
+            src="/utrace-logo.png"
+            width={1385}
+            height={1136}
             alt=""
             aria-hidden="true"
           />
-          TRACE
         </Link>
         <div className="topbar-actions">
           {hasGraph && (

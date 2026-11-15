@@ -76,7 +76,7 @@ a {
 }
 .brand-mark {
   display: block;
-  width: 52px;
+  width: 64px;
   height: auto;
   flex: none;
   object-fit: contain;
@@ -1457,7 +1457,7 @@ h3 {
 }
 .story-brand-mark {
   display: block;
-  width: 52px;
+  width: 64px;
   height: auto;
   flex: none;
   object-fit: contain;
@@ -1594,7 +1594,7 @@ h3 {
     font-size: 17px;
   }
   .story-brand-mark {
-    width: 44px;
+    width: 54px;
   }
   .story-room .story-art {
     width: 145vw;
