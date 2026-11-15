@@ -21,13 +21,6 @@
   background: #131622f5;
   backdrop-filter: blur(18px);
 }
-.workspace :global(.floating-search) {
-  top: 78px;
-  width: min(500px, calc(100% - 40px));
-}
-.workspace :global(.floating-panel) {
-  top: 145px;
-}
 .heading {
   display: flex;
   align-items: center;
@@ -87,44 +80,9 @@
   color: #c5b5ff;
   font-size: 12px;
 }
-@media (max-width: 850px) {
-  .workspace :global(.topbar) {
-    gap: 12px;
-  }
-  .workspace :global(.topbar-actions) {
-    width: 100%;
-    margin-left: 0;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .workspace :global(.toolbar-button) {
-    white-space: nowrap;
-  }
-  .tools {
-    margin-left: auto;
-  }
-  .workspace :global(.floating-search) {
-    top: 132px;
-    width: calc(100% - 28px);
-  }
-  .workspace :global(.floating-panel) {
-    top: 200px;
-    max-height: calc(100dvh - 220px);
-  }
+@media (max-width: 650px) {
   .panel {
     width: min(390px, calc(100vw - 28px));
     max-height: calc(100dvh - 150px);
-  }
-}
-@media (max-width: 480px) {
-  .workspace :global(.floating-search) {
-    top: 182px;
-  }
-  .workspace :global(.floating-panel) {
-    top: 250px;
-    max-height: calc(100dvh - 270px);
-  }
-  .panel {
-    max-height: calc(100dvh - 200px);
   }
 }
