@@ -585,13 +585,11 @@ function StoryIntro({ onExplore }: { onExplore: () => void }) {
           <span className="story-brand">
             <Image
               className="story-brand-mark"
-              src="/umass-u-from-logo.png"
-              width={52}
-              height={47}
-              alt=""
-              aria-hidden="true"
+              src="/utrace-logo.png"
+              width={1385}
+              height={1136}
+              alt="TRACE"
             />
-            TRACE
           </span>
           <button className="story-skip" onClick={onExplore}>
             Skip to graph <span aria-hidden="true">↗</span>
