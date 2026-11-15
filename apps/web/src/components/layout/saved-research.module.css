@@ -15,10 +15,10 @@
   max-height: calc(100dvh - 200px);
   overflow-y: auto;
   padding: 22px;
-  border: 1px solid #44415f;
+  border: 1px solid #49252b;
   border-radius: 16px;
-  box-shadow: 0 22px 60px #0506108c;
-  background: #131622f5;
+  box-shadow: 0 22px 60px #0b07088c;
+  background: #160d0ff5;
   backdrop-filter: blur(18px);
 }
 .heading {
@@ -56,7 +56,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  border-bottom: 1px solid #35384c;
+  border-bottom: 1px solid #321a1e;
 }
 .open {
   flex: 1;
@@ -64,20 +64,20 @@
   padding: 12px 0;
   border: 0;
   background: transparent;
-  color: #ddd8f0;
+  color: #f6f0f1;
   text-align: left;
   overflow-wrap: anywhere;
 }
 .open span {
   display: block;
   margin-top: 5px;
-  color: #9fa8c2;
+  color: #c5b7ba;
   font-size: 12px;
 }
 .remove {
   border: 0;
   background: transparent;
-  color: #c5b5ff;
+  color: #d66b74;
   font-size: 12px;
 }
 @media (max-width: 650px) {
